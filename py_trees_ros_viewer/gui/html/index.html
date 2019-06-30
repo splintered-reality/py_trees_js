@@ -1,6 +1,61 @@
 <html>
-<header><title>This is title</title></header>
+<head>
+  <meta charset="utf-8">
+  <title>Hello Pixi</title>
+</head>
+<script src="pixi.min.js"></script>
+<style>
+  body {
+    margin: 0;
+  }
+</style>
 <body>
-Hello Dude
+  <div id="foo"></div>
+  <script type="text/javascript">
+    let type = "WebGL"
+    if(!PIXI.utils.isWebGLSupported()){
+      type = "canvas"
+    }
+    // print to the javascript console (ctrl-shift-J)
+    PIXI.utils.sayHello(type)
+
+    //Create a Pixi Application
+    let app = new PIXI.Application(
+      { 
+        // width: 256,                // default: 800
+        // height: 256,               // default: 600
+        // width: gl.canvas.clientWidth,
+        // height: gl.canvas.clientHeight,
+        resizeTo: window,          // window or htmlelement, but what is htmlelement?
+        antialias: true,           // default: false
+        transparent: false,        // default: false
+        resolution: 1,             // default: 1
+        backgroundColor: 0x333333, // default: 0x000000
+      }
+    );
+    //Add the canvas that Pixi automatically created for you to the HTML document
+    document.body.appendChild(app.view);
+
+    //load an image and run the `setup` function when it's done
+    PIXI.Loader.shared
+      .add([
+        {
+          name: "images/tuxrobot",
+          url: "images/tuxrobot.png",
+          crossOrigin: true
+        }
+      ])
+      .load(setup);
+
+    //This `setup` function will run when the image has loaded
+    function setup() {
+
+      //Create the sprite
+      let sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["images/tuxrobot"].texture);
+
+      //Add the sprite to the stage
+      app.stage.addChild(sprite);
+    }    
+  </script>
 </body>
 </html>

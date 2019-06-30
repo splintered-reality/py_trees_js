@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="resources">
+    <file>html/images/tuxrobot.png</file>
+    <file>html/pixi.min.js</file>
     <file>html/index.html</file>
   </qresource>
 </RCC>

@@ -14,3 +14,4 @@ Generated qt modules for the viewer
 ##############################################################################
 
 from . import main_window
+from . import web_view

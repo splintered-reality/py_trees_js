@@ -101,6 +101,7 @@ echo ""
 
 echo -e "${CYAN}Generating UIs${RESET}"
 generate_ui main_window
+generate_ui web_view
 
 echo ""
 

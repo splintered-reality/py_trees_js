@@ -107,6 +107,7 @@ echo ""
 
 echo -e "${CYAN}Generating QRCs${RESET}"
 generate_qrc main_window
+generate_qrc web_view
 
 echo ""
 echo "I'm grooty, you should be too."

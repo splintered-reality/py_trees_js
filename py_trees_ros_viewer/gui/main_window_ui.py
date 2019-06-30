@@ -13,7 +13,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(551, 356)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/tuxrobot.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/resources/images/tuxrobot.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.central_layout = QtWidgets.QWidget(MainWindow)
         self.central_layout.setObjectName("central_layout")

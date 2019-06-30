@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="resources">
-    <file>images/tuxrobot.png</file>
+    <file>html/index.html</file>
   </qresource>
 </RCC>

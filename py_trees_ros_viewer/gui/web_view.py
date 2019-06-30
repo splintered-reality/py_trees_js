@@ -39,4 +39,5 @@ class WebViewGroupBox(qt_widgets.QGroupBox):
         super().__init__(parent)
         self.ui = web_view_ui.Ui_WebViewGroupBox()
         self.ui.setupUi(self)
-        self.ui.web_engine_view.load(qt_core.QUrl("https://stackoverflow.com/"))
+        # self.ui.web_engine_view.load(qt_core.QUrl("https://stackoverflow.com/"))
+        self.ui.web_engine_view.load(qt_core.QUrl("qrc:/resources/html/index.html"))

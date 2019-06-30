@@ -35,6 +35,8 @@
    <header location="global">QtWebEngineWidgets/QWebEngineView</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="web_view.qrc"/>
+ </resources>
  <connections/>
 </ui>

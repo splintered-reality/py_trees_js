@@ -28,3 +28,4 @@ class Ui_WebViewGroupBox(object):
         WebViewGroupBox.setTitle(_translate("WebViewGroupBox", "GroupBox"))
 
 from PyQt5 import QtWebEngineWidgets
+from . import web_view_rc

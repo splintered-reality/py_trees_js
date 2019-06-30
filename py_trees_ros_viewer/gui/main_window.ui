@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="main_window.qrc">
-    <normaloff>:/images/tuxrobot.png</normaloff>:/images/tuxrobot.png</iconset>
+    <normaloff>:/resources/images/tuxrobot.png</normaloff>:/resources/images/tuxrobot.png</iconset>
   </property>
   <widget class="QWidget" name="central_layout">
    <layout class="QHBoxLayout" name="horizontalLayout">

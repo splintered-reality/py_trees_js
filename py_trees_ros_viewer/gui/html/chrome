@@ -1,0 +1,92 @@
+#!/bin/bash
+
+###########################
+# Colours
+###########################
+
+BOLD="\e[1m"
+
+CYAN="\e[36m"
+GREEN="\e[32m"
+RED="\e[31m"
+YELLOW="\e[33m"
+
+RESET="\e[0m"
+
+###########################
+# Variables
+###########################
+
+DIR=/tmp/chrome-devel-configuration
+OPTIONS="--args --allow-file-access-from-files"
+#OPTIONS="--incognito"
+PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+###########################
+# Methods
+###########################
+
+show_help ()
+{
+  echo ""
+  echo "Launches the web app on chrome with the appropriate knobs."
+  echo ""
+  echo "    Usage:"
+  echo "        ./chrome"
+  echo ""
+  echo "    Options:"
+  echo "        --help            : this help message"
+  echo "        --clean           : clean the chrome configuration dir"
+  exit 0
+}
+
+###########################
+# Command Line
+###########################
+
+for i in "$@"
+do
+case $i in
+    --help)
+    SHOW_HELP=1
+    shift
+    ;;
+    --clean)
+    CLEAN=1
+    shift
+    ;;
+        *)
+       # pass through
+    ;;
+esac
+done
+
+###########################
+# Aborts
+###########################
+
+if [ ! -z "$SHOW_HELP" ]; then
+  show_help
+  exit 0
+fi
+
+if [ ! -z "$CLEAN" ]; then
+  echo -e "${GREEN}Cleaning.........${DIR}${RESET}"
+  rm -rf ${DIR}
+  exit 0
+fi
+
+###########################
+# Setup
+###########################
+
+if [ ! -d "${DIR}" ]; then
+  mkdir -p ${DIR}
+  rsync -av --delete --exclude=/Singleton* --exclude=/Session* ~/.config/google-chrome/ ${DIR}
+fi
+
+###########################
+# Launch
+###########################
+
+exec google-chrome ${OPTIONS} --user-data-dir=${DIR} --app=file://${PWD}/index.html

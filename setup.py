@@ -61,10 +61,10 @@ class OverrideInstall(install):
 
 
 setup(
-    cmdclass={
-        'develop': OverrideDevelop,
-        'install': OverrideInstall
-    },
+    # cmdclass={
+    #     'develop': OverrideDevelop,
+    #     'install': OverrideInstall
+    # },
     name=package_name,
     version='0.1.0',  # also update package.xml
     packages=find_packages(exclude=['tests*', 'docs*']),
@@ -75,7 +75,7 @@ setup(
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
     url='https://github.com/splintered-reality/py_trees_ros_tutorials',
-    keywords=['ROS', 'ROS2' 'behaviour-trees'],
+    keywords=['ROS', 'ROS2', 'behaviour-trees', 'Qt'],
     zip_safe=True,
     classifiers=[
         'Intended Audience :: Developers',
@@ -85,17 +85,18 @@ setup(
         'Topic :: Software Development :: Libraries'
     ],
     description=(
-        "Tutorials for py_trees on ROS2."
+        "Viewer for executing or replaying py_trees"
     ),
     long_description=(
-        "Tutorials demonstrating usage of py_trees in ROS and more generally,"
-        "behaviour trees for robotics."
+        "Qt-Javascript hybrid application for viewing of executing or"
+        "replaying py_trees"
     ),
     license='BSD',
     # test_suite="tests"
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
         'console_scripts': [
+            'py-trees-viewer = py_trees_ros_viewer.viewer:main',
         ],
     },
 )

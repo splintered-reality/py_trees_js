@@ -4,6 +4,7 @@
   <title>Hello Pixi</title>
 </head>
 <script src="pixi.min.js"></script>
+<script src="draw.js"></script>
 <style>
   body {
     margin: 0;
@@ -47,15 +48,35 @@
       ])
       .load(setup);
 
-    //This `setup` function will run when the image has loaded
+    // This `setup` function will run when the image has loaded
     function setup() {
 
-      //Create the sprite
+      // Create the sprite
       let sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["images/tuxrobot"].texture);
 
-      //Add the sprite to the stage
-      app.stage.addChild(sprite);
-    }    
+      // Add the sprite to the stage
+      // app.stage.addChild(sprite);
+      
+      var graphics = new PIXI.Graphics();
+      // graphics.beginFill(0xFF3300);
+      // graphics.lineStyle(10, 0xffd900, 1);
+
+      draw.rectangle(
+        {
+            graphics:graphics,
+            x:250,
+            y:250,
+            w: 100,
+            h: 50,
+            radius: 5,
+            bg_color: 0xFF3300,
+            border_width: 3,
+            border_color: 0xFF0000
+        }
+      )
+      
+      app.stage.addChild(graphics)
+    }
   </script>
 </body>
 </html>

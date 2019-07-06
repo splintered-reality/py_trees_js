@@ -13,4 +13,5 @@ Core modules for the viewer
 # Imports
 ##############################################################################
 
+from . import console
 from . import viewer

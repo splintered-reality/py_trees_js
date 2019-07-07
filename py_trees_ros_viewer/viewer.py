@@ -46,7 +46,7 @@ def main():
     #   permit python a chance to catch the signal
     #   https://stackoverflow.com/questions/4938723/what-is-the-correct-way-to-make-my-pyqt-application-quit-when-killed-from-the-co
     def on_shutdown(unused_signal, unused_frame):
-        console.logdebug("shutting down [viewer]")
+        console.logdebug("received interrupt signal [viewer]")
         main_window.close()
 
     signal.signal(signal.SIGINT, on_shutdown)

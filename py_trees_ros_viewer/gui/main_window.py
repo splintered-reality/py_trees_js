@@ -37,6 +37,7 @@ class MainWindow(qt_widgets.QMainWindow):
         self.readSettings()
 
     def closeEvent(self, event):
+        console.logdebug("received close event [main_window]")
         self.request_shutdown.emit()
         self.writeSettings()
         super().closeEvent(event)

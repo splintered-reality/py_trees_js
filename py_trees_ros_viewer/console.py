@@ -32,6 +32,7 @@ These colour definitions can be used in the following way:
 # Imports
 ##############################################################################
 
+import enum
 import os
 import sys
 
@@ -255,6 +256,20 @@ def error(msg):
     print(red + msg + reset)
 
 
+class LogLevel(enum.Enum):
+    """
+    Log levels.
+    """
+    DEBUG = 1
+    INFO = 2
+    WARNING = 3
+    ERROR = 4
+
+
+log_level = LogLevel.INFO
+""" Console's current log level."""
+
+
 def logdebug(message):
     '''
     Prefixes ``[DEBUG]`` and colours the message green.
@@ -262,7 +277,8 @@ def logdebug(message):
     Args:
         message (:obj:`str`): message to log.
     '''
-    print(green + "[DEBUG] " + message + reset)
+    if log_level.value < LogLevel.INFO.value:
+        print(green + "[DEBUG] " + message + reset)
 
 
 def loginfo(message):
@@ -272,7 +288,8 @@ def loginfo(message):
     Args:
         message (:obj:`str`): message to log.
     '''
-    print("[ INFO] " + message)
+    if log_level.value < LogLevel.WARNING.value:
+        print("[ INFO] " + message)
 
 
 def logwarn(message):
@@ -282,7 +299,8 @@ def logwarn(message):
     Args:
         message (:obj:`str`): message to log.
     '''
-    print(yellow + "[ WARN] " + message + reset)
+    if log_level.value < LogLevel.ERROR.value:
+        print(yellow + "[ WARN] " + message + reset)
 
 
 def logerror(message):

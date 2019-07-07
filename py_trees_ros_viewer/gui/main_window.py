@@ -42,7 +42,7 @@ class MainWindow(qt_widgets.QMainWindow):
         super().closeEvent(event)
 
     def readSettings(self):
-        console.debug("[MainWindow] Read Settings")
+        console.logdebug("read settings [main_window]")
         settings = qt_core.QSettings("Splintered Reality", "PyTrees Viewer")
         geometry = settings.value("geometry")
         if geometry is not None:
@@ -52,7 +52,7 @@ class MainWindow(qt_widgets.QMainWindow):
             self.restoreState(window_state)
 
     def writeSettings(self):
-        console.debug("[MainWindow] Write Settings")
+        console.logdebug("write settings [main_window]")
         settings = qt_core.QSettings("Splintered Reality", "PyTrees Viewer")
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("window_state", self.saveState())  # full size, maximised, minimised, no state

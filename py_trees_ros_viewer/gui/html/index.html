@@ -3,13 +3,15 @@
   <meta charset="utf-8">
   <title>Hello Pixi</title>
 </head>
+<script src="jointjs/dagre.min.js"></script>
+<script src="jointjs/graphlib.min.js"></script>
 <script src="jointjs/jquery.min.js"></script>
 <script src="jointjs/lodash.min.js"></script>
 <script src="jointjs/backbone.js"></script>
-<script src="jointjs/joint.min.js"></script>
+<script src="jointjs/joint-3.0.2.min.js"></script>
 <script src="pixi.min.js"></script>
 <script src="draw.js"></script>
-<link rel="stylesheet" type="text/css" href="jointjs/joint.min.css"/>
+<link rel="stylesheet" type="text/css" href="jointjs/joint-3.0.2.min.css"/>
 <style>
   body {
     margin: 0;
@@ -18,13 +20,102 @@
 <body>
   <div id="foo"></div>
   <script type="text/javascript">
+    // Hello to the JS console
     let type = "WebGL"
     if(!PIXI.utils.isWebGLSupported()){
       type = "canvas"
     }
-    // print to the javascript console (ctrl-shift-J)
     PIXI.utils.sayHello(type)
+    console.log("JointJS: %s", joint.version)
+  </script>
+  <div id="myholder"></div>
+  <script type="text/javascript">
 
+    // Additionally, the graph accepts an option object in its constructor function that can contain the cellNamespace option.
+    //
+    // This option can be used to change the default behavior of JointJS which by default reads cell model definitions
+    // from the joint.shapes namespace. For example, if a cell is of type 'myshapes.MyElement', then the graph looks up
+    // joint.shapes.myshapes.MyElement model when deserializing a graph from the JSON format. If the graph is instantiated as
+    // e.g. var graph = new joint.dia.Graph({}, { cellNamespace: myShapesNamespace }), then the graph will read the model
+    // definition from the myShapesNamespace.myshapes.MyElement object instead.
+    //
+    // This is useful in situations where you don't want to - for any reason -
+    // use the joint.shapes namespace for defining your own custom shapes. This option is often used in combination with the
+    // cellNamespaceView option on the joint.dia.Paper object.
+    var graph = new joint.dia.Graph;
+
+    var paper = new joint.dia.Paper({
+        el: document.getElementById('myholder'),
+        model: graph,
+        width: '100%',
+        height: '100%',
+        background: {
+            color: '#000000',
+        },
+        gridSize: 1
+    });
+    var headered_rectangle = new joint.shapes.standard.HeaderedRectangle();
+    headered_rectangle.resize(150, 100);
+    headered_rectangle.attr('root/title', 'joint.shapes.standard.HeaderedRectangle');
+    headered_rectangle.attr('header/fill', 'lightgray');
+    headered_rectangle.attr('headerText/text', 'Header');
+    headered_rectangle.attr('bodyText/text', 'Headered\nRectangle');
+    headered_rectangle.addTo(graph);
+
+    var rect = new joint.shapes.standard.Rectangle();
+    rect.position(300,100)
+    rect.resize(100, 40);
+    rect.attr({
+        body: {
+            fill: 'blue'
+        },
+        label: {
+            text: 'Hello',
+            fill: 'white',
+        }
+    });
+    rect.addTo(graph);
+
+    var rect2 = rect.clone();
+    rect2.attr('label/text', 'World!');
+    rect2.addTo(graph);
+
+    var ellipse = new joint.shapes.standard.Ellipse();
+    ellipse.resize(150, 50);
+    ellipse.attr('root/title', 'joint.shapes.standard.Ellipse');
+    ellipse.attr('label/text', 'Ellipse');
+    ellipse.attr('body/fill', 'green');
+    ellipse.addTo(graph);
+
+    var link = new joint.shapes.standard.Link();
+    link.source(rect);
+    link.target(rect2);
+    link.addTo(graph);
+
+    var link2 = new joint.shapes.standard.Link();
+    link2.source(rect)
+    link2.target(headered_rectangle)
+    link2.addTo(graph)
+
+    var link3 = new joint.shapes.standard.Link();
+    link3.source(rect2)
+    link3.target(ellipse)
+    link3.addTo(graph)
+
+    // paper.scale(0.5, 0.5); // the api to enable zooming
+
+    var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
+        marginX: 50,
+        marginY: 50,
+        nodeSep: 50,
+        edgeSep: 80,
+        rankDir: "TB"
+    });
+    console.log('x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+    console.log('width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+
+
+    /* PIXIJS
     //Create a Pixi Application
     let app = new PIXI.Application(
       {
@@ -82,6 +173,7 @@
 
       app.stage.addChild(graphics)
     }
+    */
   </script>
 </body>
 </html>

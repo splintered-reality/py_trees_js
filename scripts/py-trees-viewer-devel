@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Simple script to make sure the developer console is open and
+# the qrc's for the html/js are generated.
+
+PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export QTWEBENGINE_REMOTE_DEBUGGING=12345
+
+cd ${PWD}/../py_trees_ros_viewer/gui && ./gen.bash
+py-trees-viewer

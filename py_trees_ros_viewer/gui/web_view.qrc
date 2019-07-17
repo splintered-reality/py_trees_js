@@ -1,5 +1,10 @@
 <RCC>
   <qresource prefix="resources">
+    <file>html/jointjs/lodash.min.js</file>
+    <file>html/jointjs/jquery.min.js</file>
+    <file>html/jointjs/joint.min.js</file>
+    <file>html/jointjs/joint.min.css</file>
+    <file>html/jointjs/backbone.js</file>
     <file>html/py_trees.js</file>
     <file>html/draw.js</file>
     <file>html/images/tuxrobot.png</file>

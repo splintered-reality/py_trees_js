@@ -3,8 +3,13 @@
   <meta charset="utf-8">
   <title>Hello Pixi</title>
 </head>
+<script src="jointjs/jquery.min.js"></script>
+<script src="jointjs/lodash.min.js"></script>
+<script src="jointjs/backbone.js"></script>
+<script src="jointjs/joint.min.js"></script>
 <script src="pixi.min.js"></script>
 <script src="draw.js"></script>
+<link rel="stylesheet" type="text/css" href="jointjs/joint.min.css"/>
 <style>
   body {
     margin: 0;
@@ -22,7 +27,7 @@
 
     //Create a Pixi Application
     let app = new PIXI.Application(
-      { 
+      {
         // width: 256,                // default: 800
         // height: 256,               // default: 600
         // width: gl.canvas.clientWidth,
@@ -56,7 +61,7 @@
 
       // Add the sprite to the stage
       // app.stage.addChild(sprite);
-      
+
       var graphics = new PIXI.Graphics();
       // graphics.beginFill(0xFF3300);
       // graphics.lineStyle(10, 0xffd900, 1);
@@ -74,7 +79,7 @@
             border_color: 0xFF0000
         }
       )
-      
+
       app.stage.addChild(graphics)
     }
   </script>

@@ -42,7 +42,7 @@
     // use the joint.shapes namespace for defining your own custom shapes. This option is often used in combination with the
     // cellNamespaceView option on the joint.dia.Paper object.
     var graph = new joint.dia.Graph({
-      // cellNamespace: py_trees.shapes
+      cellNamespace: py_trees.shapes
     });
 
     var paper = new joint.dia.Paper({
@@ -50,7 +50,7 @@
       model: graph,
       width: '100%',
       height: '100%',
-      // cellViewNamespace: py_trees.shapes,
+      cellViewNamespace: py_trees.shapes,
       // defaultConnector: {  // doesn't seem to have any effect
       //     name: 'rounded',
       //     args: {
@@ -66,154 +66,28 @@
       //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
       // ]}
     });
-    parallel = py_trees.shapes.parallel({ name: "Root", message: "Dude" })
+
+    selector = new py_trees.shapes.Selector
+    selector.resize(100, 40);  // needed to render?
+    selector.attr('body/fill', 'green')
+    selector.attr('label/text', 'Bar')
+    selector.attr('label/fill', 'red')
+    selector.addTo(graph)
+
+    parallel = new py_trees.shapes.Selector
+    parallel.attr('label/text', 'Foo')
+    parallel.resize(100, 40);  // needed to render?
     parallel.addTo(graph);
 
-    selector = new py_trees.shapes.Selector()
-    selector.position(100, 30);
-    selector.resize(100, 40);
-
-    selector.addTo(graph)
     var link = new joint.shapes.standard.Link();
-    link.source(parallel)
-    link.target(selector)
+    link.source(selector)
+    link.target(parallel)
     link.connector('smooth');
     link.addTo(graph)
 
-    joint.shapes.custom = {};
-    joint.shapes.custom.Element = joint.dia.Element.extend({
-      defaults: _.defaultsDeep({
-        type: 'custom.Element',
-        fillColor: 'red',
-        outlineColor: 'black',
-        activeTab: 0,
-        numberOfTabs: 1,
-        faded: false
-      })
-    });
-
-    joint.shapes.custom.ElementView = joint.dia.ElementView.extend({
-
-      events: {
-        'dblclick': 'onDblClick',
-        'click .tab': 'onTabClick'
-      },
-
-      init: function() {
-        var model = this.model;
-        this.listenTo(model, [
-          'change:activeTab',
-          'change:fillColor',
-          'change:outlineColor',
-        ].join(' '), this.update);
-        this.listenTo(model, 'change:faded', this.toggleFade);
-        this.listenTo(model, 'change:numberOfTabs', this.render);
-      },
-
-      render: function() {
-        var markup = this.constructor.markup;
-        var body = this.vBody = markup.body.clone();
-        var tabs = this.vTabs = [];
-        var texts = this.vTexts = [];
-        for (var i = 0, n = this.model.prop('numberOfTabs'); i < n; i++) {
-          tabs.push(markup.tab.clone());
-          texts.push(markup.text.clone().text('Tab ' + (i + 1)));
-        }
-        this.vel.empty().append(
-          _.flatten([
-            body,
-            tabs
-          ])
-        );
-        this.translate();
-        this.update();
-      },
-
-      update: function() {
-        this.updateBody();
-        this.updateText();
-        this.updateTabs();
-        this.toggleFade();
-      },
-
-      updateBody: function() {
-        var model = this.model;
-        var bodyAttributes = {
-          width: model.prop('size/width'),
-          height: model.prop('size/height'),
-          fill: model.prop('fillColor'),
-          stroke: model.prop('outlineColor')
-        };
-        this.vBody.attr(bodyAttributes);
-      },
-
-      updateTabs: function() {
-        var model = this.model;
-        var numberOfTabs = model.prop('numberOfTabs');
-        var length = model.prop('size/width') / numberOfTabs;
-        var activeTab = model.prop('activeTab');
-        var vTabs = this.vTabs;
-        for (var i = 0; i < numberOfTabs; i++) {
-          var isActive = (activeTab === i);
-          var offset = +isActive;
-          vTabs[i].attr({
-            width: length - 2 * offset,
-            x: i * length + offset,
-            y: offset,
-            height: 20,
-            stroke: (isActive) ? 'none' : model.prop('outlineColor'),
-            fill: (isActive) ? model.prop('fillColor') : 'gray',
-            'data-index': i
-          });
-        }
-      },
-
-      updateText: function() {
-        var model = this.model;
-        var activeTab = model.prop('activeTab');
-        var numberOfTabs = model.prop('numberOfTabs');
-        var vTexts = this.vTexts;
-        for (var i = 0; i < numberOfTabs; i++) {
-          var vText = vTexts[i];
-          if (i === activeTab) {
-            var tx = model.prop('size/width') / 2;
-            vText.attr({
-              transform: 'translate(' + tx + ',30)',
-              'text-anchor': 'middle'
-            });
-            this.vel.append(vText);
-          } else {
-            vText.remove();
-          }
-        }
-      },
-
-      toggleFade: function() {
-        this.vel.attr('opacity', this.model.prop('faded') ? 0.2 : 1);
-      },
-
-      onTabClick: function(evt) {
-        var index = +V(evt.target).attr('data-index');
-        this.model.prop('activeTab', index);
-      },
-
-      onDblClick: function() {
-        this.model.prop('faded', !this.model.prop('faded'));
-      }
-
-    }, {
-
-      markup: {
-        body: V('rect').addClass('body'),
-        tab: V('rect').addClass('tab'),
-        text: V('text').addClass('text')
-      }
-
-    });
-
     links = []
     _.times(4, function(i) {
-      var custom_element = new joint.shapes.custom.Element;
+      var custom_element = new py_trees.shapes.TabbedRectangle;
       custom_element
         .prop('numberOfTabs', i)
         .resize(100, 100)

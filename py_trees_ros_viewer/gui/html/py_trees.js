@@ -2,20 +2,35 @@
  * py_trees.js - 0.1.0
  */
 var py_trees = (function() {
-	
-/*****************************************************************************
- * Shapes
- ****************************************************************************/
-var makeRect = function(graphics, w, h, radius, bg_color, border_width, border_color) {
-    graphics.beginFill(bg_color);
-    graphics.setStrokeStyle(border_width, 'round');
-    graphics.beginStroke(border_color);
-    graphics.drawRoundRect(-w/2, -h/2, w, h, radius);
-    graphics.endStroke();
-    graphics.endFill();
-};
 
-/*****************************************************************************
- * Behaviour Types
- ****************************************************************************/
+  return {
+    /****************************************
+     * Behaviour Types
+     ***************************************/
+    parallel: function({name, message}) {
+      var headered_rectangle = new joint.shapes.standard.HeaderedRectangle();
+      headered_rectangle.resize(150, 100);
+      headered_rectangle.attr('root/title', 'joint.shapes.standard.HeaderedRectangle');
+      headered_rectangle.attr('header/fill', 'maroon');
+      headered_rectangle.attr('headerText/text', 'Name');
+      headered_rectangle.attr('headerText/fill', 'lightgray');
+      headered_rectangle.attr('body/fill', 'orange');
+      headered_rectangle.attr('bodyText/text', 'Message');
+      return headered_rectangle
+    },
+
+    sequence: function({name, message}) {
+      var headered_rectangle = new joint.shapes.standard.HeaderedRectangle();
+      headered_rectangle.resize(150, 100);
+      headered_rectangle.attr('root/title', 'joint.shapes.standard.HeaderedRectangle');
+      headered_rectangle.attr('header/fill', 'maroon');
+      headered_rectangle.attr('headerText/text', 'Name');
+      headered_rectangle.attr('headerText/fill', 'lightgray');
+      headered_rectangle.attr('body/fill', 'orange');
+      headered_rectangle.attr('bodyText/text', 'Message');
+      return headered_rectangle
+    }
+  };
+})();
+
 

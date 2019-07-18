@@ -10,7 +10,7 @@
 <script src="jointjs/backbone.js"></script>
 <script src="jointjs/joint-3.0.2.min.js"></script>
 <script src="pixi.min.js"></script>
-<script src="draw.js"></script>
+<script src="py_trees.js"></script>
 <link rel="stylesheet" type="text/css" href="jointjs/joint-3.0.2.min.css"/>
 <style>
   body {
@@ -30,7 +30,6 @@
   </script>
   <div id="myholder"></div>
   <script type="text/javascript">
-
     // Additionally, the graph accepts an option object in its constructor function that can contain the cellNamespace option.
     //
     // This option can be used to change the default behavior of JointJS which by default reads cell model definitions
@@ -49,58 +48,168 @@
         model: graph,
         width: '100%',
         height: '100%',
+        // defaultConnector: {  // doesn't seem to have any effect
+        //     name: 'rounded',
+        //     args: {
+        //         radius: 20
+        //     }
+        // },
         background: {
             color: '#000000',
         },
         gridSize: 1
     });
-    var headered_rectangle = new joint.shapes.standard.HeaderedRectangle();
-    headered_rectangle.resize(150, 100);
-    headered_rectangle.attr('root/title', 'joint.shapes.standard.HeaderedRectangle');
-    headered_rectangle.attr('header/fill', 'lightgray');
-    headered_rectangle.attr('headerText/text', 'Header');
-    headered_rectangle.attr('bodyText/text', 'Headered\nRectangle');
-    headered_rectangle.addTo(graph);
+    parallel = py_trees.parallel({ name: "Root", message: "Dude" })
+    parallel.addTo(graph);
 
-    var rect = new joint.shapes.standard.Rectangle();
-    rect.position(300,100)
-    rect.resize(100, 40);
-    rect.attr({
-        body: {
-            fill: 'blue'
-        },
-        label: {
-            text: 'Hello',
-            fill: 'white',
-        }
+    joint.shapes.custom = {};
+    joint.shapes.custom.Element = joint.dia.Element.extend({
+      defaults: _.defaultsDeep({
+        type: 'custom.Element',
+        fillColor: 'red',
+        outlineColor: 'black',
+        activeTab: 0,
+        numberOfTabs: 1,
+        faded: false
+      })
     });
-    rect.addTo(graph);
 
-    var rect2 = rect.clone();
-    rect2.attr('label/text', 'World!');
-    rect2.addTo(graph);
+    joint.shapes.custom.ElementView = joint.dia.ElementView.extend({
 
-    var ellipse = new joint.shapes.standard.Ellipse();
-    ellipse.resize(150, 50);
-    ellipse.attr('root/title', 'joint.shapes.standard.Ellipse');
-    ellipse.attr('label/text', 'Ellipse');
-    ellipse.attr('body/fill', 'green');
-    ellipse.addTo(graph);
+      events: {
+        'dblclick': 'onDblClick',
+        'click .tab': 'onTabClick'
+      },
 
-    var link = new joint.shapes.standard.Link();
-    link.source(rect);
-    link.target(rect2);
-    link.addTo(graph);
+      init: function() {
+        var model = this.model;
+        this.listenTo(model, [
+          'change:activeTab',
+          'change:fillColor',
+          'change:outlineColor',
+        ].join(' '), this.update);
+        this.listenTo(model, 'change:faded', this.toggleFade);
+        this.listenTo(model, 'change:numberOfTabs', this.render);
+      },
 
-    var link2 = new joint.shapes.standard.Link();
-    link2.source(rect)
-    link2.target(headered_rectangle)
-    link2.addTo(graph)
+      render: function() {
+        var markup = this.constructor.markup;
+        var body = this.vBody = markup.body.clone();
+        var tabs = this.vTabs = [];
+        var texts = this.vTexts = [];
+        for (var i = 0, n = this.model.prop('numberOfTabs'); i < n; i++) {
+          tabs.push(markup.tab.clone());
+          texts.push(markup.text.clone().text('Tab ' + (i + 1)));
+        }
+        this.vel.empty().append(
+          _.flatten([
+            body,
+            tabs
+          ])
+        );
+        this.translate();
+        this.update();
+      },
 
-    var link3 = new joint.shapes.standard.Link();
-    link3.source(rect2)
-    link3.target(ellipse)
-    link3.addTo(graph)
+      update: function() {
+        this.updateBody();
+        this.updateText();
+        this.updateTabs();
+        this.toggleFade();
+      },
+
+      updateBody: function() {
+        var model = this.model;
+        var bodyAttributes = {
+          width: model.prop('size/width'),
+          height: model.prop('size/height'),
+          fill: model.prop('fillColor'),
+          stroke: model.prop('outlineColor')
+        };
+        this.vBody.attr(bodyAttributes);
+      },
+
+      updateTabs: function() {
+        var model = this.model;
+        var numberOfTabs = model.prop('numberOfTabs');
+        var length = model.prop('size/width') / numberOfTabs;
+        var activeTab = model.prop('activeTab');
+        var vTabs = this.vTabs;
+        for (var i = 0; i < numberOfTabs; i++) {
+          var isActive = (activeTab === i);
+          var offset = +isActive;
+          vTabs[i].attr({
+            width: length - 2 * offset,
+            x: i * length + offset,
+            y: offset,
+            height: 20,
+            stroke: (isActive) ? 'none' : model.prop('outlineColor'),
+            fill: (isActive) ? model.prop('fillColor') : 'gray',
+            'data-index': i
+          });
+        }
+      },
+
+      updateText: function() {
+        var model = this.model;
+        var activeTab = model.prop('activeTab');
+        var numberOfTabs = model.prop('numberOfTabs');
+        var vTexts = this.vTexts;
+        for (var i = 0; i < numberOfTabs; i++) {
+          var vText = vTexts[i];
+          if (i === activeTab) {
+            var tx = model.prop('size/width') / 2;
+            vText.attr({
+              transform: 'translate(' + tx + ',30)',
+              'text-anchor': 'middle'
+            });
+            this.vel.append(vText);
+          } else {
+            vText.remove();
+          }
+        }
+      },
+
+      toggleFade: function() {
+        this.vel.attr('opacity', this.model.prop('faded') ? 0.2 : 1);
+      },
+
+      onTabClick: function(evt) {
+        var index = +V(evt.target).attr('data-index');
+        this.model.prop('activeTab', index);
+      },
+
+      onDblClick: function() {
+        this.model.prop('faded', !this.model.prop('faded'));
+      }
+
+    }, {
+
+      markup: {
+        body: V('rect').addClass('body'),
+        tab: V('rect').addClass('tab'),
+        text: V('text').addClass('text')
+      }
+
+    });
+
+    links = []
+    _.times(4, function(i) {
+      var custom_element = new joint.shapes.custom.Element;
+      custom_element
+        .prop('numberOfTabs', i)
+        .resize(100, 100)
+        .position(50 + (i % 2) * 150, 50 + (i < 2) * 150)
+        .prop('fillColor', ['salmon', 'lightgreen', 'lightblue', 'lightgray'][i])
+        .prop('faded', i === 1)
+        .addTo(graph);
+      var link = new joint.shapes.standard.Link();
+      link.source(parallel)
+      link.target(custom_element)
+      link.connector('smooth');
+      link.addTo(graph)
+      links.push(link)
+    });
 
     // paper.scale(0.5, 0.5); // the api to enable zooming
 
@@ -113,67 +222,6 @@
     });
     console.log('x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
     console.log('width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
-
-
-    /* PIXIJS
-    //Create a Pixi Application
-    let app = new PIXI.Application(
-      {
-        // width: 256,                // default: 800
-        // height: 256,               // default: 600
-        // width: gl.canvas.clientWidth,
-        // height: gl.canvas.clientHeight,
-        resizeTo: window,          // window or htmlelement, but what is htmlelement?
-        antialias: true,           // default: false
-        transparent: false,        // default: false
-        resolution: 1,             // default: 1
-        backgroundColor: 0x333333, // default: 0x000000
-      }
-    );
-    //Add the canvas that Pixi automatically created for you to the HTML document
-    document.body.appendChild(app.view);
-
-    //load an image and run the `setup` function when it's done
-    PIXI.Loader.shared
-      .add([
-        {
-          name: "images/tuxrobot",
-          url: "images/tuxrobot.png",
-          crossOrigin: true
-        }
-      ])
-      .load(setup);
-
-    // This `setup` function will run when the image has loaded
-    function setup() {
-
-      // Create the sprite
-      let sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["images/tuxrobot"].texture);
-
-      // Add the sprite to the stage
-      // app.stage.addChild(sprite);
-
-      var graphics = new PIXI.Graphics();
-      // graphics.beginFill(0xFF3300);
-      // graphics.lineStyle(10, 0xffd900, 1);
-
-      draw.rectangle(
-        {
-            graphics:graphics,
-            x:250,
-            y:250,
-            w: 100,
-            h: 50,
-            radius: 5,
-            bg_color: 0xFF3300,
-            border_width: 3,
-            border_color: 0xFF0000
-        }
-      )
-
-      app.stage.addChild(graphics)
-    }
-    */
   </script>
 </body>
 </html>

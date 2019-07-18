@@ -41,26 +41,44 @@
     // This is useful in situations where you don't want to - for any reason -
     // use the joint.shapes namespace for defining your own custom shapes. This option is often used in combination with the
     // cellNamespaceView option on the joint.dia.Paper object.
-    var graph = new joint.dia.Graph;
+    var graph = new joint.dia.Graph({
+      // cellNamespace: py_trees.shapes
+    });
 
     var paper = new joint.dia.Paper({
-        el: document.getElementById('myholder'),
-        model: graph,
-        width: '100%',
-        height: '100%',
-        // defaultConnector: {  // doesn't seem to have any effect
-        //     name: 'rounded',
-        //     args: {
-        //         radius: 20
-        //     }
-        // },
-        background: {
-            color: '#000000',
-        },
-        gridSize: 1
+      el: document.getElementById('myholder'),
+      model: graph,
+      width: '100%',
+      height: '100%',
+      // cellViewNamespace: py_trees.shapes,
+      // defaultConnector: {  // doesn't seem to have any effect
+      //     name: 'rounded',
+      //     args: {
+      //         radius: 20
+      //     }
+      // },
+      background: { color: '#111111' },
+      // gridSize: 15,     // doesn't work?
+      // drawGrid: {
+      //     name: 'doubleMesh',
+      //     args: [
+      //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
+      //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
+      // ]}
     });
-    parallel = py_trees.parallel({ name: "Root", message: "Dude" })
+    parallel = py_trees.shapes.parallel({ name: "Root", message: "Dude" })
     parallel.addTo(graph);
+
+    selector = new py_trees.shapes.Selector()
+    selector.position(100, 30);
+    selector.resize(100, 40);
+
+    selector.addTo(graph)
+    var link = new joint.shapes.standard.Link();
+    link.source(parallel)
+    link.target(selector)
+    link.connector('smooth');
+    link.addTo(graph)
 
     joint.shapes.custom = {};
     joint.shapes.custom.Element = joint.dia.Element.extend({

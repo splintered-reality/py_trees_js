@@ -74,8 +74,15 @@
     selector.attr('label/fill', 'red')
     selector.addTo(graph)
 
-    parallel = new py_trees.shapes.Selector
-    parallel.attr('label/text', 'Foo')
+    parallel = new py_trees.shapes.Node({
+        attrs: {
+            '.card': { fill: '#0000AA', stroke: 'none'},
+              image: { 'xlink:href': 'images/tuxrobot.png', opacity: 0.7 },
+            '.rank': { text: 'Dude', fill: '#f1f1f1'},
+            '.name': { text: 'Bob is da Best of all time', fill: '#f1f1f1'}
+        }
+    });
+//    parallel.attr('label/text', 'Foo')
     parallel.resize(100, 40);  // needed to render?
     parallel.addTo(graph);
 

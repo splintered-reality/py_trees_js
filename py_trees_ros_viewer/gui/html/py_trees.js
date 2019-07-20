@@ -41,7 +41,7 @@ var py_trees = (function() {
   )
 
   // *************************************************************************
-  // Tabbed Boxes - https://jsfiddle.net/kumilingus/Lznzjqmk/
+  // Tabbed Box Experiments - https://jsfiddle.net/kumilingus/Lznzjqmk/
   // *************************************************************************
   _TabbedRectangle = joint.dia.Element.extend({
     defaults: _.defaultsDeep({

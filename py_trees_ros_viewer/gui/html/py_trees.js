@@ -180,35 +180,33 @@ var py_trees = (function() {
       'Node', {
         size: { width: 180, height: 70 },
         attrs: {
-//          rect: {
-//        	width: 140, height: 60
-//          },
           box: {
-            width: 140, height: 60,
+            width: 150, height: 60,
             // stroke: none
             fill: '#333333', stroke: '#000000', 'stroke-width': 2,
             'pointer-events': 'visiblePainted', rx: 10, ry: 10
           },
           type: {
-            width: 30, height: 60,
+            ref: 'box',
+            refWidth: '20%', refHeight: '100%',
             fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
             'pointer-events': 'visiblePainted', rx: 10, ry: 10
           },
 
           name: {
+             // 'font-weight': '800',
             'text-decoration': 'underline',
             fill: '#f1f1f1',
-            ref: 'box', 'ref-x': 0.9, 'ref-y': 0.2,
+            ref: 'box', refX: 0.9, refY: 0.2,
             'font-family': 'Courier New', 'font-size': 14,
             'text-anchor': 'end'
           },
 
           details: {
-            'font-weight': '800',
             fill: '#f1f1f1',
             ref: 'box', 'ref-x': 0.9, 'ref-y': 0.6,
             'font-family': 'Arial', 'font-size': 10,
-            'text-anchor': 'end'
+            'text-anchor': 'end',
           }
         }
       }, {
@@ -236,7 +234,7 @@ var py_trees = (function() {
           attrs: {
               'type': { fill: '#FFA500' },
               'name': { text: name || 'Sequence' },
-              'details': { text: details || '...'}
+              'details': { text: details || '...' }
           }
       });
     return node
@@ -252,11 +250,17 @@ var py_trees = (function() {
       return node
     }
   var _create_parallel = function({name, details}) {
+    elided_details = joint.util.breakText(
+        details || '...',
+        { width: 150, height:30 },
+        {},
+        { ellipsis: true }
+    )
     node = new _Node({
             attrs: {
                 'type': { fill: '#FFFF00' },
                 'name': { text: name || 'Parallel'},
-                'details': { text: details || '...' }
+                'details': { text: elided_details }
             }
         });
       return node

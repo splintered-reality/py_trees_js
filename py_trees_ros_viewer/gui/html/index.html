@@ -67,32 +67,45 @@
       // ]}
     });
 
-    selector = new py_trees.shapes.Selector
-    selector.resize(100, 40);  // needed to render?
-    selector.attr('body/fill', 'green')
-    selector.attr('label/text', 'Bar')
-    selector.attr('label/fill', 'red')
-    selector.addTo(graph)
+    root_children = {}
 
-    parallel = new py_trees.shapes.Node({
-        attrs: {
-            '.card': { fill: '#0000AA', stroke: 'none'},
-              image: { 'xlink:href': 'images/tuxrobot.png', opacity: 0.7 },
-            '.rank': { text: 'Dude', fill: '#f1f1f1'},
-            '.name': { text: 'Bob is da Best of all time', fill: '#f1f1f1'}
-        }
-    });
-//    parallel.attr('label/text', 'Foo')
-    parallel.resize(100, 40);  // needed to render?
-    parallel.addTo(graph);
+    root_children.selector = new py_trees.shapes.create_selector({
+      details: "decision maker"
+    })
 
-    var link = new joint.shapes.standard.Link();
-    link.source(selector)
-    link.target(parallel)
-    link.connector('smooth');
-    link.addTo(graph)
+    root_children.sequence = new py_trees.shapes.create_sequence({
+      details: "Worker"
+    })
 
-    links = []
+    root_children.parallel = new py_trees.shapes.create_parallel({
+      details: "Bob is da best of all time ..."
+    })
+
+    root_children.decorator = new py_trees.shapes.create_decorator({
+        details: "Wearing hats"
+    })
+
+    root_children.behaviour = new py_trees.shapes.create_behaviour({
+        details: "I'm the pleb"
+    })
+
+    decorated = new py_trees.shapes.create_behaviour({
+        name: "Decorated",
+        details: "..."
+    })
+    console.log("Decorated")
+    console.log(decorated)
+    console.log(root_children)
+    for (child in root_children) {
+      console.log("Child: " + root_children[child].attributes.attrs.name.text)
+      console.log(root_children[child])
+      console.log(root_children[child])
+      root_children[child].addTo(graph)
+      py_trees.shapes.create_link({source: root_children.selector, target: root_children[child]})
+    }
+    decorated.addTo(graph)
+    py_trees.shapes.create_link({source: root_children.decorator, target: decorated})
+
     _.times(4, function(i) {
       var custom_element = new py_trees.shapes.TabbedRectangle;
       custom_element
@@ -102,12 +115,7 @@
         .prop('fillColor', ['salmon', 'lightgreen', 'lightblue', 'lightgray'][i])
         .prop('faded', i === 1)
         .addTo(graph);
-      var link = new joint.shapes.standard.Link();
-      link.source(parallel)
-      link.target(custom_element)
-      link.connector('smooth');
-      link.addTo(graph)
-      links.push(link)
+      py_trees.shapes.create_link({source: root_children.parallel, target: custom_element})
     });
 
     // paper.scale(0.5, 0.5); // the api to enable zooming
@@ -119,8 +127,9 @@
         edgeSep: 80,
         rankDir: "TB"
     });
-    console.log('x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
-    console.log('width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+    console.log("Bounding Box")
+    console.log('  x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+    console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
   </script>
 </body>
 </html>

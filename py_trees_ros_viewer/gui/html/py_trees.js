@@ -173,47 +173,126 @@ var py_trees = (function() {
 
   });
   // *************************************************************************
-  // Rectangles on Roids
+  // Base Node Class
   // *************************************************************************
 
   var _Node = joint.dia.Element.define(
       'Node', {
         size: { width: 180, height: 70 },
         attrs: {
-          rect: { width: 170, height: 60 },
-
-          '.card': {
-            fill: '#FFFFFF', stroke: '#000000', 'stroke-width': 2,
+//          rect: {
+//        	width: 140, height: 60
+//          },
+          box: {
+            width: 140, height: 60,
+            // stroke: none
+            fill: '#333333', stroke: '#000000', 'stroke-width': 2,
             'pointer-events': 'visiblePainted', rx: 10, ry: 10
           },
-          '.type': {
+          type: {
             width: 30, height: 60,
-            fill: '#FFA500', stroke: '#000000', 'stroke-width': 2,
+            fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
             'pointer-events': 'visiblePainted', rx: 10, ry: 10
           },
 
-          image: {
-            width: 48, height: 48,
-            ref: '.card', 'ref-x': 10, 'ref-y': 5
-          },
-
-          '.rank': {
+          name: {
             'text-decoration': 'underline',
-            ref: '.card', 'ref-x': 0.9, 'ref-y': 0.2,
+            fill: '#f1f1f1',
+            ref: 'box', 'ref-x': 0.9, 'ref-y': 0.2,
             'font-family': 'Courier New', 'font-size': 14,
             'text-anchor': 'end'
           },
 
-          '.name': {
+          details: {
             'font-weight': '800',
-            ref: '.card', 'ref-x': 0.9, 'ref-y': 0.6,
+            fill: '#f1f1f1',
+            ref: 'box', 'ref-x': 0.9, 'ref-y': 0.6,
             'font-family': 'Arial', 'font-size': 10,
             'text-anchor': 'end'
           }
         }
       }, {
-        markup: '<g class="rotatable"><g class="scalable"><rect class="card"/><rect class="type"/><image/></g><text class="rank"/><text class="name"/></g>',
+          markup: [{
+              tagName: 'rect',
+              selector: 'box'
+          }, {
+              tagName: 'rect',
+              selector: 'type'
+          }, {
+              tagName: 'text',
+              selector: 'name'
+          }, {
+              tagName: 'text',
+              selector: 'details'
+          }]
       });
+
+  // *************************************************************************
+  // PyTree Classes
+  // *************************************************************************
+
+  var _create_sequence = function({name, details}) {
+    node = new _Node({
+          attrs: {
+              'type': { fill: '#FFA500' },
+              'name': { text: name || 'Sequence' },
+              'details': { text: details || '...'}
+          }
+      });
+    return node
+  }
+  var _create_selector = function({name, details}) {
+      node = new _Node({
+            attrs: {
+                'type': { fill: '#00FFFF' },
+                'name': { text: name || 'Selector' },
+                'details': { text: details || '...' }
+            }
+        });
+      return node
+    }
+  var _create_parallel = function({name, details}) {
+    node = new _Node({
+            attrs: {
+                'type': { fill: '#FFFF00' },
+                'name': { text: name || 'Parallel'},
+                'details': { text: details || '...' }
+            }
+        });
+      return node
+    }
+  var _create_decorator = function({name, details}) {
+      node = new _Node({
+              attrs: {
+                  'type': { fill: '#DDDDDD' },
+                  'name': { text: name || 'Decorator'},
+                  'details': { text: details || '...' }
+              }
+          });
+        return node
+      }
+  var _create_behaviour = function({name, details}) {
+      node = new _Node({
+              attrs: {
+                  'type': { fill: '#555555' },
+                  'name': { text: name || 'Behaviour'},
+                  'details': { text: details || '...' }
+              }
+          });
+        return node
+      }
+
+  var _links = []
+
+  var _create_link = function({source, target}) {
+      var link = new joint.shapes.standard.Link();
+      link.source(source)
+      link.target(target)
+      link.connector('smooth');
+      link.addTo(graph)
+      _links.push(link)
+  }
+
 
   return {
     shapes: {
@@ -221,7 +300,13 @@ var py_trees = (function() {
       Selector: _Selector,
       TabbedRectangle: _TabbedRectangle,
       TabbedRectangleView: _TabbedRectangleView,
-      Node: _Node,
+      // Node: _Node,
+      create_sequence: _create_sequence,
+      create_selector: _create_selector,
+      create_parallel: _create_parallel,
+      create_decorator: _create_decorator,
+      create_behaviour: _create_behaviour,
+      create_link: _create_link,
 
 //			Rectangle: joint.shapes.standard.Rectangle,
 //			Circle: joint.shapes.standard.Circle,

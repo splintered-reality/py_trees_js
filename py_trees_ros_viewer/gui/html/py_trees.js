@@ -172,6 +172,22 @@ var py_trees = (function() {
     }
 
   });
+  var _create_tabbed_tree = function({graph}) {
+    tabbed_root = new py_trees.shapes.TabbedRectangle;
+    tabbed_root.prop('numberOfTabs', 4).position(50, 50).resize(100,100).addTo(graph)
+    _.times(4, function(i) {
+      var custom_element = new py_trees.shapes.TabbedRectangle;
+      custom_element
+        .prop('numberOfTabs', i)
+        .resize(100, 100)
+        .position(50 + (i % 2) * 150, 50 + (i < 2) * 150)
+        .prop('fillColor', ['salmon', 'lightgreen', 'lightblue', 'lightgray'][i])
+        .prop('faded', i === 1)
+        .addTo(graph);
+      _create_link({source: tabbed_root, target: custom_element})
+    });
+  }
+  
   // *************************************************************************
   // Base Node Class
   // *************************************************************************
@@ -311,25 +327,27 @@ var py_trees = (function() {
       create_decorator: _create_decorator,
       create_behaviour: _create_behaviour,
       create_link: _create_link,
-
-//			Rectangle: joint.shapes.standard.Rectangle,
-//			Circle: joint.shapes.standard.Circle,
-//			Ellipse: joint.shapes.standard.Ellipse,
-//			Path: joint.shapes.standard.Path,
-//			Polygon: joint.shapes.standard.Polygon,
-//			Polyline: joint.shapes.standard.Polyline,
-//			Image: joint.shapes.standard.Image,
-//			BorderedImage: joint.shapes.standard.BorderedImage,
-//			EmbeddedImage: joint.shapes.standard.EmbeddedImage,
-//			InscribedImage: joint.shapes.standard.InscribedImage,
-//			HeaderedRectangle: joint.shapes.standard.HeaderedRectangle,
-//			Cylinder: joint.shapes.standard.Cylinder,
-//			TextBlock: joint.shapes.standard.TextBlock,
-//			Link: joint.shapes.standard.Link,
-//			DoubleLink: joint.shapes.standard.DoubleLink,
-//			ShadowLink: joint.shapes.standard.ShadowLink
+    },
+    experiments: {
+      create_tabbed_tree: _create_tabbed_tree,
     },
   };
 })(); // namespace py_trees
 
+//          Rectangle: joint.shapes.standard.Rectangle,
+//          Circle: joint.shapes.standard.Circle,
+//          Ellipse: joint.shapes.standard.Ellipse,
+//          Path: joint.shapes.standard.Path,
+//          Polygon: joint.shapes.standard.Polygon,
+//          Polyline: joint.shapes.standard.Polyline,
+//          Image: joint.shapes.standard.Image,
+//          BorderedImage: joint.shapes.standard.BorderedImage,
+//          EmbeddedImage: joint.shapes.standard.EmbeddedImage,
+//          InscribedImage: joint.shapes.standard.InscribedImage,
+//          HeaderedRectangle: joint.shapes.standard.HeaderedRectangle,
+//          Cylinder: joint.shapes.standard.Cylinder,
+//          TextBlock: joint.shapes.standard.TextBlock,
+//          Link: joint.shapes.standard.Link,
+//          DoubleLink: joint.shapes.standard.DoubleLink,
+//          ShadowLink: joint.shapes.standard.ShadowLink
 

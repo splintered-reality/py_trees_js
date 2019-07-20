@@ -66,6 +66,73 @@
       //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
       // ]}
     });
+    
+    tree = {
+        nodes: {
+            '1': {
+                id: '1',
+                status: 'INVALID',
+                name: 'Selector',
+                colour: '#00FFFF',
+                children: ['2', '3', '4', '6'],
+                data: {
+                    type: 'py_trees.composites.Selector',
+                    feedback: "Decision maker",
+                },
+            },
+            '2': {
+                id: '2',
+                status: 'INVALID',
+                name: 'Sequence',
+                colour: '#FFA500',
+                data: {
+                    type: 'py_trees.composites.Sequence',
+                    feedback: "Worker"
+                },
+            },
+            '3': {
+                id: '3',
+                status: 'INVALID',
+                name: 'Parallel',
+                colour: '#FFFF00',
+                data: {
+                    type: 'py_trees.composites.Parallel',
+                    feedback: 'Bob is da best ....',
+                },
+            },
+            '4': {
+                id: '4',
+                status: 'INVALID',
+                name: 'Decorator',
+                colour: '#DDDDDD',
+                data: {
+                    type: 'py_trees.composites.Decorator',
+                    feedback: 'Wearing the hats',
+                },
+            },
+            '5': {
+                id: '5',
+                status: 'INVALID',
+                name: 'Decorated',
+                colour: '#555555',
+                data: {
+                    type: 'py_trees.composites.Behaviour',
+                    feedback: "...."
+                },
+            },
+            '6': {
+                id: '6',
+                status: 'INVALID',
+                name: 'Behaviour',
+                colour: '#555555',
+                data: {
+                    type: 'py_trees.composites.Behaviour',
+                    feedback: "..."
+                },
+            },
+        }
+    }
+    
 
     root_children = {}
 
@@ -106,18 +173,7 @@
     decorated.addTo(graph)
     py_trees.shapes.create_link({source: root_children.decorator, target: decorated})
 
-    _.times(4, function(i) {
-      var custom_element = new py_trees.shapes.TabbedRectangle;
-      custom_element
-        .prop('numberOfTabs', i)
-        .resize(100, 100)
-        .position(50 + (i % 2) * 150, 50 + (i < 2) * 150)
-        .prop('fillColor', ['salmon', 'lightgreen', 'lightblue', 'lightgray'][i])
-        .prop('faded', i === 1)
-        .addTo(graph);
-      py_trees.shapes.create_link({source: root_children.parallel, target: custom_element})
-    });
-
+    // py_trees.experiments.create_tabbed_tree({graph})
     // paper.scale(0.5, 0.5); // the api to enable zooming
 
     var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {

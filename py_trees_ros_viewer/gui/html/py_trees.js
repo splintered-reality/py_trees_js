@@ -251,7 +251,6 @@ var py_trees = (function() {
             fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
             'pointer-events': 'visiblePainted', rx: 10, ry: 10
           },
-
           name: {
              // 'font-weight': '800',
             'text-decoration': 'underline',
@@ -260,13 +259,15 @@ var py_trees = (function() {
             'font-family': 'Courier New', 'font-size': 14,
             'text-anchor': 'end'
           },
-
           details: {
             fill: '#f1f1f1',
             ref: 'box', 'ref-x': 0.9, 'ref-y': 0.6,
             'font-family': 'Arial', 'font-size': 10,
             'text-anchor': 'end',
-          }
+          },
+          tooltip: {
+            text: "My Tooltip",
+          },
         }
       }, {
           markup: [{
@@ -281,6 +282,9 @@ var py_trees = (function() {
           }, {
               tagName: 'text',
               selector: 'details'
+          }, {
+              tagName: 'title',
+              selector: 'tooltip'
           }]
       });
 

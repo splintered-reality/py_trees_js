@@ -14,7 +14,7 @@ var py_trees = (function() {
         behaviours: {
             '1': {
                 id: '1',
-                status: 'INVALID',
+                status: 'SUCCESS',
                 name: 'Selector',
                 colour: '#00FFFF',
                 children: ['2', '3', '4', '6'],
@@ -25,7 +25,7 @@ var py_trees = (function() {
             },
             '2': {
                 id: '2',
-                status: 'INVALID',
+                status: 'FAILURE',
                 name: 'Sequence',
                 colour: '#FFA500',
                 data: {
@@ -35,7 +35,7 @@ var py_trees = (function() {
             },
             '3': {
                 id: '3',
-                status: 'INVALID',
+                status: 'FAILURE',
                 name: 'Parallel',
                 colour: '#FFFF00',
                 data: {
@@ -45,7 +45,7 @@ var py_trees = (function() {
             },
             '4': {
                 id: '4',
-                status: 'INVALID',
+                status: 'SUCCESS',
                 name: 'Decorator',
                 colour: '#DDDDDD',
                 children: ['5'],
@@ -56,7 +56,7 @@ var py_trees = (function() {
             },
             '5': {
                 id: '5',
-                status: 'INVALID',
+                status: 'RUNNING',
                 name: 'Decorated',
                 colour: '#555555',
                 data: {
@@ -243,7 +243,7 @@ var py_trees = (function() {
             width: 150, height: 60,
             // stroke: none
             fill: '#333333', stroke: '#000000', 'stroke-width': 2,
-            'pointer-events': 'visiblePainted', rx: 10, ry: 10
+            'pointer-events': 'visiblePainted', rx: 10, ry: 10,
           },
           type: {
             ref: 'box',
@@ -296,16 +296,22 @@ var py_trees = (function() {
     _nodes = {}
     _links = []
     for (behaviour in tree.behaviours) {
+        // at least name should go through, all others are optional
         node = _create_node({
-            colour: tree.behaviours[behaviour].colour,
+            colour: tree.behaviours[behaviour].colour || '#555555',
             name: tree.behaviours[behaviour].name,
-            details: tree.behaviours[behaviour].data.feedback
+            status: tree.behaviours[behaviour].status || 'INVALID',
+            details: tree.behaviours[behaviour].data.feedback || '...'
         })
         _nodes[tree.behaviours[behaviour].id] = node
         node.addTo(graph)
     }
     for (behaviour in tree.behaviours) {
         console.log("  Name: " + tree.behaviours[behaviour].name)
+        console.log("    Colour: " + tree.behaviours[behaviour].colour)
+        console.log("    Details: " + tree.behaviours[behaviour].data.feedback)
+        console.log("    Status: " + tree.behaviours[behaviour].status)
+        
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
             console.log("    Children: " + tree.behaviours[behaviour].children)
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
@@ -332,14 +338,36 @@ var py_trees = (function() {
     console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
   }
 
-  var _create_node = function({colour, name, details}) {
+  var _create_node = function({colour, name, details, status}) {
     node = new py_trees.shapes.Node({
       attrs: {
-          'type': { fill: colour },
+          'type': { fill: colour || '#555555' },
           'name': { text: name || 'Behaviour'},
           'details': { text: details || '...' }
       }
     })
+    var highlight_colours = {
+        'FAILURE': 'red',
+        'SUCCESS': 'green',
+        'RUNNING': 'blue',
+        'INVALID': 'gray'
+    }
+    // TODO: consider not showing any highlight if invalid
+    if ( typeof status !== 'undefined') {
+        node.attr({
+          'box': {
+            filter: {
+                name: 'highlight',
+                args: {
+                    color: highlight_colours[status],
+                    width: 2,
+                    opacity: 0.5,
+                    blur: 5
+                }
+            }
+          },
+        })
+    }
     return node
   }
 

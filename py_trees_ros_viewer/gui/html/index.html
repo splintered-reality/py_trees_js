@@ -2,6 +2,7 @@
 <head>
   <meta charset="utf-8">
   <title>Hello Pixi</title>
+  <link rel="stylesheet" href="py_trees.css">
 </head>
 <script src="jointjs/dagre.min.js"></script>
 <script src="jointjs/graphlib.min.js"></script>
@@ -49,7 +50,15 @@
       //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
       // ]}
     });
-    
+    paper.on('element:mouseover', function(view, event) {
+        // ugh, is there a better way than pulling [0]?
+        //    note; the method used in the view with .find().css({ ... doesn't work
+        view.$box.find('div.html-tooltip')[0].style.display = "block"
+    })
+    paper.on('element:mouseout', function(view, event) {
+        view.$box.find('div.html-tooltip')[0].style.display = "none"
+    })
+
     tree = py_trees.experiments.create_demo_tree_definition()
     py_trees.update_graph({graph: graph, tree: tree})
     py_trees.layout_graph({graph: graph})

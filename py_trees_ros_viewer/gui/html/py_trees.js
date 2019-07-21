@@ -19,8 +19,8 @@ var py_trees = (function() {
                 colour: '#00FFFF',
                 children: ['2', '3', '4', '6'],
                 data: {
-                    type: 'py_trees.composites.Selector',
-                    feedback: "Decision maker",
+                    Type: 'py_trees.composites.Selector',
+                    Feedback: "Decision maker",
                 },
             },
             '2': {
@@ -29,18 +29,19 @@ var py_trees = (function() {
                 name: 'Sequence',
                 colour: '#FFA500',
                 data: {
-                    type: 'py_trees.composites.Sequence',
-                    feedback: "Worker"
+                    Type: 'py_trees.composites.Sequence',
+                    Feedback: "Worker"
                 },
             },
             '3': {
                 id: '3',
                 status: 'FAILURE',
                 name: 'Parallel',
+                details: 'SuccessOnOne',
                 colour: '#FFFF00',
                 data: {
-                    type: 'py_trees.composites.Parallel',
-                    feedback: 'Bob is da best ....',
+                    Type: 'py_trees.composites.Parallel',
+                    Feedback: 'Baked beans is good for your heart, baked beans makes you',
                 },
             },
             '4': {
@@ -50,18 +51,18 @@ var py_trees = (function() {
                 colour: '#DDDDDD',
                 children: ['5'],
                 data: {
-                    type: 'py_trees.composites.Decorator',
-                    feedback: 'Wearing the hats',
+                    Type: 'py_trees.composites.Decorator',
+                    Feedback: 'Wearing the hats',
                 },
             },
             '5': {
                 id: '5',
                 status: 'RUNNING',
-                name: 'Decorated',
+                name: 'Decorated Beyond The Beliefs of an Agnostic Rhino',
                 colour: '#555555',
                 data: {
-                    type: 'py_trees.composites.Behaviour',
-                    feedback: "...."
+                    Type: 'py_trees.composites.Behaviour',
+                    Feedback: "...."
                 },
             },
             '6': {
@@ -70,13 +71,13 @@ var py_trees = (function() {
                 name: 'Behaviour',
                 colour: '#555555',
                 data: {
-                    type: 'py_trees.composites.Behaviour',
-                    feedback: "..."
+                    Type: 'py_trees.composites.Behaviour',
+                    Feedback: "..."
                 },
             },
         }
     }
-    return tree  
+    return tree
   }
 
   // ****************************************
@@ -230,43 +231,27 @@ var py_trees = (function() {
       link.addTo(graph)
     });
   }
-  
+
   // *************************************************************************
   // Shapes (Models/Views)
   // *************************************************************************
 
   var _Node = joint.dia.Element.define(
       'Node', {
-        size: { width: 180, height: 70 },
+        size: { width: 170, height: 50 },
         attrs: {
           box: {
-            width: 150, height: 60,
+            refX: '0%', refY: '0%',
+            refWidth: '100%', refHeight: '100%',
             // stroke: none
             fill: '#333333', stroke: '#000000', 'stroke-width': 2,
-            'pointer-events': 'visiblePainted', rx: 10, ry: 10,
+            'pointer-events': 'visiblePainted', rx: 8, ry: 8,
           },
           type: {
-            ref: 'box',
-            refWidth: '20%', refHeight: '100%',
+            refX: '0%', refY: '0%',
+            refWidth: '15%', refHeight: '100%',
             fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
-            'pointer-events': 'visiblePainted', rx: 10, ry: 10
-          },
-          name: {
-             // 'font-weight': '800',
-            'text-decoration': 'underline',
-            fill: '#f1f1f1',
-            ref: 'box', refX: 0.9, refY: 0.2,
-            'font-family': 'Courier New', 'font-size': 14,
-            'text-anchor': 'end'
-          },
-          details: {
-            fill: '#f1f1f1',
-            ref: 'box', 'ref-x': 0.9, 'ref-y': 0.6,
-            'font-family': 'Arial', 'font-size': 10,
-            'text-anchor': 'end',
-          },
-          tooltip: {
-            text: "My Tooltip",
+            'pointer-events': 'visiblePainted', rx: 8, ry: 8,
           },
         }
       }, {
@@ -276,17 +261,92 @@ var py_trees = (function() {
           }, {
               tagName: 'rect',
               selector: 'type'
-          }, {
-              tagName: 'text',
-              selector: 'name'
-          }, {
-              tagName: 'text',
-              selector: 'details'
-          }, {
-              tagName: 'title',
-              selector: 'tooltip'
           }]
       });
+
+  _NodeView = joint.dia.ElementView.extend({
+      // events: {
+      //   'dblclick': 'onDblClick',
+      // },
+      template: [
+          '<div class="html-element">',
+          '<span class="html-name"></span>',
+          '<span class="html-detail"></span>',
+          '<div class="html-tooltip"/>',
+          '</div>'
+      ].join(''),
+
+      initialize: function() {
+          _.bindAll(this, 'updateBox');
+          joint.dia.ElementView.prototype.initialize.apply(this, arguments);
+
+          this.$box = $(_.template(this.template)());
+          // This is an example of reacting on the input change and storing the input data in the cell model.
+          this.model.on('change', this.updateBox, this);
+          // Remove the box when the model gets removed from the graph.
+          this.model.on('remove', this.removeBox, this);
+          // These don't actually work
+          // this.model.on('mouseover', this.showTooltip, this);
+          // this.model.on('mouseout', this.hideTooltip, this);
+
+          this.updateBox();
+      },
+      render: function() {
+          joint.dia.ElementView.prototype.render.apply(this, arguments);
+          this.paper.$el.prepend(this.$box);
+          this.updateBox();
+          return this;
+      },
+      // onDblClick: function() {
+      //     console.log("***** Fading ******")
+      //     this.model.prop('faded', !this.model.prop('faded'));
+      // },
+      updateBox: function() {
+          // Set the position and dimension of the box so that it covers the JointJS element.
+          var bbox = this.model.getBBox();
+          // Example of updating the HTML with a data stored in the cell model.
+          this.$box.find('span.html-name').text(this.model.get('name'))
+          this.$box.find('span.html-detail').text(this.model.get('details'))
+          // This sets both innerHTML and innerText..similar method for html?
+          // this.$box.find('div.html-tooltip').text("Wahoooooooooooooooo")
+          this.$box.find('div.html-tooltip')[0].innerHTML =
+              "<div>#" +
+              this.model.get('behaviour_id') +
+              "</div>" +
+              "<hr/>"
+          data = this.model.get('data')
+          for (var key in data) {
+            this.$box.find('div.html-tooltip')[0].innerHTML +=
+                "<span><b>" +
+                key +
+                ": </b>" +
+                data[key] +
+                "</span><br/>"
+          }
+          // CSS
+          this.$box.find('div.html-tooltip').css({
+              width: '30em',
+              left: 0.9*bbox.width,  // see below, parent is 0.8*bbox.wdith
+          })
+          this.$box.find('span.html-name').css({
+              'margin-top': 0.10*bbox.height,
+              'margin-bottom': 0.15*bbox.height,
+          })
+          this.$box.css({
+              // math says this should be 0.85/1.0, but not everything lining up correctly
+              //   html-element top left corner is fine, but bottom-right corner is
+              //   overhanging by some small delta in x and y directions
+              width: 0.80*bbox.width,
+              height: 0.95*bbox.height,
+              left: bbox.x + 0.15*bbox.width,
+              top: bbox.y,
+              transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
+          });
+      },
+      removeBox: function(evt) {
+          this.$box.remove();
+      }
+  });
 
   // *************************************************************************
   // PyTrees
@@ -294,6 +354,19 @@ var py_trees = (function() {
 
   var _links = []
   var _nodes = {}
+  var _text_blocks = []
+
+  var _create_name_text_block = function({name}) {
+    var text_block = new joint.shapes.standard.TextBlock();
+    text_block.resize(100, 100);
+    text_block.position(250, 610);
+    text_block.attr('root/title', 'joint.shapes.standard.TextBlock');
+    text_block.attr('body/fill', 'lightgray');
+    text_block.attr('label/text', 'Hyper Text Markup Language');
+    // Styling of the label via `style` presentation attribute (i.e. CSS).
+    text_block.attr('label/style/color', 'red');
+    return text_block;
+  }
 
   var _update_graph = function({graph, tree}) {
     console.log("Adding tree to the graph")
@@ -302,11 +375,17 @@ var py_trees = (function() {
     for (behaviour in tree.behaviours) {
         // at least name should go through, all others are optional
         node = _create_node({
+            behaviour_id: tree.behaviours[behaviour].id,
             colour: tree.behaviours[behaviour].colour || '#555555',
             name: tree.behaviours[behaviour].name,
             status: tree.behaviours[behaviour].status || 'INVALID',
-            details: tree.behaviours[behaviour].data.feedback || '...'
+            details: tree.behaviours[behaviour].details || '...',
+            data: tree.behaviours[behaviour].data || {},
         })
+        // text_block = _create_name_text_block({name: tree.behaviours[behaviour].name})
+        // _text_blocks.push(text_block)
+        // text_block.addTo(graph)
+        // node.embed(text_block)
         _nodes[tree.behaviours[behaviour].id] = node
         node.addTo(graph)
     }
@@ -315,7 +394,7 @@ var py_trees = (function() {
         console.log("    Colour: " + tree.behaviours[behaviour].colour)
         console.log("    Details: " + tree.behaviours[behaviour].data.feedback)
         console.log("    Status: " + tree.behaviours[behaviour].status)
-        
+
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
             console.log("    Children: " + tree.behaviours[behaviour].children)
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
@@ -342,12 +421,22 @@ var py_trees = (function() {
     console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
   }
 
-  var _create_node = function({colour, name, details, status}) {
+  var _create_node = function({behaviour_id, colour, name, details, status, data}) {
+    elided_details = joint.util.breakText(
+        details || '...',
+        { width: 150, height:30 },
+        {},
+        { ellipsis: true }
+    )
     node = new py_trees.shapes.Node({
+      name: name,
+      behaviour_id: behaviour_id,
+      details: details,
+      elided_details: elided_details,
+      status: status,
+      data: data,
       attrs: {
           'type': { fill: colour || '#555555' },
-          'name': { text: name || 'Behaviour'},
-          'details': { text: details || '...' }
       }
     })
     var highlight_colours = {
@@ -390,9 +479,10 @@ var py_trees = (function() {
     layout_graph: _layout_graph,
     shapes: {
       Node: _Node,
+      NodeView: _NodeView,
     },
     experiments: {
-      create_demo_tree_definition: _create_demo_tree_definition, 
+      create_demo_tree_definition: _create_demo_tree_definition,
       add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
     },
   };

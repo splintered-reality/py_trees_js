@@ -3,46 +3,87 @@
  */
 var py_trees = (function() {
 
-  var _parallel = function({name, message}) {
-    var headered_rectangle = new joint.shapes.standard.HeaderedRectangle();
-    headered_rectangle.resize(150, 100);
-    headered_rectangle.attr('root/title', 'joint.shapes.standard.HeaderedRectangle');
-    headered_rectangle.attr('header/fill', 'maroon');
-    headered_rectangle.attr('headerText/text', 'Name');
-    headered_rectangle.attr('headerText/fill', 'lightgray');
-    headered_rectangle.attr('body/fill', 'orange');
-    headered_rectangle.attr('bodyText/text', 'Message');
-    return headered_rectangle
+  // *************************************************************************
+  // Experiments
+  // *************************************************************************
+  // ****************************************
+  // Demo Tree
+  // ****************************************
+  var _create_demo_tree_definition = function() {
+    var     tree = {
+        behaviours: {
+            '1': {
+                id: '1',
+                status: 'INVALID',
+                name: 'Selector',
+                colour: '#00FFFF',
+                children: ['2', '3', '4', '6'],
+                data: {
+                    type: 'py_trees.composites.Selector',
+                    feedback: "Decision maker",
+                },
+            },
+            '2': {
+                id: '2',
+                status: 'INVALID',
+                name: 'Sequence',
+                colour: '#FFA500',
+                data: {
+                    type: 'py_trees.composites.Sequence',
+                    feedback: "Worker"
+                },
+            },
+            '3': {
+                id: '3',
+                status: 'INVALID',
+                name: 'Parallel',
+                colour: '#FFFF00',
+                data: {
+                    type: 'py_trees.composites.Parallel',
+                    feedback: 'Bob is da best ....',
+                },
+            },
+            '4': {
+                id: '4',
+                status: 'INVALID',
+                name: 'Decorator',
+                colour: '#DDDDDD',
+                children: ['5'],
+                data: {
+                    type: 'py_trees.composites.Decorator',
+                    feedback: 'Wearing the hats',
+                },
+            },
+            '5': {
+                id: '5',
+                status: 'INVALID',
+                name: 'Decorated',
+                colour: '#555555',
+                data: {
+                    type: 'py_trees.composites.Behaviour',
+                    feedback: "...."
+                },
+            },
+            '6': {
+                id: '6',
+                status: 'INVALID',
+                name: 'Behaviour',
+                colour: '#555555',
+                data: {
+                    type: 'py_trees.composites.Behaviour',
+                    feedback: "..."
+                },
+            },
+        }
+    }
+    return tree  
   }
 
-  var _Selector = joint.shapes.standard.Rectangle.define(
-      'Selector',
-      {
-        attrs: {
-          body: {
-            // rx: 10, // add a corner radius
-            // ry: 10,
-            // strokeWidth: 1,
-            fill: 'blue'
-          },
-          label: {
-            //textAnchor: 'left', // align text to left
-            //refX: 10, // offset text from right edge of model bbox
-            text: 'Hello',
-            fill: 'white',
-            //fontSize: 18
-          }
-        }
-      }, {
-        // inherit joint.shapes.standard.Rectangle.markup
-      }, {
-        // no new methods
-      }
-  )
+  // ****************************************
+  // Tabbed Rectangles
+  // ****************************************
+  // https://jsfiddle.net/kumilingus/Lznzjqmk/
 
-  // *************************************************************************
-  // Tabbed Box Experiments - https://jsfiddle.net/kumilingus/Lznzjqmk/
-  // *************************************************************************
   _TabbedRectangle = joint.dia.Element.extend({
     defaults: _.defaultsDeep({
       type: 'TabbedRectangle',
@@ -172,7 +213,7 @@ var py_trees = (function() {
     }
 
   });
-  var _create_tabbed_tree = function({graph}) {
+  var _add_tabbed_tree_to_graph = function({graph}) {
     tabbed_root = new py_trees.shapes.TabbedRectangle;
     tabbed_root.prop('numberOfTabs', 4).position(50, 50).resize(100,100).addTo(graph)
     _.times(4, function(i) {
@@ -184,12 +225,14 @@ var py_trees = (function() {
         .prop('fillColor', ['salmon', 'lightgreen', 'lightblue', 'lightgray'][i])
         .prop('faded', i === 1)
         .addTo(graph);
-      _create_link({source: tabbed_root, target: custom_element})
+      link = _create_link({source: tabbed_root, target: custom_element})
+      _links.push(link)
+      link.addTo(graph)
     });
   }
   
   // *************************************************************************
-  // Base Node Class
+  // Shapes (Models/Views)
   // *************************************************************************
 
   var _Node = joint.dia.Element.define(
@@ -242,94 +285,83 @@ var py_trees = (function() {
       });
 
   // *************************************************************************
-  // PyTree Classes
+  // PyTrees
   // *************************************************************************
 
-  var _create_sequence = function({name, details}) {
-    node = new _Node({
-          attrs: {
-              'type': { fill: '#FFA500' },
-              'name': { text: name || 'Sequence' },
-              'details': { text: details || '...' }
-          }
-      });
+  var _links = []
+  var _nodes = {}
+
+  var _update_graph = function({graph, tree}) {
+    console.log("Adding tree to the graph")
+    _nodes = {}
+    _links = []
+    for (behaviour in tree.behaviours) {
+        node = _create_node({
+            colour: tree.behaviours[behaviour].colour,
+            name: tree.behaviours[behaviour].name,
+            details: tree.behaviours[behaviour].data.feedback
+        })
+        _nodes[tree.behaviours[behaviour].id] = node
+        node.addTo(graph)
+    }
+    for (behaviour in tree.behaviours) {
+        console.log("  Name: " + tree.behaviours[behaviour].name)
+        if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
+            console.log("    Children: " + tree.behaviours[behaviour].children)
+            tree.behaviours[behaviour].children.forEach(function (child_id, index) {
+                link = py_trees.create_link({
+                    source: _nodes[tree.behaviours[behaviour].id],
+                    target: _nodes[child_id],
+                })
+                _links.push(link)
+                link.addTo(graph)
+            });
+        }
+    }
+  }
+  var _layout_graph = function({graph}) {
+    var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
+        marginX: 50,
+        marginY: 50,
+        nodeSep: 50,
+        edgeSep: 80,
+        rankDir: "TB"
+    });
+    console.log("Dot Graph Layout")
+    console.log('  x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+    console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+  }
+
+  var _create_node = function({colour, name, details}) {
+    node = new py_trees.shapes.Node({
+      attrs: {
+          'type': { fill: colour },
+          'name': { text: name || 'Behaviour'},
+          'details': { text: details || '...' }
+      }
+    })
     return node
   }
-  var _create_selector = function({name, details}) {
-      node = new _Node({
-            attrs: {
-                'type': { fill: '#00FFFF' },
-                'name': { text: name || 'Selector' },
-                'details': { text: details || '...' }
-            }
-        });
-      return node
-    }
-  var _create_parallel = function({name, details}) {
-    elided_details = joint.util.breakText(
-        details || '...',
-        { width: 150, height:30 },
-        {},
-        { ellipsis: true }
-    )
-    node = new _Node({
-            attrs: {
-                'type': { fill: '#FFFF00' },
-                'name': { text: name || 'Parallel'},
-                'details': { text: elided_details }
-            }
-        });
-      return node
-    }
-  var _create_decorator = function({name, details}) {
-      node = new _Node({
-              attrs: {
-                  'type': { fill: '#DDDDDD' },
-                  'name': { text: name || 'Decorator'},
-                  'details': { text: details || '...' }
-              }
-          });
-        return node
-      }
-  var _create_behaviour = function({name, details}) {
-      node = new _Node({
-              attrs: {
-                  'type': { fill: '#555555' },
-                  'name': { text: name || 'Behaviour'},
-                  'details': { text: details || '...' }
-              }
-          });
-        return node
-      }
-
-  var _links = []
 
   var _create_link = function({source, target}) {
       var link = new joint.shapes.standard.Link();
       link.source(source)
       link.target(target)
       link.connector('smooth');
-      link.addTo(graph)
-      _links.push(link)
+      return link
   }
 
-
   return {
+    create_link: _create_link,
+    create_node: _create_node,
+    update_graph: _update_graph,
+    layout_graph: _layout_graph,
     shapes: {
-      parallel: _parallel,
-      Selector: _Selector,
-      TabbedRectangle: _TabbedRectangle,
-      TabbedRectangleView: _TabbedRectangleView,
-      // Node: _Node,
-      create_sequence: _create_sequence,
-      create_selector: _create_selector,
-      create_parallel: _create_parallel,
-      create_decorator: _create_decorator,
-      create_behaviour: _create_behaviour,
-      create_link: _create_link,
+      Node: _Node,
     },
     experiments: {
-      create_tabbed_tree: _create_tabbed_tree,
+      create_demo_tree_definition: _create_demo_tree_definition, 
+      add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
     },
   };
 })(); // namespace py_trees

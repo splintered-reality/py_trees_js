@@ -1,0 +1,76 @@
+
+.html-element {
+    position: absolute;
+    background: none;
+    pointer-events: none;
+    -webkit-user-select: none;
+    z-index: 2;
+    box-sizing: border-box;
+    /*
+    border-style: groove;
+    border-color: red;
+    border-style: groove;
+    border-color: red;
+    */
+}
+.html-name {
+    color: #f1f1f1;
+    text-decoration: underline;
+    font-size: 14px;
+    font-family: 'serif';
+    font-weight: normal;
+    text-align: center;
+    margin-left: 5px;
+    margin-right: 5px;
+    /* All four of these are necessary for eliding text */
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
+    white-space: nowrap;
+    /*
+    background: green;
+    */
+}
+.html-detail {
+    text-align: center;
+    margin-left: 5px;
+    margin-right: 5px;
+    color: #f1f1f1;
+    font-size: 10px;
+    font-family: 'serif';
+    /* All four of these are necessary for eliding text */
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
+    white-space: nowrap;
+    /*
+    background: blue;
+    */
+}
+
+.html-tooltip {
+    display: none;
+    position: absolute;
+    top: 0px;
+    border-radius: 8px;
+    background: #333333;
+    border: 1px solid #000000;
+    z-index: 2;
+    font-size: 10px;
+    font-family: 'serif';
+    color: #F1F1F1;
+    padding: 0.5em;
+    box-sizing: border-box;
+    /*
+    box-shadow: inset 0 0 5px black, 2px 2px 1px gray;
+    box-sizing: border-box;
+    padding: 5px;
+    */
+}
+.html-tooltip div {
+    display: block;
+    text-align: center;
+    /*
+    border: 1px solid #1c87c9;
+    */
+}

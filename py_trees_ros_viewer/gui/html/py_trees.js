@@ -47,7 +47,7 @@ var py_trees = (function() {
             '4': {
                 id: '4',
                 status: 'SUCCESS',
-                name: 'Decorator',
+                name: '&#x302; &#x302; Decorator',
                 colour: '#DDDDDD',
                 children: ['5'],
                 data: {
@@ -305,15 +305,18 @@ var py_trees = (function() {
           // Set the position and dimension of the box so that it covers the JointJS element.
           var bbox = this.model.getBBox();
           // Example of updating the HTML with a data stored in the cell model.
-          this.$box.find('span.html-name').text(this.model.get('name'))
-          this.$box.find('span.html-detail').text(this.model.get('details'))
+          this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
+          this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
           // This sets both innerHTML and innerText..similar method for html?
           // this.$box.find('div.html-tooltip').text("Wahoooooooooooooooo")
           this.$box.find('div.html-tooltip')[0].innerHTML =
               "<div>#" +
               this.model.get('behaviour_id') +
               "</div>" +
-              "<hr/>"
+              "<hr/>" +
+              "<span><b>Name: </b>" +
+              this.model.get('name') +
+              "</span><br/>"
           data = this.model.get('data')
           for (var key in data) {
             this.$box.find('div.html-tooltip')[0].innerHTML +=

@@ -58,16 +58,8 @@
     paper.on('element:mouseout', function(view, event) {
         view.$box.find('div.html-tooltip')[0].style.display = "none"
     })
-    paper.on('blank:mousewheel', function(event, x, y, delta) {
-        console.log("delta: " + delta)
-        scale = paper.scale()
-        sx = scale.sx
-        sy = scale.sy
-        sx = (sx <= 0.1 ? sx : sx + delta / 10.0)
-        sy = (sy <= 0.1 ? sy : sy + delta / 10.0)
-        paper.scale(sx, sy)
-        // TODO: get the views to update
-    })
+    // cell:mousewheel gives strange scale values back (30.0!)
+    paper.on('blank:mousewheel', py_trees.scale_canvas.bind(null, paper))
 
     tree = py_trees.experiments.create_demo_tree_definition()
     py_trees.update_graph({graph: graph, tree: tree})

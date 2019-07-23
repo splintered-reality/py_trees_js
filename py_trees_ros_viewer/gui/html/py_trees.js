@@ -320,7 +320,10 @@ var py_trees = (function() {
           this.updateBox();
       },
       render: function() {
+          console.log("NodeView::render")
           joint.dia.ElementView.prototype.render.apply(this, arguments);
+          this.listenTo(this.paper, 'scale', this.updateBox);
+          this.listenTo(this.paper, 'translate', this.updateBox);
           this.paper.$el.prepend(this.$box);
           this.updateBox();
           return this;
@@ -508,11 +511,24 @@ var py_trees = (function() {
       return link
   }
 
+  var _scale_canvas = function(paper, event, x, y, delta) {
+      // TODO: how is it this function gets a handle to paper?
+      scale = paper.scale()
+      sx = scale.sx
+      sy = scale.sy
+      sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 10.0)
+      sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
+      console.log("Scale: " + sx)
+      paper.scale(sx, sy)
+      // paper.render()  / why does this produce a black screen?
+  }
+
   return {
     create_link: _create_link,
     create_node: _create_node,
-    update_graph: _update_graph,
     layout_graph: _layout_graph,
+    scale_canvas: _scale_canvas,
+    update_graph: _update_graph,
     shapes: {
       Node: _Node,
       NodeView: _NodeView,

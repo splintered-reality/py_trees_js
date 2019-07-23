@@ -92,6 +92,10 @@ pyrcc5 -o ${NAME}_rc.py ${NAME}.qrc
 
 ##############################################################################
 
+# Ensure reproducible results so we can avoid committing ad-nauseum to github
+#  https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=872285
+export QT_HASH_SEED=0
+
 echo ""
 
 echo -e "${CYAN}Dependencies${RESET}"

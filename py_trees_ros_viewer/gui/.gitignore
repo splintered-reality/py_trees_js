@@ -1,4 +1,0 @@
-# Seems to consistently produce different results.
-# Due to different versions of pyrcc5 on different machines?
-main_window_rc.py
-web_view_rc.py

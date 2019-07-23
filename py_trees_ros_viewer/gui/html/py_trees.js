@@ -14,7 +14,7 @@ var py_trees = (function() {
         behaviours: {
             '1': {
                 id: '1',
-                status: 'SUCCESS',
+                status: 'RUNNING',
                 name: 'Selector',
                 colour: '#00FFFF',
                 children: ['2', '3', '4', '6'],
@@ -28,6 +28,7 @@ var py_trees = (function() {
                 status: 'FAILURE',
                 name: 'Sequence',
                 colour: '#FFA500',
+                children: ['7', '8', '9'],
                 data: {
                     Type: 'py_trees.composites.Sequence',
                     Feedback: "Worker"
@@ -46,7 +47,7 @@ var py_trees = (function() {
             },
             '4': {
                 id: '4',
-                status: 'SUCCESS',
+                status: 'RUNNING',
                 name: '&#x302; &#x302; Decorator',
                 colour: '#DDDDDD',
                 children: ['5'],
@@ -69,6 +70,36 @@ var py_trees = (function() {
                 id: '6',
                 status: 'INVALID',
                 name: 'Behaviour',
+                colour: '#555555',
+                data: {
+                    Type: 'py_trees.composites.Behaviour',
+                    Feedback: "..."
+                },
+            },
+            '7': {
+                id: '7',
+                status: 'SUCCESS',
+                name: 'Worker A',
+                colour: '#555555',
+                data: {
+                    Type: 'py_trees.composites.Behaviour',
+                    Feedback: "..."
+                },
+            },
+            '8': {
+                id: '8',
+                status: 'FAILURE',
+                name: 'Worker B',
+                colour: '#555555',
+                data: {
+                    Type: 'py_trees.composites.Behaviour',
+                    Feedback: "..."
+                },
+            },
+            '9': {
+                id: '9',
+                status: 'INVALID',
+                name: 'Worker C',
                 colour: '#555555',
                 data: {
                     Type: 'py_trees.composites.Behaviour',
@@ -285,14 +316,14 @@ var py_trees = (function() {
           this.model.on('change', this.updateBox, this);
           // Remove the box when the model gets removed from the graph.
           this.model.on('remove', this.removeBox, this);
-          // These don't actually work
-          // this.model.on('mouseover', this.showTooltip, this);
-          // this.model.on('mouseout', this.hideTooltip, this);
 
           this.updateBox();
       },
       render: function() {
+          console.log("NodeView::render")
           joint.dia.ElementView.prototype.render.apply(this, arguments);
+          this.listenTo(this.paper, 'scale', this.updateBox);
+          this.listenTo(this.paper, 'translate', this.updateBox);
           this.paper.$el.prepend(this.$box);
           this.updateBox();
           return this;
@@ -326,23 +357,32 @@ var py_trees = (function() {
                 data[key] +
                 "</span><br/>"
           }
+          // surprisingly, paper.scale() is available,
+          // and ... this.paper is listed, but not available
+          scale = paper.scale()
           // CSS
           this.$box.find('div.html-tooltip').css({
               width: '30em',
-              left: 0.9*bbox.width,  // see below, parent is 0.8*bbox.wdith
+              left: 0.9*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
+          })
+          this.$box.find('span.html-detail').css({
+              'margin-top': 0.10*bbox.height*scale.sy,
+              'margin-bottom': 0.15*bbox.height*scale.sy,
+              'font-size': 10*scale.sy,
           })
           this.$box.find('span.html-name').css({
-              'margin-top': 0.10*bbox.height,
-              'margin-bottom': 0.15*bbox.height,
+              'margin-top': 0.10*bbox.height*scale.sy,
+              'margin-bottom': 0.15*bbox.height*scale.sy,
+              'font-size': 14*scale.sy,
           })
           this.$box.css({
               // math says this should be 0.85/1.0, but not everything lining up correctly
               //   html-element top left corner is fine, but bottom-right corner is
               //   overhanging by some small delta in x and y directions
-              width: 0.80*bbox.width,
-              height: 0.95*bbox.height,
-              left: bbox.x + 0.15*bbox.width,
-              top: bbox.y,
+              width: 0.80*bbox.width*scale.sx,
+              height: 0.95*bbox.height*scale.sy,
+              left: bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
+              top: bbox.y*scale.sy,
               transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
           });
       },
@@ -385,10 +425,6 @@ var py_trees = (function() {
             details: tree.behaviours[behaviour].details || '...',
             data: tree.behaviours[behaviour].data || {},
         })
-        // text_block = _create_name_text_block({name: tree.behaviours[behaviour].name})
-        // _text_blocks.push(text_block)
-        // text_block.addTo(graph)
-        // node.embed(text_block)
         _nodes[tree.behaviours[behaviour].id] = node
         node.addTo(graph)
     }
@@ -475,11 +511,24 @@ var py_trees = (function() {
       return link
   }
 
+  var _scale_canvas = function(paper, event, x, y, delta) {
+      // TODO: how is it this function gets a handle to paper?
+      scale = paper.scale()
+      sx = scale.sx
+      sy = scale.sy
+      sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 10.0)
+      sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
+      console.log("Scale: " + sx)
+      paper.scale(sx, sy)
+      // paper.render()  / why does this produce a black screen?
+  }
+
   return {
     create_link: _create_link,
     create_node: _create_node,
-    update_graph: _update_graph,
     layout_graph: _layout_graph,
+    scale_canvas: _scale_canvas,
+    update_graph: _update_graph,
     shapes: {
       Node: _Node,
       NodeView: _NodeView,

@@ -59,7 +59,21 @@
         view.$box.find('div.html-tooltip')[0].style.display = "none"
     })
     // cell:mousewheel gives strange scale values back (30.0!)
-    paper.on('blank:mousewheel', py_trees.scale_canvas.bind(null, paper))
+    paper.on('blank:mousewheel',
+        py_trees.scale_canvas.bind(null, paper)
+    )
+
+    // pan canvas
+    paper.on('blank:pointerdown',
+        py_trees.pan_canvas_begin.bind(null, paper)
+    )
+
+    paper.on('blank:pointermove',
+        py_trees.pan_canvas_move.bind(null, paper)
+    )
+    paper.on('blank:pointerup',
+        py_trees.pan_canvas_move.bind(null, paper)
+    )
 
     tree = py_trees.experiments.create_demo_tree_definition()
     py_trees.update_graph({graph: graph, tree: tree})

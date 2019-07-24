@@ -1,6 +1,10 @@
 # PyTrees Viz
 
-A javascript library for visualisation and monitoring of behaviour trees. It is not an editor and is also not restricted to a py_tree flavoured behaviour tree either. The incoming serialisation of a tree and it's state requires only elements common to behaviour trees. Any implementation specific data can be encapsulated in a key-value dictionary that is appropriately formatted in an agnostic way inside the web application.
+A javascript library for visualisation and monitoring of behaviour trees.
+
+It is not an editor and is also not restricted to a py_tree flavoured behaviour tree either.
+
+The incoming serialisation of a tree and it's state requires only elements common to behaviour trees. Any implementation specific data can be encapsulated in a key-value dictionary that is appropriately formatted in an agnostic way inside the web application.
 
 While the actual functionality is provided via `py_trees.js` and `py_trees.css`, a hybrid Qt-JS application is used for the purposes of development and demonstration.
 

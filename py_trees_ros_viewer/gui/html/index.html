@@ -74,10 +74,15 @@
     paper.on('blank:pointerup',
         py_trees.pan_canvas_move.bind(null, paper)
     )
+    paper.on('blank:pointerdblclick',
+        py_trees.fit_content_to_canvas.bind(null, paper)
+    )
 
     tree = py_trees.experiments.create_demo_tree_definition()
     py_trees.update_graph({graph: graph, tree: tree})
     py_trees.layout_graph({graph: graph})
+    py_trees.fit_content_to_canvas(paper)
+
 
   </script>
 </body>

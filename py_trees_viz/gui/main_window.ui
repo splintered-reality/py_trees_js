@@ -76,7 +76,7 @@
   <customwidget>
    <class>WebViewGroupBox</class>
    <extends>QGroupBox</extends>
-   <header>py_trees_ros_viewer.gui.web_view</header>
+   <header>py_trees_viz.gui.web_view</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -15,7 +15,7 @@ DIR=/tmp/chrome-devel-configuration
 # Generate Resources
 ###########################
 
-cd ${PWD}/../py_trees_ros_viewer/gui && ./gen.bash
+cd ${PWD}/../py_trees_viz/gui && ./gen.bash
 
 ###########################
 # Setup

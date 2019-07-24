@@ -54,5 +54,5 @@ class Ui_MainWindow(object):
         self.web_view_group_box.setTitle(_translate("MainWindow", "Tree View"))
         self.push_button.setText(_translate("MainWindow", "PushButton"))
 
-from py_trees_ros_viewer.gui.web_view import WebViewGroupBox
+from py_trees_viz.gui.web_view import WebViewGroupBox
 from . import main_window_rc

@@ -37,7 +37,14 @@
         })
         var links = graph.getConnectedLinks(model, { outbound: true })
         _.each(links, function(child) {
+            console.log(child)
             if (child.get('hidden')) {
+//              child.attr({
+//                  'line': {'visibility': 'hidden'},
+//                  'wrapper': {'visibility': 'hidden'}
+              })
+              // child.attr('line/visibility', 'hidden')
+              // child.attr('wrapper/', 'hidden')
 //                child.attr({'./visibility': 'hidden'});
             } else {
 //                child.attr({'./visibility': 'visible'});

@@ -418,6 +418,13 @@ var py_trees = (function() {
     console.log("Inside: " + all_the_things)
   }
 
+  /**
+   * Right now this is creating the graph. Will have to decide
+   * in future whether new tree serialisations reset the graph
+   * and completely recreate or just update the graph. The latter
+   * may be imoprtant for efficiency concerns or to retain
+   * interactivity information in the graph (e.g. collapsible points).
+   */
   var _update_graph = function({graph, tree}) {
     console.log("Adding tree to the graph")
     var _nodes = {}
@@ -516,6 +523,55 @@ var py_trees = (function() {
       return link
   }
 
+  var _create_paper = function({graph}) {
+      var paper = new joint.dia.Paper({
+          el: document.getElementById('canvas'),
+          model: graph,
+          width: '100%',
+          height: '100%',
+          // defaultConnector: {  // doesn't seem to have any effect
+          //     name: 'rounded',
+          //     args: {
+          //         radius: 20
+          //     }
+          // },
+          background: { color: '#111111' },
+          // gridSize: 15,     // doesn't work?
+          // drawGrid: {
+          //     name: 'doubleMesh',
+          //     args: [
+          //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
+          //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
+          // ]}
+      });
+      paper.on('element:mouseover', function(view, event) {
+          // ugh, is there a better way than pulling [0]?
+          //    note; the method used in the view with .find().css({ ... doesn't work
+          view.$box.find('div.html-tooltip')[0].style.display = "block"
+      })
+      paper.on('element:mouseout', function(view, event) {
+          view.$box.find('div.html-tooltip')[0].style.display = "none"
+      })
+      // cell:mousewheel gives strange scale values back (30.0!)
+      paper.on('blank:mousewheel',
+          py_trees.scale_canvas.bind(null, paper)
+      )
+       // pan canvas
+      paper.on('blank:pointerdown',
+          py_trees.pan_canvas_begin.bind(null, paper)
+      )
+      paper.on('blank:pointermove',
+          py_trees.pan_canvas_move.bind(null, paper)
+      )
+      paper.on('blank:pointerup',
+          py_trees.pan_canvas_move.bind(null, paper)
+      )
+      paper.on('blank:pointerdblclick',
+          py_trees.fit_content_to_canvas.bind(null, paper)
+      )
+      return paper
+  }
+
   var _layout_graph = function({graph}) {
     var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
         marginX: 50,
@@ -578,17 +634,33 @@ var py_trees = (function() {
       });
   }
 
+  /**
+   * Print the py_trees.js version as well as it's dependency's
+   * versions to the js dev console.
+   */
+  var _print_versions = function() {
+      console.log("Backbone: %s", Backbone.VERSION)
+      console.log("Dagre   : %s", dagre.version)
+      console.log("Graphlib: %s", graphlib.version)
+      console.log("JointJS : %s", joint.version)
+      console.log("JQuery  : %s", jQuery.fn.jquery)
+      console.log("Lodash  : %s", _.VERSION)
+      console.log("PyTrees : %s", py_trees.version)
+  }
+
   return {
     // variables
     version: _version,
     // methods
     create_link: _create_link,
     create_node: _create_node,
+    create_paper: _create_paper,
     fit_content_to_canvas: _fit_content_to_canvas,
     foo: _foo,
     layout_graph: _layout_graph,
     pan_canvas_begin: _pan_canvas_begin,
     pan_canvas_move: _pan_canvas_move,
+    print_versions: _print_versions,
     scale_canvas: _scale_canvas,
     update_graph: _update_graph,
     experiments: {

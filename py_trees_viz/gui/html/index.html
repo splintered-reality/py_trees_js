@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hello Pixi</title>
+  <title>PyTrees Viz</title>
   <link rel="stylesheet" href="py_trees-0.1.0.css">
 </head>
 <script src="jointjs/dagre-0.8.4.min.js"></script>
@@ -20,7 +20,7 @@
 <body>
   <div id="foo"></div>
   <script type="text/javascript">
-    // Hello to the JS console
+    py_trees.print_versions()
     console.log("Backbone: %s", Backbone.VERSION)
     console.log("Dagre   : %s", dagre.version)
     console.log("Graphlib: %s", graphlib.version)
@@ -31,56 +31,8 @@
   </script>
   <div id="canvas"></div>
   <script type="text/javascript">
-    var graph = new joint.dia.Graph({});
-
-    var paper = new joint.dia.Paper({
-      el: document.getElementById('canvas'),
-      model: graph,
-      width: '100%',
-      height: '100%',
-      // defaultConnector: {  // doesn't seem to have any effect
-      //     name: 'rounded',
-      //     args: {
-      //         radius: 20
-      //     }
-      // },
-      background: { color: '#111111' },
-      // gridSize: 15,     // doesn't work?
-      // drawGrid: {
-      //     name: 'doubleMesh',
-      //     args: [
-      //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
-      //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
-      // ]}
-    });
-    paper.on('element:mouseover', function(view, event) {
-        // ugh, is there a better way than pulling [0]?
-        //    note; the method used in the view with .find().css({ ... doesn't work
-        view.$box.find('div.html-tooltip')[0].style.display = "block"
-    })
-    paper.on('element:mouseout', function(view, event) {
-        view.$box.find('div.html-tooltip')[0].style.display = "none"
-    })
-    // cell:mousewheel gives strange scale values back (30.0!)
-    paper.on('blank:mousewheel',
-        py_trees.scale_canvas.bind(null, paper)
-    )
-
-    // pan canvas
-    paper.on('blank:pointerdown',
-        py_trees.pan_canvas_begin.bind(null, paper)
-    )
-
-    paper.on('blank:pointermove',
-        py_trees.pan_canvas_move.bind(null, paper)
-    )
-    paper.on('blank:pointerup',
-        py_trees.pan_canvas_move.bind(null, paper)
-    )
-    paper.on('blank:pointerdblclick',
-        py_trees.fit_content_to_canvas.bind(null, paper)
-    )
-
+    graph = new joint.dia.Graph({});
+    paper = py_trees.create_paper({graph: graph})
     tree = py_trees.experiments.create_demo_tree_definition()
     py_trees.update_graph({graph: graph, tree: tree})
     py_trees.layout_graph({graph: graph})

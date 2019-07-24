@@ -322,8 +322,8 @@ var py_trees = (function() {
       render: function() {
           console.log("NodeView::render")
           joint.dia.ElementView.prototype.render.apply(this, arguments);
-          this.listenTo(this.paper, 'scale', this.updateBox);
           this.listenTo(this.paper, 'translate', this.updateBox);
+          this.listenTo(this.paper, 'scale', this.updateBox);
           this.paper.$el.prepend(this.$box);
           this.updateBox();
           return this;
@@ -338,8 +338,6 @@ var py_trees = (function() {
           // Example of updating the HTML with a data stored in the cell model.
           this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
           this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
-          // This sets both innerHTML and innerText..similar method for html?
-          // this.$box.find('div.html-tooltip').text("Wahoooooooooooooooo")
           this.$box.find('div.html-tooltip')[0].innerHTML =
               "<div>#" +
               this.model.get('behaviour_id') +
@@ -359,11 +357,12 @@ var py_trees = (function() {
           }
           // surprisingly, paper.scale() is available,
           // and ... this.paper is listed, but not available
-          scale = paper.scale()
+          scale = paper.scale()       // sx, sy
+          offset = paper.translate()  // tx, ty
           // CSS
           this.$box.find('div.html-tooltip').css({
               width: '30em',
-              left: 0.9*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
+              left: offset.tx + 0.9*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
           })
           this.$box.find('span.html-detail').css({
               'margin-top': 0.10*bbox.height*scale.sy,
@@ -381,8 +380,8 @@ var py_trees = (function() {
               //   overhanging by some small delta in x and y directions
               width: 0.80*bbox.width*scale.sx,
               height: 0.95*bbox.height*scale.sy,
-              left: bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
-              top: bbox.y*scale.sy,
+              left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
+              top: offset.ty + bbox.y*scale.sy,
               transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
           });
       },
@@ -398,18 +397,6 @@ var py_trees = (function() {
   var _links = []
   var _nodes = {}
   var _text_blocks = []
-
-  var _create_name_text_block = function({name}) {
-    var text_block = new joint.shapes.standard.TextBlock();
-    text_block.resize(100, 100);
-    text_block.position(250, 610);
-    text_block.attr('root/title', 'joint.shapes.standard.TextBlock');
-    text_block.attr('body/fill', 'lightgray');
-    text_block.attr('label/text', 'Hyper Text Markup Language');
-    // Styling of the label via `style` presentation attribute (i.e. CSS).
-    text_block.attr('label/style/color', 'red');
-    return text_block;
-  }
 
   var _update_graph = function({graph, tree}) {
     console.log("Adding tree to the graph")
@@ -512,7 +499,6 @@ var py_trees = (function() {
   }
 
   var _scale_canvas = function(paper, event, x, y, delta) {
-      // TODO: how is it this function gets a handle to paper?
       scale = paper.scale()
       sx = scale.sx
       sy = scale.sy
@@ -520,13 +506,42 @@ var py_trees = (function() {
       sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
       console.log("Scale: " + sx)
       paper.scale(sx, sy)
-      // paper.render()  / why does this produce a black screen?
+  }
+
+  var _pan_canvas_begin = function(paper, event, x, y) {
+      console.log("PanCanvasBegin")
+      console.log("  x: " + x + ",  y: " + y)
+      scale = paper.scale()
+      // TODO: little dirty, monkeypatching paper on the fly
+      paper.start_drag = {}
+      paper.start_drag.x = x * scale.sx
+      paper.start_drag.y = y * scale.sy
+  }
+  var _pan_canvas_move = function(paper, event, x, y) {
+      console.log("PanCanvasMove")
+      console.log(" ox: " + event.offsetX + ", oy: " + event.offsetY)
+      console.log("  x: " + x + ",  y: " + y)
+      console.log(" sx: " + paper.start_drag.x + ", sy: " + paper.start_drag.y)
+      paper.translate(
+          event.offsetX - paper.start_drag.x,
+          event.offsetY - paper.start_drag.y
+      )
+//      delta = 1
+//      scale = paper.scale()
+//      sx = scale.sx
+//      sy = scale.sy
+//      sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 100000.0)
+//      sy = (sy < 0.2 && delta < 0 ? sy : sy + delta / 100000.0)
+//      console.log("Scale: " + sx)
+//      paper.scale(sx, sy)
   }
 
   return {
     create_link: _create_link,
     create_node: _create_node,
     layout_graph: _layout_graph,
+    pan_canvas_begin: _pan_canvas_begin,
+    pan_canvas_move: _pan_canvas_move,
     scale_canvas: _scale_canvas,
     update_graph: _update_graph,
     shapes: {

@@ -31,16 +31,13 @@
   </script>
   <div id="canvas"></div>
   <script type="text/javascript">
-    var graph = new joint.dia.Graph({
-      cellNamespace: py_trees.shapes
-    });
+    var graph = new joint.dia.Graph({});
 
     var paper = new joint.dia.Paper({
       el: document.getElementById('canvas'),
       model: graph,
       width: '100%',
       height: '100%',
-      cellViewNamespace: py_trees.shapes,
       // defaultConnector: {  // doesn't seem to have any effect
       //     name: 'rounded',
       //     args: {

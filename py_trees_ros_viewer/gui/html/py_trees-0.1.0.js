@@ -1,6 +1,147 @@
 /*!
- * py_trees.js - 0.1.0
+ * A library for rendering, with jointjs, a behaviour tree on a
+ * html canvas.
  */
+// *************************************************************************
+// Joint Shapes (Models/Views)
+//   Originally had these in py_trees.shapes, however that replaces
+//   (doesn't combine with) joint.shapes, resulting in a few inconsistent
+//   behaviours when I do call on joint.shapes components (ostensibly
+//   because their views don't get found). 
+// *************************************************************************
+
+var joint = joint
+
+joint.shapes.Node = joint.dia.Element.define(
+  'Node', {
+    size: { width: 170, height: 50 },
+    attrs: {
+      box: {
+        refX: '0%', refY: '0%',
+        refWidth: '100%', refHeight: '100%',
+        // stroke: none
+        fill: '#333333', stroke: '#000000', 'stroke-width': 2,
+        'pointer-events': 'visiblePainted', rx: 8, ry: 8,
+      },
+      type: {
+        refX: '0%', refY: '0%',
+        refWidth: '15%', refHeight: '100%',
+        fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
+        'pointer-events': 'visiblePainted', rx: 8, ry: 8,
+      },
+    }
+  }, {
+      markup: [{
+          tagName: 'rect',
+          selector: 'box'
+      }, {
+          tagName: 'rect',
+          selector: 'type'
+      }]
+  });
+
+joint.shapes.NodeView = joint.dia.ElementView.extend({
+      // events: {
+  //   'dblclick': 'onDblClick',
+  // },
+  template: [
+      '<div class="html-element">',
+      '<span class="html-name"></span>',
+      '<span class="html-detail"></span>',
+      '<div class="html-tooltip"/>',
+      '</div>'
+  ].join(''),
+
+  initialize: function() {
+      _.bindAll(this, 'updateBox');
+      joint.dia.ElementView.prototype.initialize.apply(this, arguments);
+
+      this.$box = $(_.template(this.template)());
+      // This is an example of reacting on the input change and storing the input data in the cell model.
+      this.model.on('change', this.updateBox, this);
+      // Remove the box when the model gets removed from the graph.
+      this.model.on('remove', this.removeBox, this);
+
+      this.updateBox();
+  },
+  render: function() {
+      joint.dia.ElementView.prototype.render.apply(this, arguments);
+      this.listenTo(this.paper, 'translate', this.updateBox);
+      this.listenTo(this.paper, 'scale', this.updateBox);
+      this.paper.$el.prepend(this.$box);
+      this.updateBox();
+      return this;
+  },
+  // onDblClick: function() {
+  //     console.log("***** Fading ******")
+  //     this.model.prop('faded', !this.model.prop('faded'));
+  // },
+  updateBox: function() {
+      // Set the position and dimension of the box so that it covers the JointJS element.
+      var bbox = this.model.getBBox();
+      // Example of updating the HTML with a data stored in the cell model.
+      this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
+      this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
+      this.$box.find('div.html-tooltip')[0].innerHTML =
+          "<div>#" +
+          this.model.get('behaviour_id') +
+          "</div>" +
+          "<hr/>" +
+          "<span><b>Name: </b>" +
+          this.model.get('name') +
+          "</span><br/>" +
+          "<span><b>Status: </b>" +
+          this.model.get('status') +
+          "</span><br/>" +
+          "<span><b>Visited: </b>" +
+          this.model.get('visited') +
+          "</span><br/>"
+      data = this.model.get('data')
+      for (var key in data) {
+        this.$box.find('div.html-tooltip')[0].innerHTML +=
+            "<span><b>" +
+            key +
+            ": </b>" +
+            data[key] +
+            "</span><br/>"
+      }
+      // surprisingly, paper.scale() is available,
+      // and ... this.paper is listed, but not available
+      scale = paper.scale()       // sx, sy
+      offset = paper.translate()  // tx, ty
+      // CSS
+      this.$box.find('div.html-tooltip').css({
+          width: '30em',
+          left: offset.tx + 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
+      })
+      this.$box.find('span.html-detail').css({
+          'margin-top': 0.10*bbox.height*scale.sy,
+          'margin-bottom': 0.15*bbox.height*scale.sy,
+          'font-size': 10*scale.sy,
+          'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
+      })
+      this.$box.find('span.html-name').css({
+          'margin-top': 0.10*bbox.height*scale.sy,
+          'margin-bottom': 0.15*bbox.height*scale.sy,
+          'font-size': 14*scale.sy,
+          'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
+      })
+      this.$box.css({
+          // math says this should be 0.85/1.0, but not everything lining up correctly
+          //   html-element top left corner is fine, but bottom-right corner is
+          //   overhanging by some small delta in x and y directions
+          width: 0.80*bbox.width*scale.sx,
+          height: 0.95*bbox.height*scale.sy,
+          left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
+          top: offset.ty + bbox.y*scale.sy,
+          transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
+          });
+      },
+      removeBox: function(evt) {
+          this.$box.remove();
+      }
+  });
+
 var py_trees = (function() {
 
   // *************************************************************************
@@ -266,140 +407,6 @@ var py_trees = (function() {
   }
 
   // *************************************************************************
-  // Shapes (Models/Views)
-  // *************************************************************************
-
-  var _Node = joint.dia.Element.define(
-      'Node', {
-        size: { width: 170, height: 50 },
-        attrs: {
-          box: {
-            refX: '0%', refY: '0%',
-            refWidth: '100%', refHeight: '100%',
-            // stroke: none
-            fill: '#333333', stroke: '#000000', 'stroke-width': 2,
-            'pointer-events': 'visiblePainted', rx: 8, ry: 8,
-          },
-          type: {
-            refX: '0%', refY: '0%',
-            refWidth: '15%', refHeight: '100%',
-            fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
-            'pointer-events': 'visiblePainted', rx: 8, ry: 8,
-          },
-        }
-      }, {
-          markup: [{
-              tagName: 'rect',
-              selector: 'box'
-          }, {
-              tagName: 'rect',
-              selector: 'type'
-          }]
-      });
-
-  _NodeView = joint.dia.ElementView.extend({
-      // events: {
-      //   'dblclick': 'onDblClick',
-      // },
-      template: [
-          '<div class="html-element">',
-          '<span class="html-name"></span>',
-          '<span class="html-detail"></span>',
-          '<div class="html-tooltip"/>',
-          '</div>'
-      ].join(''),
-
-      initialize: function() {
-          _.bindAll(this, 'updateBox');
-          joint.dia.ElementView.prototype.initialize.apply(this, arguments);
-
-          this.$box = $(_.template(this.template)());
-          // This is an example of reacting on the input change and storing the input data in the cell model.
-          this.model.on('change', this.updateBox, this);
-          // Remove the box when the model gets removed from the graph.
-          this.model.on('remove', this.removeBox, this);
-
-          this.updateBox();
-      },
-      render: function() {
-          joint.dia.ElementView.prototype.render.apply(this, arguments);
-          this.listenTo(this.paper, 'translate', this.updateBox);
-          this.listenTo(this.paper, 'scale', this.updateBox);
-          this.paper.$el.prepend(this.$box);
-          this.updateBox();
-          return this;
-      },
-      // onDblClick: function() {
-      //     console.log("***** Fading ******")
-      //     this.model.prop('faded', !this.model.prop('faded'));
-      // },
-      updateBox: function() {
-          // Set the position and dimension of the box so that it covers the JointJS element.
-          var bbox = this.model.getBBox();
-          // Example of updating the HTML with a data stored in the cell model.
-          this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
-          this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
-          this.$box.find('div.html-tooltip')[0].innerHTML =
-              "<div>#" +
-              this.model.get('behaviour_id') +
-              "</div>" +
-              "<hr/>" +
-              "<span><b>Name: </b>" +
-              this.model.get('name') +
-              "</span><br/>" +
-              "<span><b>Status: </b>" +
-              this.model.get('status') +
-              "</span><br/>" +
-              "<span><b>Visited: </b>" +
-              this.model.get('visited') +
-              "</span><br/>"
-          data = this.model.get('data')
-          for (var key in data) {
-            this.$box.find('div.html-tooltip')[0].innerHTML +=
-                "<span><b>" +
-                key +
-                ": </b>" +
-                data[key] +
-                "</span><br/>"
-          }
-          // surprisingly, paper.scale() is available,
-          // and ... this.paper is listed, but not available
-          scale = paper.scale()       // sx, sy
-          offset = paper.translate()  // tx, ty
-          // CSS
-          this.$box.find('div.html-tooltip').css({
-              width: '30em',
-              left: offset.tx + 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
-          })
-          this.$box.find('span.html-detail').css({
-              'margin-top': 0.10*bbox.height*scale.sy,
-              'margin-bottom': 0.15*bbox.height*scale.sy,
-              'font-size': 10*scale.sy,
-              'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
-          })
-          this.$box.find('span.html-name').css({
-              'margin-top': 0.10*bbox.height*scale.sy,
-              'margin-bottom': 0.15*bbox.height*scale.sy,
-              'font-size': 14*scale.sy,
-              'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
-          })
-          this.$box.css({
-              // math says this should be 0.85/1.0, but not everything lining up correctly
-              //   html-element top left corner is fine, but bottom-right corner is
-              //   overhanging by some small delta in x and y directions
-              width: 0.80*bbox.width*scale.sx,
-              height: 0.95*bbox.height*scale.sy,
-              left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
-              top: offset.ty + bbox.y*scale.sy,
-              transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
-          });
-      },
-      removeBox: function(evt) {
-          this.$box.remove();
-      }
-  });
-
-  // *************************************************************************
   // PyTrees
   // *************************************************************************
 
@@ -413,9 +420,6 @@ var py_trees = (function() {
     _nodes = {}
     _links = []
     for (behaviour in tree.behaviours) {
-        console.log("Visited Path: " + tree.visited_path)
-        console.log("Id: " + tree.behaviours[behaviour].id)
-        console.log(tree.visited_path.includes(tree.behaviours[behaviour].id))
         // at least name should go through, all others are optional
         node = _create_node({
             behaviour_id: tree.behaviours[behaviour].id,
@@ -455,7 +459,7 @@ var py_trees = (function() {
         {},
         { ellipsis: true }
     )
-    node = new py_trees.shapes.Node({
+    node = new joint.shapes.Node({
       name: name,
       behaviour_id: behaviour_id,
       details: details,
@@ -585,31 +589,9 @@ var py_trees = (function() {
     pan_canvas_move: _pan_canvas_move,
     scale_canvas: _scale_canvas,
     update_graph: _update_graph,
-    shapes: {
-      Node: _Node,
-      NodeView: _NodeView,
-    },
     experiments: {
       create_demo_tree_definition: _create_demo_tree_definition,
       add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
     },
   };
 })(); // namespace py_trees
-
-//          Rectangle: joint.shapes.standard.Rectangle,
-//          Circle: joint.shapes.standard.Circle,
-//          Ellipse: joint.shapes.standard.Ellipse,
-//          Path: joint.shapes.standard.Path,
-//          Polygon: joint.shapes.standard.Polygon,
-//          Polyline: joint.shapes.standard.Polyline,
-//          Image: joint.shapes.standard.Image,
-//          BorderedImage: joint.shapes.standard.BorderedImage,
-//          EmbeddedImage: joint.shapes.standard.EmbeddedImage,
-//          InscribedImage: joint.shapes.standard.InscribedImage,
-//          HeaderedRectangle: joint.shapes.standard.HeaderedRectangle,
-//          Cylinder: joint.shapes.standard.Cylinder,
-//          TextBlock: joint.shapes.standard.TextBlock,
-//          Link: joint.shapes.standard.Link,
-//          DoubleLink: joint.shapes.standard.DoubleLink,
-//          ShadowLink: joint.shapes.standard.ShadowLink
-

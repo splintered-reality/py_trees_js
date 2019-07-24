@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
-package_name = 'py_trees_ros_viewer'
+package_name = 'py_trees_viz'
 
 
 # This is somewhat dodgy as it will escape any override from, e.g. the command
@@ -69,12 +69,12 @@ setup(
     version='0.1.0',  # also update package.xml
     packages=find_packages(exclude=['tests*', 'docs*']),
     data_files=[('share/' + package_name, ['package.xml'])],
-    package_data={'py_trees_ros_viewer': ['gui/*']},
+    package_data={'py_trees_viz': ['gui/*']},
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
-    url='https://github.com/splintered-reality/py_trees_ros_tutorials',
+    url='https://github.com/splintered-reality/py_trees_viz',
     keywords=['ROS', 'ROS2', 'behaviour-trees', 'Qt'],
     zip_safe=True,
     classifiers=[
@@ -96,7 +96,7 @@ setup(
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
         'console_scripts': [
-            'py-trees-viewer = py_trees_ros_viewer.viewer:main',
+            'py-trees-viewer = py_trees_viz.viewer:main',
         ],
     },
 )

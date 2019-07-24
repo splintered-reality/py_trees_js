@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # License: BSD
-#   https://github.com/splintered-reality/py_trees_ros_tutorials/raw/devel/LICENSE
+#   https://github.com/splintered-reality/py_trees_viz/raw/devel/LICENSE
 #
 ##############################################################################
 # Documentation

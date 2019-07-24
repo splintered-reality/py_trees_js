@@ -12,7 +12,7 @@ While the actual functionality is provided via `py_trees.js` and `py_trees.css`,
 
 ## Roadmap
 
-This is a work-in-progress. See the [Projects](https://github.com/splintered-reality/py_trees_ros_viewer/projects?query=is%3Aopen+sort%3Acreated-asc) page for progress and planned milestones.
+This is a work-in-progress. See the [Projects](https://github.com/splintered-reality/py_trees_viz/projects?query=is%3Aopen+sort%3Acreated-asc) page for progress and planned milestones.
 
 ## Development
 

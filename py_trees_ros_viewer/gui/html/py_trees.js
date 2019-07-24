@@ -526,19 +526,20 @@ var py_trees = (function() {
           event.offsetX - paper.start_drag.x,
           event.offsetY - paper.start_drag.y
       )
-//      delta = 1
-//      scale = paper.scale()
-//      sx = scale.sx
-//      sy = scale.sy
-//      sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 100000.0)
-//      sy = (sy < 0.2 && delta < 0 ? sy : sy + delta / 100000.0)
-//      console.log("Scale: " + sx)
-//      paper.scale(sx, sy)
+  }
+  var _fit_content_to_canvas = function(paper, event, x, y) {
+      paper.scaleContentToFit({
+          padding: 50,
+          minScale: 0.1,
+          maxScale: 1.0,
+          scaleGrid: 0.1,
+      });
   }
 
   return {
     create_link: _create_link,
     create_node: _create_node,
+    fit_content_to_canvas: _fit_content_to_canvas,
     layout_graph: _layout_graph,
     pan_canvas_begin: _pan_canvas_begin,
     pan_canvas_move: _pan_canvas_move,

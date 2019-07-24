@@ -15,6 +15,7 @@ var joint = joint
 joint.shapes.Node = joint.dia.Element.define(
   'Node', {
     size: { width: 170, height: 50 },
+    hidden: false,
     attrs: {
       box: {
         refX: '0%', refY: '0%',
@@ -42,101 +43,115 @@ joint.shapes.Node = joint.dia.Element.define(
 
 joint.shapes.NodeView = joint.dia.ElementView.extend({
       // events: {
-  //   'dblclick': 'onDblClick',
-  // },
-  template: [
-      '<div class="html-element">',
-      '<span class="html-name"></span>',
-      '<span class="html-detail"></span>',
-      '<div class="html-tooltip"/>',
-      '</div>'
-  ].join(''),
+    //   'dblclick': 'onDblClick',
+    // },
+    template: [
+        '<div class="html-element">',
+        '<span class="html-name"></span>',
+        '<span class="html-detail"></span>',
+        '<div class="html-tooltip"/>',
+        '</div>'
+    ].join(''),
 
-  initialize: function() {
-      _.bindAll(this, 'updateBox');
-      joint.dia.ElementView.prototype.initialize.apply(this, arguments);
+    initialize: function() {
+        _.bindAll(this, 'updateBox');
+        joint.dia.ElementView.prototype.initialize.apply(this, arguments);
 
-      this.$box = $(_.template(this.template)());
-      // This is an example of reacting on the input change and storing the input data in the cell model.
-      this.model.on('change', this.updateBox, this);
-      // Remove the box when the model gets removed from the graph.
-      this.model.on('remove', this.removeBox, this);
+        this.$box = $(_.template(this.template)());
+        // This is an example of reacting on the input change and storing the input data in the cell model.
+        this.model.on('change', this.updateBox, this);
+        // Remove the box when the model gets removed from the graph.
+        this.model.on('remove', this.removeBox, this);
 
-      this.updateBox();
-  },
-  render: function() {
-      joint.dia.ElementView.prototype.render.apply(this, arguments);
-      this.listenTo(this.paper, 'translate', this.updateBox);
-      this.listenTo(this.paper, 'scale', this.updateBox);
-      this.paper.$el.prepend(this.$box);
-      this.updateBox();
-      return this;
-  },
-  // onDblClick: function() {
-  //     console.log("***** Fading ******")
-  //     this.model.prop('faded', !this.model.prop('faded'));
-  // },
-  updateBox: function() {
-      // Set the position and dimension of the box so that it covers the JointJS element.
-      var bbox = this.model.getBBox();
-      // Example of updating the HTML with a data stored in the cell model.
-      this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
-      this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
-      this.$box.find('div.html-tooltip')[0].innerHTML =
-          "<div>#" +
-          this.model.get('behaviour_id') +
-          "</div>" +
-          "<hr/>" +
-          "<span><b>Name: </b>" +
-          this.model.get('name') +
-          "</span><br/>" +
-          "<span><b>Status: </b>" +
-          this.model.get('status') +
-          "</span><br/>" +
-          "<span><b>Visited: </b>" +
-          this.model.get('visited') +
-          "</span><br/>"
-      data = this.model.get('data')
-      for (var key in data) {
-        this.$box.find('div.html-tooltip')[0].innerHTML +=
-            "<span><b>" +
-            key +
-            ": </b>" +
-            data[key] +
+        this.updateBox();
+    },
+    render: function() {
+        joint.dia.ElementView.prototype.render.apply(this, arguments);
+        this.listenTo(this.paper, 'translate', this.updateBox);
+        this.listenTo(this.paper, 'scale', this.updateBox);
+        this.paper.$el.prepend(this.$box);
+        this.updateBox();
+        return this;
+    },
+    // onDblClick: function() {
+    //     console.log("***** Fading ******")
+    //     this.model.prop('faded', !this.model.prop('faded'));
+    // },
+    updateBox: function() {
+        // Set the position and dimension of the box so that it covers the JointJS element.
+        var bbox = this.model.getBBox();
+        // Example of updating the HTML with a data stored in the cell model.
+        this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
+        this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
+        this.$box.find('div.html-tooltip')[0].innerHTML =
+            "<div>#" +
+            this.model.get('behaviour_id') +
+            "</div>" +
+            "<hr/>" +
+            "<span><b>Name: </b>" +
+            this.model.get('name') +
+            "</span><br/>" +
+            "<span><b>Status: </b>" +
+            this.model.get('status') +
+            "</span><br/>" +
+            "<span><b>Visited: </b>" +
+            this.model.get('visited') +
             "</span><br/>"
-      }
-      // surprisingly, paper.scale() is available,
-      // and ... this.paper is listed, but not available
-      scale = paper.scale()       // sx, sy
-      offset = paper.translate()  // tx, ty
-      // CSS
-      this.$box.find('div.html-tooltip').css({
-          width: '30em',
-          left: offset.tx + 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
-      })
-      this.$box.find('span.html-detail').css({
-          'margin-top': 0.10*bbox.height*scale.sy,
-          'margin-bottom': 0.15*bbox.height*scale.sy,
-          'font-size': 10*scale.sy,
-          'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
-      })
-      this.$box.find('span.html-name').css({
-          'margin-top': 0.10*bbox.height*scale.sy,
-          'margin-bottom': 0.15*bbox.height*scale.sy,
-          'font-size': 14*scale.sy,
-          'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
-      })
-      this.$box.css({
-          // math says this should be 0.85/1.0, but not everything lining up correctly
-          //   html-element top left corner is fine, but bottom-right corner is
-          //   overhanging by some small delta in x and y directions
-          width: 0.80*bbox.width*scale.sx,
-          height: 0.95*bbox.height*scale.sy,
-          left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
-          top: offset.ty + bbox.y*scale.sy,
-          transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
-          });
+        data = this.model.get('data')
+        for (var key in data) {
+            this.$box.find('div.html-tooltip')[0].innerHTML +=
+               "<span><b>" +
+                key +
+                ": </b>" +
+                data[key] +
+                "</span><br/>"
+        }
+        // surprisingly, paper.scale() is available,
+        // and ... this.paper is listed, but not available
+        scale = paper.scale()       // sx, sy
+        offset = paper.translate()  // tx, ty
+        // Positioning
+        this.$box.find('div.html-tooltip').css({
+            width: '30em',
+            left: offset.tx + 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
+        })
+        this.$box.find('span.html-detail').css({
+            'margin-top': 0.10*bbox.height*scale.sy,
+            'margin-bottom': 0.15*bbox.height*scale.sy,
+            'font-size': 10*scale.sy,
+            'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
+        })
+        this.$box.find('span.html-name').css({
+            'margin-top': 0.10*bbox.height*scale.sy,
+            'margin-bottom': 0.15*bbox.height*scale.sy,
+            'font-size': 14*scale.sy,
+            'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
+        })
+        this.$box.css({
+            // math says this should be 0.85/1.0, but not everything lining up correctly
+            //   html-element top left corner is fine, but bottom-right corner is
+            //   overhanging by some small delta in x and y directions
+            width: 0.80*bbox.width*scale.sx,
+            height: 0.95*bbox.height*scale.sy,
+            left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
+            top: offset.ty + bbox.y*scale.sy,
+            transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
+        });
+        // Hiding
+        console.log("Hide: " + this.model.get('hidden'))
+        if ( this.model.get('hidden') ) {
+            this.model.attr('./visibility', 'hidden')
+            this.$box.css({
+                'visibility': 'hidden',
+            })
+        } else {
+            this.model.attr('./visibility', 'visible')
+            this.$box.css({
+                'visibility': 'visible',
+            })
+        }
       },
+
       removeBox: function(evt) {
           this.$box.remove();
       }

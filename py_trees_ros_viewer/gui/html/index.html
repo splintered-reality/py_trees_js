@@ -2,15 +2,15 @@
 <head>
   <meta charset="utf-8">
   <title>Hello Pixi</title>
-  <link rel="stylesheet" href="py_trees.css">
+  <link rel="stylesheet" href="py_trees-0.1.0.css">
 </head>
-<script src="jointjs/dagre.min.js"></script>
-<script src="jointjs/graphlib.min.js"></script>
-<script src="jointjs/jquery.min.js"></script>
-<script src="jointjs/lodash.min.js"></script>
-<script src="jointjs/backbone.js"></script>
+<script src="jointjs/dagre-0.8.4.min.js"></script>
+<script src="jointjs/graphlib-2.1.7.min.js"></script>
+<script src="jointjs/jquery-3.4.1.min.js"></script>
+<script src="jointjs/lodash-4.17.11.min.js"></script>
+<script src="jointjs/backbone-1.4.0.js"></script>
 <script src="jointjs/joint-3.0.2.min.js"></script>
-<script src="py_trees.js"></script>
+<script src="py_trees-0.1.0.js"></script>
 <link rel="stylesheet" type="text/css" href="jointjs/joint-3.0.2.min.css"/>
 <style>
   body {
@@ -21,7 +21,13 @@
   <div id="foo"></div>
   <script type="text/javascript">
     // Hello to the JS console
-    console.log("JointJS: %s", joint.version)
+    console.log("Backbone: %s", Backbone.VERSION)
+    console.log("Dagre   : %s", dagre.version)
+    console.log("Graphlib: %s", graphlib.version)
+    console.log("JointJS : %s", joint.version)
+    console.log("JQuery  : %s", jQuery.fn.jquery)
+    console.log("Lodash  : %s", _.VERSION)
+    console.log("PyTrees : %s", py_trees.version)
   </script>
   <div id="canvas"></div>
   <script type="text/javascript">

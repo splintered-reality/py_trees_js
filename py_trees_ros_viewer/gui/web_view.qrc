@@ -1,14 +1,14 @@
 <RCC>
   <qresource prefix="resources">
-    <file>html/jointjs/dagre.min.js</file>
-    <file>html/jointjs/graphlib.min.js</file>
-    <file>html/jointjs/lodash.min.js</file>
-    <file>html/jointjs/jquery.min.js</file>
+    <file>html/jointjs/dagre-0.8.4.min.js</file>
+    <file>html/jointjs/graphlib-2.1.7.min.js</file>
+    <file>html/jointjs/lodash-4.17.11.min.js</file>
+    <file>html/jointjs/jquery-3.4.1.min.js</file>
     <file>html/jointjs/joint-3.0.2.min.js</file>
     <file>html/jointjs/joint-3.0.2.min.css</file>
-    <file>html/jointjs/backbone.js</file>
-    <file>html/py_trees.css</file>
-    <file>html/py_trees.js</file>
+    <file>html/jointjs/backbone-1.4.0.js</file>
+    <file>html/py_trees-0.1.0.css</file>
+    <file>html/py_trees-0.1.0.js</file>
     <file>html/images/tuxrobot.png</file>
     <file>html/index.html</file>
   </qresource>

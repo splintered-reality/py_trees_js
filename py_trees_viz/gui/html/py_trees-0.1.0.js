@@ -7,7 +7,7 @@
 //   Originally had these in py_trees.shapes, however that replaces
 //   (doesn't combine with) joint.shapes, resulting in a few inconsistent
 //   behaviours when I do call on joint.shapes components (ostensibly
-//   because their views don't get found). 
+//   because their views don't get found).
 // *************************************************************************
 
 var joint = joint
@@ -411,14 +411,23 @@ var py_trees = (function() {
   // *************************************************************************
 
   var _version = '0.1.0'
-  var _links = []
-  var _nodes = {}
-  var _text_blocks = []
 
+  var _foo = function({all_the_things}) {
+    console.log("Inside: " + all_the_things)
+    all_the_things.push(5)
+    console.log("Inside: " + all_the_things)
+  }
+
+  /**
+   * Right now this is creating the graph. Will have to decide
+   * in future whether new tree serialisations reset the graph
+   * and completely recreate or just update the graph. The latter
+   * may be imoprtant for efficiency concerns or to retain
+   * interactivity information in the graph (e.g. collapsible points).
+   */
   var _update_graph = function({graph, tree}) {
     console.log("Adding tree to the graph")
-    _nodes = {}
-    _links = []
+    var _nodes = {}
     for (behaviour in tree.behaviours) {
         // at least name should go through, all others are optional
         node = _create_node({
@@ -442,11 +451,10 @@ var py_trees = (function() {
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
             console.log("    Children: " + tree.behaviours[behaviour].children)
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
-                link = py_trees.create_link({
+                link = _create_link({
                     source: _nodes[tree.behaviours[behaviour].id],
                     target: _nodes[child_id],
                 })
-                _links.push(link)
                 link.addTo(graph)
             });
         }
@@ -470,13 +478,13 @@ var py_trees = (function() {
       attrs: {
           'box': {
               opacity: visited ? 1.0 : 0.3
-            
+
           },
           'type': {
               fill: colour || '#555555',
               opacity: visited ? 1.0 : 0.3
           },
-          
+
       }
     })
     var highlight_colours = {
@@ -493,8 +501,8 @@ var py_trees = (function() {
                 name: 'highlight',
                 args: {
                     color: highlight_colours[status],
-                    width: 2,
-                    opacity: 0.5,
+                    width: 3,
+                    opacity: 0.8,
                     blur: 5
                 }
             }
@@ -511,8 +519,57 @@ var py_trees = (function() {
       var link = new joint.shapes.standard.Link();
       link.source(source)
       link.target(target)
-      link.connector('smooth');
+      link.connector('smooth')
       return link
+  }
+
+  var _create_paper = function({graph}) {
+      var paper = new joint.dia.Paper({
+          el: document.getElementById('canvas'),
+          model: graph,
+          width: '100%',
+          height: '100%',
+          // defaultConnector: {  // doesn't seem to have any effect
+          //     name: 'rounded',
+          //     args: {
+          //         radius: 20
+          //     }
+          // },
+          background: { color: '#111111' },
+          // gridSize: 15,     // doesn't work?
+          // drawGrid: {
+          //     name: 'doubleMesh',
+          //     args: [
+          //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
+          //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
+          // ]}
+      });
+      paper.on('element:mouseover', function(view, event) {
+          // ugh, is there a better way than pulling [0]?
+          //    note; the method used in the view with .find().css({ ... doesn't work
+          view.$box.find('div.html-tooltip')[0].style.display = "block"
+      })
+      paper.on('element:mouseout', function(view, event) {
+          view.$box.find('div.html-tooltip')[0].style.display = "none"
+      })
+      // cell:mousewheel gives strange scale values back (30.0!)
+      paper.on('blank:mousewheel',
+          py_trees.scale_canvas.bind(null, paper)
+      )
+       // pan canvas
+      paper.on('blank:pointerdown',
+          py_trees.pan_canvas_begin.bind(null, paper)
+      )
+      paper.on('blank:pointermove',
+          py_trees.pan_canvas_move.bind(null, paper)
+      )
+      paper.on('blank:pointerup',
+          py_trees.pan_canvas_move.bind(null, paper)
+      )
+      paper.on('blank:pointerdblclick',
+          py_trees.fit_content_to_canvas.bind(null, paper)
+      )
+      return paper
   }
 
   var _layout_graph = function({graph}) {
@@ -543,7 +600,7 @@ var py_trees = (function() {
   }
 
   /**
-   * Initialise data for a panning maneuvre. 
+   * Initialise data for a panning maneuvre.
    */
   var _pan_canvas_begin = function(paper, event, x, y) {
       console.log("PanCanvasBegin")
@@ -556,7 +613,7 @@ var py_trees = (function() {
   }
   /**
    * Pan the canvas, lookup the offset via paper.translate() later
-   * (necessary when rendering the html views, but not the models). 
+   * (necessary when rendering the html views, but not the models).
    */
   var _pan_canvas_move = function(paper, event, x, y) {
       paper.translate(
@@ -566,7 +623,7 @@ var py_trees = (function() {
   }
   /**
    * Fit the tree to the canvas if scale < 1.0,
-   * otherwise just render it normally (scale: 1.0). 
+   * otherwise just render it normally (scale: 1.0).
    */
   var _fit_content_to_canvas = function(paper, event, x, y) {
       paper.scaleContentToFit({
@@ -577,16 +634,33 @@ var py_trees = (function() {
       });
   }
 
+  /**
+   * Print the py_trees.js version as well as it's dependency's
+   * versions to the js dev console.
+   */
+  var _print_versions = function() {
+      console.log("Backbone: %s", Backbone.VERSION)
+      console.log("Dagre   : %s", dagre.version)
+      console.log("Graphlib: %s", graphlib.version)
+      console.log("JointJS : %s", joint.version)
+      console.log("JQuery  : %s", jQuery.fn.jquery)
+      console.log("Lodash  : %s", _.VERSION)
+      console.log("PyTrees : %s", py_trees.version)
+  }
+
   return {
     // variables
     version: _version,
     // methods
     create_link: _create_link,
     create_node: _create_node,
+    create_paper: _create_paper,
     fit_content_to_canvas: _fit_content_to_canvas,
+    foo: _foo,
     layout_graph: _layout_graph,
     pan_canvas_begin: _pan_canvas_begin,
     pan_canvas_move: _pan_canvas_move,
+    print_versions: _print_versions,
     scale_canvas: _scale_canvas,
     update_graph: _update_graph,
     experiments: {

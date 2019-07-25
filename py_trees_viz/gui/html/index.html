@@ -26,31 +26,6 @@
   <script type="text/javascript">
     graph = new joint.dia.Graph({});
     paper = py_trees.create_paper({graph: graph})
-    paper.on('element:pointerdblclick', function(view, evt, x, y) {
-        model = view.model
-        console.log("double click")
-        var neighbours = graph.getNeighbors(model, {
-            outbound: true
-        })
-        _.each(neighbours, function(child) {
-            child.set('hidden', !child.get('hidden'))
-        })
-        var links = graph.getConnectedLinks(model, { outbound: true })
-        _.each(links, function(child) {
-            console.log(child)
-            if (child.get('hidden')) {
-//              child.attr({
-//                  'line': {'visibility': 'hidden'},
-//                  'wrapper': {'visibility': 'hidden'}
-              })
-              // child.attr('line/visibility', 'hidden')
-              // child.attr('wrapper/', 'hidden')
-//                child.attr({'./visibility': 'hidden'});
-            } else {
-//                child.attr({'./visibility': 'visible'});
-            }
-        })
-    })
     tree = py_trees.experiments.create_demo_tree_definition()
     py_trees.update_graph({graph: graph, tree: tree})
     py_trees.layout_graph({graph: graph})

@@ -15,6 +15,7 @@ var joint = joint
 joint.shapes.Node = joint.dia.Element.define(
   'Node', {
     size: { width: 170, height: 50 },
+    collapse_children: false,
     hidden: false,
     attrs: {
       box: {
@@ -113,7 +114,7 @@ joint.shapes.NodeView = joint.dia.ElementView.extend({
         // Positioning
         this.$box.find('div.html-tooltip').css({
             width: '30em',
-            left: offset.tx + 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
+            left: 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
         })
         this.$box.find('span.html-detail').css({
             'margin-top': 0.10*bbox.height*scale.sy,
@@ -137,8 +138,32 @@ joint.shapes.NodeView = joint.dia.ElementView.extend({
             top: offset.ty + bbox.y*scale.sy,
             transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
         });
+        if ( this.model.get('collapse_children') ) {
+        	this.model.attr({
+        		box: {
+                    fill: {
+                        type: 'linearGradient',
+                        stops: [
+                            { offset: '0%',  color: '#333333' },
+                            { offset: '100%', color: '#555555' }
+                        ],
+                        attrs: {
+                            x1: '0%',
+                            y1: '0%',
+                            x2: '0%',
+                            y2: '100%'
+                        },
+        	        },
+        		}
+        	})
+        } else {
+        	this.model.attr({
+        		box: {
+        			fill: '#333333'
+        		}
+            })
+        }
         // Hiding
-        console.log("Hide: " + this.model.get('hidden'))
         if ( this.model.get('hidden') ) {
             this.model.attr('./visibility', 'hidden')
             this.$box.css({
@@ -573,16 +598,19 @@ var py_trees = (function() {
       )
        // pan canvas
       paper.on('blank:pointerdown',
-          py_trees.pan_canvas_begin.bind(null, paper)
+          _pan_canvas_begin.bind(null, paper)
       )
       paper.on('blank:pointermove',
-          py_trees.pan_canvas_move.bind(null, paper)
+          _pan_canvas_move.bind(null, paper)
       )
       paper.on('blank:pointerup',
-          py_trees.pan_canvas_move.bind(null, paper)
+          _pan_canvas_move.bind(null, paper)
       )
       paper.on('blank:pointerdblclick',
-          py_trees.fit_content_to_canvas.bind(null, paper)
+          _fit_content_to_canvas.bind(null, paper)
+      )
+      paper.on('element:pointerdblclick',
+    	  _collapse_children.bind(null)
       )
       return paper
   }
@@ -598,6 +626,28 @@ var py_trees = (function() {
     console.log("Dot Graph Layout")
     console.log('  x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
     console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+  }
+  /**
+   * Collapse children of the selected model/view. This merely
+   * hides them from view, but doesn't remove them from the graph.
+   */
+  var _collapse_children = function(view, event, x, y) {
+      model = view.model
+      var successors = graph.getSuccessors(model)
+      if ( !successors.length ) {
+          return
+      }
+      model.set('collapse_children', !model.get('collapse_children'))
+      collapse_children = model.get('collapse_children')
+      _.each(successors, function(behaviour) {
+          behaviour.set('hidden', collapse_children)
+          var links = graph.getConnectedLinks(behaviour, { inbound: true })
+          _.each(links, function(link) {
+              // prefer to set a variable in the model and do this in a view,
+              // but this will do till we have a custom link and link view
+              link.attr('line/visibility', collapse_children ? 'hidden' : 'visible')
+          })
+      })
   }
   /**
    * Scale the canvas. Note that paper will automagically

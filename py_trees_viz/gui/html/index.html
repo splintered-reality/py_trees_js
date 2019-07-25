@@ -24,6 +24,11 @@
   </script>
   <div id="canvas"></div>
   <script type="text/javascript">
+    foo = function() {
+      console.log("Got Foo")
+      console.log("Sending Bar")
+      return "bar"
+    }
     graph = new joint.dia.Graph({});
     paper = py_trees.create_paper({graph: graph})
     tree = py_trees.experiments.create_demo_tree_definition()

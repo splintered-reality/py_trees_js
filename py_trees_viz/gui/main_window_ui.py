@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
         self.central_horizontal_layout.addWidget(self.web_view_group_box)
         MainWindow.setCentralWidget(self.central_display)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 29))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 35))
         self.menubar.setDefaultUp(False)
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
@@ -37,9 +37,9 @@ class Ui_MainWindow(object):
         self.dock_widget_contents.setObjectName("dock_widget_contents")
         self.dock_vertical_layout = QtWidgets.QVBoxLayout(self.dock_widget_contents)
         self.dock_vertical_layout.setObjectName("dock_vertical_layout")
-        self.push_button = QtWidgets.QPushButton(self.dock_widget_contents)
-        self.push_button.setObjectName("push_button")
-        self.dock_vertical_layout.addWidget(self.push_button)
+        self.send_button = QtWidgets.QPushButton(self.dock_widget_contents)
+        self.send_button.setObjectName("send_button")
+        self.dock_vertical_layout.addWidget(self.send_button)
         spacerItem = QtWidgets.QSpacerItem(20, 218, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.dock_vertical_layout.addItem(spacerItem)
         self.dock_widget.setWidget(self.dock_widget_contents)
@@ -52,7 +52,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "PyTrees Viewer"))
         self.web_view_group_box.setTitle(_translate("MainWindow", "Tree View"))
-        self.push_button.setText(_translate("MainWindow", "PushButton"))
+        self.send_button.setText(_translate("MainWindow", "Send Tree"))
 
 from py_trees_viz.gui.web_view import WebViewGroupBox
 from . import main_window_rc

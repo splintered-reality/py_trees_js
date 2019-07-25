@@ -39,5 +39,25 @@ class WebViewGroupBox(qt_widgets.QGroupBox):
         super().__init__(parent)
         self.ui = web_view_ui.Ui_WebViewGroupBox()
         self.ui.setupUi(self)
-        # self.ui.web_engine_view.load(qt_core.QUrl("https://stackoverflow.com/"))
-        self.ui.web_engine_view.load(qt_core.QUrl("qrc:/resources/html/index.html"))
+        # Auto-loading from the url setting via Designer.
+        # Note: if you wish to manually determine what is loaded from python,
+        # you can refuse to load anything  by default (to avoid the
+        # twice-loadfinished trigger issue) you can remove it as a dynamic
+        # property via designer
+        # self.ui.web_engine_view.load(qt_core.QUrl("qrc:/resources/html/index.html"))
+        self.ui.web_engine_view.loadFinished.connect(self.on_load_finished)
+
+    @qt_core.pyqtSlot()
+    def on_load_finished(self):
+        print("Post load setup")
+        self.send_tree()
+
+    def send_tree(self):
+        print("Sending Tree to JS App")
+        self.ui.web_engine_view.page().runJavaScript(
+            "foo();",
+            self.send_tree_response
+        )
+
+    def send_tree_response(self, reply):
+        print("Reply: {}".format(reply))

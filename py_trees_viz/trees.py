@@ -14,6 +14,8 @@ Demo trees to feed to the web app
 # Imports
 ##############################################################################
 
+import json
+
 ##############################################################################
 # Methods
 ##############################################################################
@@ -22,7 +24,7 @@ Demo trees to feed to the web app
 def create_demo_tree_definition():
     tree = {
         'timestamp': 1563938995,
-        'visited_path': ['1', '2', '3', '4', '5', '7', '8'],
+        'visited_path': ['1', '2', '7'],
         'behaviours': {
             '1': {
                 'id': '1',
@@ -48,10 +50,11 @@ def create_demo_tree_definition():
             },
             '3': {
                 'id': '3',
-                'status': 'FAILURE',
+                'status': 'INVALID',
                 'name': 'Parallel',
                 'details': 'SuccessOnOne',
                 'colour': '#FFFF00',
+                'children': ['10', '11'],
                 'data': {
                     'Type': 'py_trees.composites.Parallel',
                     'Feedback': 'Baked beans is good for your heart, baked beans makes you',
@@ -70,7 +73,7 @@ def create_demo_tree_definition():
             },
             '5': {
                 'id': '5',
-                'status': 'RUNNING',
+                'status': 'INVALID',
                 'name': 'Decorated Beyond The Beliefs of an Agnostic Rhino',
                 'colour': '#555555',
                 'data': {
@@ -90,7 +93,7 @@ def create_demo_tree_definition():
             },
             '7': {
                 'id': '7',
-                'status': 'SUCCESS',
+                'status': 'RUNNING',
                 'name': 'Worker A',
                 'colour': '#555555',
                 'data': {
@@ -100,7 +103,7 @@ def create_demo_tree_definition():
             },
             '8': {
                 'id': '8',
-                'status': 'FAILURE',
+                'status': 'INVALID',
                 'name': 'Worker B',
                 'colour': '#555555',
                 'data': {
@@ -118,6 +121,49 @@ def create_demo_tree_definition():
                     'Feedback': "..."
                 },
             },
+            '10': {
+                'id': '10',
+                'status': 'INVALID',
+                'name': 'Foo',
+                'colour': '#555555',
+                'data': {
+                    'Type': 'py_trees.composites.Behaviour',
+                    'Feedback': "..."
+                },
+            },
+            '11': {
+                'id': '11',
+                'status': 'INVALID',
+                'name': 'Bar',
+                'colour': '#555555',
+                'data': {
+                    'Type': 'py_trees.composites.Behaviour',
+                    'Feedback': "..."
+                },
+            },
         }
     }
     return tree
+
+
+def create_demo_tree_json_list():
+    trees = []
+    tree = create_demo_tree_definition()
+    trees.append(json.dumps(tree))
+    tree['visited_path'] = ['1', '2', '7', '8']
+    tree['behaviours']['7']['status'] = 'SUCCESS'
+    tree['behaviours']['8']['status'] = 'RUNNING'
+    trees.append(json.dumps(tree))
+    # sequence
+    tree['visited_path'] = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '11']
+    tree['behaviours']['8']['status'] = 'SUCCESS'
+    tree['behaviours']['9']['status'] = 'FAILURE'
+    # parallel
+    tree['behaviours']['3']['status'] = 'SUCCESS'
+    tree['behaviours']['10']['status'] = 'SUCCESS'
+    tree['behaviours']['11']['status'] = 'RUNNING'
+    # decorated
+    tree['behaviours']['4']['status'] = 'RUNNING'
+    tree['behaviours']['5']['status'] = 'RUNNING'
+    trees.append(json.dumps(tree))
+    return trees

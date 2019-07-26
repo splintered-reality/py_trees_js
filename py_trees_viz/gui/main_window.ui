@@ -34,7 +34,7 @@
      <x>0</x>
      <y>0</y>
      <width>551</width>
-     <height>29</height>
+     <height>35</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -49,9 +49,9 @@
    <widget class="QWidget" name="dock_widget_contents">
     <layout class="QVBoxLayout" name="dock_vertical_layout">
      <item>
-      <widget class="QPushButton" name="push_button">
+      <widget class="QPushButton" name="send_button">
        <property name="text">
-        <string>PushButton</string>
+        <string>Send Tree</string>
        </property>
       </widget>
      </item>

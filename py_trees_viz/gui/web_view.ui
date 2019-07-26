@@ -21,7 +21,7 @@
     <widget class="QWebEngineView" name="web_engine_view" native="true">
      <property name="url" stdset="0">
       <url>
-       <string>about:blank</string>
+       <string>qrc:/resources/html/index.html</string>
       </url>
      </property>
     </widget>

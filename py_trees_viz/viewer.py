@@ -14,6 +14,8 @@ A qt-javascript application for viewing executing or replaying py_trees
 # Imports
 ##############################################################################
 
+import functools
+import json
 import signal
 import sys
 
@@ -23,15 +25,30 @@ import PyQt5.QtWidgets as qt_widgets
 # To use generated files instead of loading ui's directly
 from . import console
 from . import gui
+from . import trees
 
 ##############################################################################
 # Helpers
 ##############################################################################
 
 
+@qt_core.pyqtSlot()
+def send_tree(web_view_page):
+    print("Sending Tree to JS App")
+    json_tree = json.dumps(trees.create_demo_tree_definition())
+    web_view_page.runJavaScript(
+        "render_tree({tree: '%s'});" % json_tree,
+        send_tree_response
+    )
+
+
+def send_tree_response(reply):
+    print("Reply: {}".format(reply))
+
 ##############################################################################
 # Main
 ##############################################################################
+
 
 def main():
     # logging
@@ -53,6 +70,12 @@ def main():
     timer = qt_core.QTimer()
     timer.timeout.connect(lambda: None)
     timer.start(250)
+
+    # sigslots
+    main_window.ui.web_view_group_box.ui.web_engine_view.loadFinished.connect(
+        functools.partial(
+            send_tree,
+            main_window.ui.web_view_group_box.ui.web_engine_view.page()))
 
     # qt bringup
     main_window.show()

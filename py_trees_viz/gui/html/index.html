@@ -26,10 +26,19 @@
   <script type="text/javascript">
     graph = new joint.dia.Graph({});
     paper = py_trees.create_paper({graph: graph})
-    tree = py_trees.experiments.create_demo_tree_definition()
-    py_trees.update_graph({graph: graph, tree: tree})
-    py_trees.layout_graph({graph: graph})
-    py_trees.fit_content_to_canvas(paper)
+
+    render_tree = function({tree}) {
+      json_tree = JSON.parse(tree)
+      py_trees.update_graph({graph: graph, tree: json_tree})
+	  py_trees.layout_graph({graph: graph})
+	  py_trees.fit_content_to_canvas(paper)
+      return "success"
+    }
+
+    // tree = py_trees.experiments.create_demo_tree_definition()
+    // py_trees.update_graph({graph: graph, tree: tree})
+    // py_trees.layout_graph({graph: graph})
+    // py_trees.fit_content_to_canvas(paper)
 
   </script>
 </body>

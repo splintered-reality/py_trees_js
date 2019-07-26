@@ -191,7 +191,7 @@ var py_trees = (function() {
   // Demo Tree
   // ****************************************
   var _create_demo_tree_definition = function() {
-    var     tree = {
+    var tree = {
         timestamp: 1563938995,
         visited_path: ['1', '2', '3', '4', '5', '7', '8'],
         behaviours: {

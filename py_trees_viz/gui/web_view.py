@@ -45,19 +45,3 @@ class WebViewGroupBox(qt_widgets.QGroupBox):
         # twice-loadfinished trigger issue) you can remove it as a dynamic
         # property via designer
         # self.ui.web_engine_view.load(qt_core.QUrl("qrc:/resources/html/index.html"))
-        self.ui.web_engine_view.loadFinished.connect(self.on_load_finished)
-
-    @qt_core.pyqtSlot()
-    def on_load_finished(self):
-        print("Post load setup")
-        self.send_tree()
-
-    def send_tree(self):
-        print("Sending Tree to JS App")
-        self.ui.web_engine_view.page().runJavaScript(
-            "foo();",
-            self.send_tree_response
-        )
-
-    def send_tree_response(self, reply):
-        print("Reply: {}".format(reply))

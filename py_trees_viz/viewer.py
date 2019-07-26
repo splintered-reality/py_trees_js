@@ -34,16 +34,16 @@ from . import trees
 
 @qt_core.pyqtSlot()
 def send_tree(web_view_page):
-    print("Sending Tree to JS App")
-    json_tree = json.dumps(trees.create_demo_tree_definition())
+    console.logdebug("send: single tree [viewer]")
+    json_trees = trees.create_demo_tree_json_list()
     web_view_page.runJavaScript(
-        "render_tree({tree: '%s'});" % json_tree,
+        "render_tree({tree: '%s'});" % json_trees[2],
         send_tree_response
     )
 
 
 def send_tree_response(reply):
-    print("Reply: {}".format(reply))
+    console.logdebug("send: response: {} [viewer]".format(reply))
 
 ##############################################################################
 # Main

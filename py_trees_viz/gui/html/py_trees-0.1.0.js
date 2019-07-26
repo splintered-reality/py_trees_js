@@ -139,8 +139,8 @@ joint.shapes.NodeView = joint.dia.ElementView.extend({
             transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
         });
         if ( this.model.get('collapse_children') ) {
-        	this.model.attr({
-        		box: {
+          this.model.attr({
+            box: {
                     fill: {
                         type: 'linearGradient',
                         stops: [
@@ -153,14 +153,14 @@ joint.shapes.NodeView = joint.dia.ElementView.extend({
                             x2: '0%',
                             y2: '100%'
                         },
-        	        },
-        		}
-        	})
+                  },
+            }
+          })
         } else {
-        	this.model.attr({
-        		box: {
-        			fill: '#333333'
-        		}
+          this.model.attr({
+            box: {
+              fill: '#333333'
+            }
             })
         }
         // Hiding
@@ -479,9 +479,18 @@ var py_trees = (function() {
             visited: tree.visited_path.includes(tree.behaviours[behaviour].id),
             data: tree.behaviours[behaviour].data || {},
         })
+        console.log("Name: " + tree.behaviours[behaviour].name)
+        console.log(tree.behaviours[behaviour])
+        console.log(tree.behaviours[behaviour].id)
+        console.log(typeof tree.behaviours[behaviour].id)
+        console.log("Visited Path [0]")
+        console.log(tree.visited_path[0])
+        console.log(typeof tree.visited_path[0])
+        console.log("  Visited: " + tree.visited_path.includes(tree.behaviours[behaviour].id))
         _nodes[tree.behaviours[behaviour].id] = node
         node.addTo(graph)
     }
+    console.log("Visited Path: " + tree.visited_path)
     for (behaviour in tree.behaviours) {
         console.log("  Name: " + tree.behaviours[behaviour].name)
         console.log("    Colour: " + tree.behaviours[behaviour].colour)
@@ -610,7 +619,7 @@ var py_trees = (function() {
           _fit_content_to_canvas.bind(null, paper)
       )
       paper.on('element:pointerdblclick',
-    	  _collapse_children.bind(null)
+        _collapse_children.bind(null)
       )
       return paper
   }

@@ -15,6 +15,8 @@ Launch a qt dashboard for the tutorials.
 # Imports
 ##############################################################################
 
+import functools
+
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
 
@@ -30,11 +32,30 @@ class MainWindow(qt_widgets.QMainWindow):
 
     request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
 
-    def __init__(self):
+    def __init__(self, default_tree):
         super().__init__()
         self.ui = main_window_ui.Ui_MainWindow()
         self.ui.setupUi(self)
         self.readSettings()
+        self.ui.web_view_group_box.ui.web_engine_view.loadFinished.connect(
+            functools.partial(
+                self.onLoadFinished,
+                default_tree
+            )
+        )
+
+    @qt_core.pyqtSlot()
+    def onLoadFinished(self, default_tree):
+        console.logdebug("web page loaded [main window]")
+        self.ui.send_button.setEnabled(True)
+
+        def handle_response(reply):
+            console.logdebug("reply: '{}' [viewer]".format(reply))
+
+        self.ui.web_view_group_box.ui.web_engine_view.page().runJavaScript(
+            "render_tree({tree: '%s'});" % default_tree,
+            handle_response
+        )
 
     def closeEvent(self, event):
         console.logdebug("received close event [main_window]")

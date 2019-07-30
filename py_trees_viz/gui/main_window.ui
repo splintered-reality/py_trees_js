@@ -50,6 +50,9 @@
     <layout class="QVBoxLayout" name="dock_vertical_layout">
      <item>
       <widget class="QPushButton" name="send_button">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Send Tree</string>
        </property>

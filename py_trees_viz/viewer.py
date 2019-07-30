@@ -32,18 +32,22 @@ from . import trees
 ##############################################################################
 
 
+def send_tree_response(reply):
+    console.logdebug("reply: '{}' [viewer]".format(reply))
+
+
 @qt_core.pyqtSlot()
-def send_tree(web_view_page):
-    console.logdebug("send: single tree [viewer]")
+def send_tree(web_view_page, unused_checked):
+    send_tree.index = 0 if send_tree.index == 2 else send_tree.index + 1
+    console.logdebug("send: tree '{}' [viewer]".format(send_tree.index))
     json_trees = trees.create_demo_tree_json_list()
     web_view_page.runJavaScript(
-        "render_tree({tree: '%s'});" % json_trees[2],
+        "render_tree({tree: '%s'});" % json_trees[send_tree.index],
         send_tree_response
     )
 
 
-def send_tree_response(reply):
-    console.logdebug("send: response: {} [viewer]".format(reply))
+send_tree.index = 0
 
 ##############################################################################
 # Main
@@ -56,7 +60,9 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
-    main_window = gui.main_window.MainWindow()
+    main_window = gui.main_window.MainWindow(
+        default_tree=trees.create_demo_tree_json_list()[0]
+    )
 
     # sig interrupt handling
     #   use a timer to get out of the gui thread and
@@ -72,11 +78,12 @@ def main():
     timer.start(250)
 
     # sigslots
-    main_window.ui.web_view_group_box.ui.web_engine_view.loadFinished.connect(
+    main_window.ui.send_button.clicked.connect(
         functools.partial(
-            send_tree,
-            main_window.ui.web_view_group_box.ui.web_engine_view.page()))
-
+             send_tree,
+             main_window.ui.web_view_group_box.ui.web_engine_view.page()
+        )
+    )
     # qt bringup
     main_window.show()
     result = app.exec_()

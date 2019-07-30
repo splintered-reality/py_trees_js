@@ -38,6 +38,7 @@ class Ui_MainWindow(object):
         self.dock_vertical_layout = QtWidgets.QVBoxLayout(self.dock_widget_contents)
         self.dock_vertical_layout.setObjectName("dock_vertical_layout")
         self.send_button = QtWidgets.QPushButton(self.dock_widget_contents)
+        self.send_button.setEnabled(False)
         self.send_button.setObjectName("send_button")
         self.dock_vertical_layout.addWidget(self.send_button)
         spacerItem = QtWidgets.QSpacerItem(20, 218, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)

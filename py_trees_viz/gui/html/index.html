@@ -28,28 +28,19 @@
     paper = py_trees.create_paper({graph: graph})
 
     // Accept a tree from external sources
-    rendered = false
+    already_rendered = false
     render_tree = function({tree}) {
       json_tree = JSON.parse(tree)
-      if (!rendered) {
-        py_trees.update_graph({graph: graph, tree: json_tree})
-        py_trees.layout_graph({graph: graph})
+      py_trees.update_graph({graph: graph, tree: json_tree})
+      py_trees.layout_graph({graph: graph})
+      if (!already_rendered) {
         py_trees.fit_content_to_canvas(paper)
-        rendered = true
+        already_rendered = true
         return "rendered"
       } else {
-        console.log("Tree\n%s", tree)
         return "already rendered"
       }
     }
-
-    // Render a tree from the py_trees.js library
-    //
-    // tree = py_trees.experiments.create_demo_tree_definition()
-    // py_trees.update_graph({graph: graph, tree: tree})
-    // py_trees.layout_graph({graph: graph})
-    // py_trees.fit_content_to_canvas(paper)
-
   </script>
 </body>
 </html>

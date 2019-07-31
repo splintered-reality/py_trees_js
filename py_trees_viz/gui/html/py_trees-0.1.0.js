@@ -466,7 +466,34 @@ var py_trees = (function() {
    * interactivity information in the graph (e.g. collapsible points).
    */
   var _update_graph = function({graph, tree}) {
-    console.log("Adding tree to the graph")
+
+    // Log the tree for introspection
+    console.log("Update the graph")
+    console.log("Behaviours")
+    for (behaviour in tree.behaviours) {
+        console.log("  Name: " + tree.behaviours[behaviour].name)
+        // console.log(tree.behaviours[behaviour])
+        console.log("    Id: " + tree.behaviours[behaviour].id)
+        console.log("    Colour: " + tree.behaviours[behaviour].colour)
+        console.log("    Details: " + tree.behaviours[behaviour].data.feedback)
+        console.log("    Status: " + tree.behaviours[behaviour].status)
+        console.log("    Visited: " + tree.visited_path.includes(tree.behaviours[behaviour].id))
+    }
+    console.log("Visited Path: " + tree.visited_path)
+
+    // extract interactive information
+    var collapsed_nodes = []
+    _.each(graph.getElements(), function(el) {
+        behaviour_id = el.get('behaviour_id')
+        if (el.get('collapse_children')) {
+          collapsed_nodes.push(behaviour_id)
+        }
+    })
+
+    // reset
+    graph.clear()
+
+    // repopulate
     var _nodes = {}
     for (behaviour in tree.behaviours) {
         // at least name should go through, all others are optional
@@ -479,24 +506,10 @@ var py_trees = (function() {
             visited: tree.visited_path.includes(tree.behaviours[behaviour].id),
             data: tree.behaviours[behaviour].data || {},
         })
-        console.log("Name: " + tree.behaviours[behaviour].name)
-        console.log(tree.behaviours[behaviour])
-        console.log(tree.behaviours[behaviour].id)
-        console.log(typeof tree.behaviours[behaviour].id)
-        console.log("Visited Path [0]")
-        console.log(tree.visited_path[0])
-        console.log(typeof tree.visited_path[0])
-        console.log("  Visited: " + tree.visited_path.includes(tree.behaviours[behaviour].id))
         _nodes[tree.behaviours[behaviour].id] = node
         node.addTo(graph)
     }
-    console.log("Visited Path: " + tree.visited_path)
     for (behaviour in tree.behaviours) {
-        console.log("  Name: " + tree.behaviours[behaviour].name)
-        console.log("    Colour: " + tree.behaviours[behaviour].colour)
-        console.log("    Details: " + tree.behaviours[behaviour].data.feedback)
-        console.log("    Status: " + tree.behaviours[behaviour].status)
-
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
             console.log("    Children: " + tree.behaviours[behaviour].children)
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
@@ -508,19 +521,35 @@ var py_trees = (function() {
             });
         }
     }
+
+    // re-establish interactive properties
+    _.each(graph.getElements(), function(el) {
+        behaviour_id = el.get("behaviour_id")
+        if (collapsed_nodes.includes(behaviour_id)) {
+          _collapse_children(el)
+        }
+    })
   }
-  var _create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
+
+  /**
+   * Create elided details from a details (text) snippet.
+   */
+  var _create_elided_details = function(details) {
     elided_details = joint.util.breakText(
-        details || '...',
-        { width: 150, height:30 },
-        {},
-        { ellipsis: true }
-    )
+            details || '...',
+            { width: 150, height:30 },
+            {},
+            { ellipsis: true }
+        )
+    return elided_details
+  }
+
+  var _create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
     node = new joint.shapes.Node({
       name: name,
       behaviour_id: behaviour_id,
       details: details,
-      elided_details: elided_details,
+      elided_details: _create_elided_details(details),
       status: status,
       visited: visited,
       data: data,
@@ -619,7 +648,7 @@ var py_trees = (function() {
           _fit_content_to_canvas.bind(null, paper)
       )
       paper.on('element:pointerdblclick',
-        _collapse_children.bind(null)
+        _collapse_children_handler.bind(null)
       )
       return paper
   }
@@ -637,11 +666,17 @@ var py_trees = (function() {
     console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
   }
   /**
-   * Collapse children of the selected model/view. This merely
+   * Callback for collapsing children on a click event
+   */
+  var _collapse_children_handler = function(view, event, x, y) {
+    _collapse_children(view.model)
+  }
+
+  /**
+   * Collapse children of the selected model. This merely
    * hides them from view, but doesn't remove them from the graph.
    */
-  var _collapse_children = function(view, event, x, y) {
-      model = view.model
+  var _collapse_children = function(model) {
       var successors = graph.getSuccessors(model)
       if ( !successors.length ) {
           return
@@ -677,8 +712,7 @@ var py_trees = (function() {
    * Initialise data for a panning maneuvre.
    */
   var _pan_canvas_begin = function(paper, event, x, y) {
-      console.log("PanCanvasBegin")
-      console.log("  x: " + x + ",  y: " + y)
+    console.log("Panning...")
       scale = paper.scale()
       // TODO: little dirty, monkeypatching paper on the fly
       paper.start_drag = {}
@@ -700,6 +734,7 @@ var py_trees = (function() {
    * otherwise just render it normally (scale: 1.0).
    */
   var _fit_content_to_canvas = function(paper, event, x, y) {
+      console.log("Scaling content to fit...")
       paper.scaleContentToFit({
           padding: 50,
           minScale: 0.1,

@@ -39,7 +39,7 @@ def create_demo_tree_definition():
             },
             '2': {
                 'id': '2',
-                'status': 'FAILURE',
+                'status': 'RUNNING',
                 'name': 'Sequence',
                 'colour': '#FFA500',
                 'children': ['7', '8', '9'],
@@ -156,6 +156,7 @@ def create_demo_tree_json_list():
     trees.append(json.dumps(tree))
     # sequence
     tree['visited_path'] = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '11']
+    tree['behaviours']['2']['status'] = 'FAILURE'
     tree['behaviours']['8']['status'] = 'SUCCESS'
     tree['behaviours']['9']['status'] = 'FAILURE'
     # parallel

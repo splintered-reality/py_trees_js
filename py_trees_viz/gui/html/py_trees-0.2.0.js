@@ -450,7 +450,7 @@ var py_trees = (function() {
   // PyTrees
   // *************************************************************************
 
-  var _version = '0.1.0'
+  var _version = '0.2.0'
 
   var _foo = function({all_the_things}) {
     console.log("Inside: " + all_the_things)
@@ -492,7 +492,7 @@ var py_trees = (function() {
 
     // root level json checks
     // TODO: replace with a json specification verification later
-    if (typeof tree.behavioursd == 'undefined') {
+    if (typeof tree.behaviours == 'undefined') {
       alert("Tree Parsing Error: tree.behaviours does not exist")
       return
     }

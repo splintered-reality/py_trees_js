@@ -490,20 +490,41 @@ var py_trees = (function() {
         }
     })
 
+    // root level json checks
+    // TODO: replace with a json specification verification later
+    if (typeof tree.behavioursd == 'undefined') {
+      alert("Tree Parsing Error: tree.behaviours does not exist")
+      return
+    }
+    if (typeof tree.timestamp == 'undefined') {
+        alert("Tree Parsing Error: tree.timestamp does not exist")
+        return
+    }
+    for (behaviour in tree.behaviours) {
+        // at least id, name are required, all others are optional
+        if (typeof tree.behaviours[behaviour].id == 'undefined') {
+            alert("Tree Parsing Error: tree.behaviours[n].id does not exist")
+            return
+        }
+        if (typeof tree.behaviours[behaviour].name == 'undefined') {
+            alert("Tree Parsing Error: tree.behaviours[n].name does not exist")
+            return
+        }
+    }
+
     // reset
     graph.clear()
 
     // repopulate
     var _nodes = {}
     for (behaviour in tree.behaviours) {
-        // at least name should go through, all others are optional
         node = _create_node({
             behaviour_id: tree.behaviours[behaviour].id,
             colour: tree.behaviours[behaviour].colour || '#555555',
             name: tree.behaviours[behaviour].name,
             status: tree.behaviours[behaviour].status || 'INVALID',
             details: tree.behaviours[behaviour].details || '...',
-            visited: tree.visited_path.includes(tree.behaviours[behaviour].id),
+            visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
             data: tree.behaviours[behaviour].data || {},
         })
         _nodes[tree.behaviours[behaviour].id] = node

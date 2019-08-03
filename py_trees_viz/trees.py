@@ -14,7 +14,7 @@ Demo trees to feed to the web app
 # Imports
 ##############################################################################
 
-import json
+import copy
 
 ##############################################################################
 # Methods
@@ -146,16 +146,16 @@ def create_demo_tree_definition():
     return tree
 
 
-def create_demo_tree_json_list():
+def create_demo_tree_list():
     trees = []
     tree = create_demo_tree_definition()
-    trees.append(json.dumps(tree))
+    trees.append(copy.deepcopy(tree))
     tree['visited_path'] = ['1', '2', '7', '8']
     tree['behaviours']['7']['status'] = 'SUCCESS'
     tree['behaviours']['8']['status'] = 'RUNNING'
-    trees.append(json.dumps(tree))
+    trees.append(copy.deepcopy(tree))
     # sequence
-    tree['visited_path'] = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '11']
+    tree['visited_path'] = ['1', '2', '3', '4', '5', '8', '9', '10', '11']
     tree['behaviours']['2']['status'] = 'FAILURE'
     tree['behaviours']['8']['status'] = 'SUCCESS'
     tree['behaviours']['9']['status'] = 'FAILURE'
@@ -166,5 +166,5 @@ def create_demo_tree_json_list():
     # decorated
     tree['behaviours']['4']['status'] = 'RUNNING'
     tree['behaviours']['5']['status'] = 'RUNNING'
-    trees.append(json.dumps(tree))
+    trees.append(copy.deepcopy(tree))
     return trees

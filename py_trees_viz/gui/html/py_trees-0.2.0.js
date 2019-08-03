@@ -447,16 +447,8 @@ var py_trees = (function() {
   }
 
   // *************************************************************************
-  // PyTrees
+  // PyTrees Tree Rendering
   // *************************************************************************
-
-  var _version = '0.2.0'
-
-  var _foo = function({all_the_things}) {
-    console.log("Inside: " + all_the_things)
-    all_the_things.push(5)
-    console.log("Inside: " + all_the_things)
-  }
 
   /**
    * Right now this is creating the graph. Will have to decide
@@ -764,6 +756,55 @@ var py_trees = (function() {
       });
   }
 
+  // *************************************************************************
+  // PyTrees Timeline Bar
+  // *************************************************************************
+
+  /**
+   * Create a graph for the timeline, allocating storage for the cache
+   * to be bounded by the specified cache size.
+   */
+  var _create_timeline_graph = function({tree_cache_size}) {
+	  var graph = new joint.dia.Graph({
+		  tree_cache: [],
+		  tree_cache_size: tree_cache_size
+	  });
+      return graph
+  }
+
+  var _create_timeline_paper = function({graph}) {
+      var paper = new joint.dia.Paper({
+          el: document.getElementById('timeline'),
+          model: graph,
+          width: '100%',
+          height: '50px',
+          background: { color: '#111111' },
+      });
+      return paper
+  }
+
+  /**
+   * Add the incoming tree to the cache (stored in
+   * the specified graph).
+   */
+  var _add_tree_to_timeline_cache = function({graph, tree}) {
+      if ( graph.attributes.tree_cache.length == graph.get('tree_cache_size')) {
+    	  graph.attributes.tree_cache.shift() // pop first element
+      }
+      graph.attributes.tree_cache.push(tree)
+  }
+  // *************************************************************************
+  // PyTrees
+  // *************************************************************************
+
+  var _version = '0.2.0'
+
+  var _foo = function({all_the_things}) {
+    console.log("Inside: " + all_the_things)
+    all_the_things.push(5)
+    console.log("Inside: " + all_the_things)
+  }
+
   /**
    * Print the py_trees.js version as well as it's dependency's
    * versions to the js dev console.
@@ -777,6 +818,7 @@ var py_trees = (function() {
       console.log("Lodash  : %s", _.VERSION)
       console.log("PyTrees : %s", py_trees.version)
   }
+
 
   return {
     // variables
@@ -796,6 +838,11 @@ var py_trees = (function() {
     experiments: {
       create_demo_tree_definition: _create_demo_tree_definition,
       add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
+    },
+    timeline: {
+    	create_graph: _create_timeline_graph,
+    	create_paper: _create_timeline_paper,
+    	add_tree_to_cache: _add_tree_to_timeline_cache,
     },
   };
 })(); // namespace py_trees

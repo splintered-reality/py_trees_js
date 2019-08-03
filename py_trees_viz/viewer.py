@@ -18,6 +18,7 @@ import functools
 import json
 import signal
 import sys
+import time
 
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
@@ -37,12 +38,14 @@ def send_tree_response(reply):
 
 
 @qt_core.pyqtSlot()
-def send_tree(web_view_page, unused_checked):
+def send_tree(web_view_page, demo_trees, unused_checked):
     send_tree.index = 0 if send_tree.index == 2 else send_tree.index + 1
-    console.logdebug("send: tree '{}' [viewer]".format(send_tree.index))
-    json_trees = trees.create_demo_tree_json_list()
+    demo_trees[send_tree.index]['timestamp'] = time.time()
+    console.logdebug("send: tree '{}' [{}][viewer]".format(
+        send_tree.index, demo_trees[send_tree.index]['timestamp'])
+    )
     web_view_page.runJavaScript(
-        "render_tree({tree: '%s'});" % json_trees[send_tree.index],
+        "render_tree({tree: '%s'});" % json.dumps(demo_trees[send_tree.index]),
         send_tree_response
     )
 
@@ -60,8 +63,9 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
+    demo_trees = trees.create_demo_tree_list()
     main_window = gui.main_window.MainWindow(
-        default_tree=trees.create_demo_tree_json_list()[0]
+        default_tree=json.dumps(demo_trees[0])
     )
 
     # sig interrupt handling
@@ -81,7 +85,8 @@ def main():
     main_window.ui.send_button.clicked.connect(
         functools.partial(
              send_tree,
-             main_window.ui.web_view_group_box.ui.web_engine_view.page()
+             main_window.ui.web_view_group_box.ui.web_engine_view.page(),
+             demo_trees
         )
     )
     # qt bringup

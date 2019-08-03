@@ -1,4 +1,21 @@
 
+/* 
+ * Most settings are handled programmatically in js paper creation.
+ * These two however cause problems...? Rendering of the tree
+ * canvas goes awol.
+ */
+#timeline {
+	position: absolute;
+	bottom: 0px;
+    /*
+    padding: 0px;
+    box-sizing: border-box;
+    background: #111111;
+    border-style: groove;
+    border-color: blue;
+    */
+}
+
 .html-element {
     position: absolute;
     background: none;
@@ -7,8 +24,6 @@
     z-index: 2;
     box-sizing: border-box;
     /*
-    border-style: groove;
-    border-color: red;
     border-style: groove;
     border-color: red;
     */

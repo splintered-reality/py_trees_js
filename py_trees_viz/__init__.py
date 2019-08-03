@@ -14,4 +14,5 @@ Core modules for the viewer
 ##############################################################################
 
 from . import console
+from . import trees
 from . import viewer

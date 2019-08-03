@@ -447,16 +447,8 @@ var py_trees = (function() {
   }
 
   // *************************************************************************
-  // PyTrees
+  // PyTrees Tree Rendering
   // *************************************************************************
-
-  var _version = '0.2.0'
-
-  var _foo = function({all_the_things}) {
-    console.log("Inside: " + all_the_things)
-    all_the_things.push(5)
-    console.log("Inside: " + all_the_things)
-  }
 
   /**
    * Right now this is creating the graph. Will have to decide
@@ -764,6 +756,34 @@ var py_trees = (function() {
       });
   }
 
+  // *************************************************************************
+  // PyTrees Timeline Bar
+  // *************************************************************************
+
+  var _create_timeline_paper = function({graph}) {
+      var paper = new joint.dia.Paper({
+          el: document.getElementById('timeline'),
+          model: graph,
+          width: '100%',
+          height: '50px',
+          background: { color: '#111111' },
+      });
+      return paper
+  }
+
+
+  // *************************************************************************
+  // PyTrees
+  // *************************************************************************
+
+  var _version = '0.2.0'
+
+  var _foo = function({all_the_things}) {
+    console.log("Inside: " + all_the_things)
+    all_the_things.push(5)
+    console.log("Inside: " + all_the_things)
+  }
+
   /**
    * Print the py_trees.js version as well as it's dependency's
    * versions to the js dev console.
@@ -778,6 +798,7 @@ var py_trees = (function() {
       console.log("PyTrees : %s", py_trees.version)
   }
 
+
   return {
     // variables
     version: _version,
@@ -785,6 +806,7 @@ var py_trees = (function() {
     create_link: _create_link,
     create_node: _create_node,
     create_paper: _create_paper,
+    create_timeline_paper: _create_timeline_paper,
     fit_content_to_canvas: _fit_content_to_canvas,
     foo: _foo,
     layout_graph: _layout_graph,

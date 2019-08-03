@@ -27,24 +27,27 @@
     <div id="timeline"></div>
   </div>
   <script type="text/javascript">
+    // Canvas for rendering the tree
     graph = new joint.dia.Graph({});
     paper = py_trees.create_paper({graph: graph})
-    timeline_graph = new joint.dia.Graph({tree_cache: []});
-    timeline_paper = py_trees.create_timeline_paper({graph: timeline_graph})
 
-    // Accept a tree from external sources
+    // Canvas for rendering the timeline bar
+    timeline_graph = py_trees.timeline.create_graph({tree_cache_size: 100});
+    timeline_paper = py_trees.timeline.create_paper({graph: timeline_graph})
+
+    // Accept incoming trees - cache & render them
     already_rendered = false
     render_tree = function({tree}) {
-      json_tree = JSON.parse(tree)
-      py_trees.update_graph({graph: graph, tree: json_tree})
+      deserialised_tree = JSON.parse(tree)
+      py_trees.update_graph({graph: graph, tree: deserialised_tree})
       py_trees.layout_graph({graph: graph})
-      timeline_graph.attributes.tree_cache.push(json_tree)
+      py_trees.timeline.add_tree_to_cache({graph: timeline_graph, tree: deserialised_tree})
       if (!already_rendered) {
         py_trees.fit_content_to_canvas(paper)
         already_rendered = true
         return "rendered"
       } else {
-    	console.log(json_tree)
+    	console.log(deserialised_tree)
     	console.log(timeline_graph.attributes.tree_cache)
         return "already rendered"
       }

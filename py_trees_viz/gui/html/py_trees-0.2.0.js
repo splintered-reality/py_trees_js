@@ -760,6 +760,18 @@ var py_trees = (function() {
   // PyTrees Timeline Bar
   // *************************************************************************
 
+  /**
+   * Create a graph for the timeline, allocating storage for the cache
+   * to be bounded by the specified cache size.
+   */
+  var _create_timeline_graph = function({tree_cache_size}) {
+	  var graph = new joint.dia.Graph({
+		  tree_cache: [],
+		  tree_cache_size: tree_cache_size
+	  });
+      return graph
+  }
+
   var _create_timeline_paper = function({graph}) {
       var paper = new joint.dia.Paper({
           el: document.getElementById('timeline'),
@@ -771,7 +783,16 @@ var py_trees = (function() {
       return paper
   }
 
-
+  /**
+   * Add the incoming tree to the cache (stored in
+   * the specified graph).
+   */
+  var _add_tree_to_timeline_cache = function({graph, tree}) {
+      if ( graph.attributes.tree_cache.length == graph.get('tree_cache_size')) {
+    	  graph.attributes.tree_cache.shift() // pop first element
+      }
+      graph.attributes.tree_cache.push(tree)
+  }
   // *************************************************************************
   // PyTrees
   // *************************************************************************
@@ -806,7 +827,6 @@ var py_trees = (function() {
     create_link: _create_link,
     create_node: _create_node,
     create_paper: _create_paper,
-    create_timeline_paper: _create_timeline_paper,
     fit_content_to_canvas: _fit_content_to_canvas,
     foo: _foo,
     layout_graph: _layout_graph,
@@ -818,6 +838,11 @@ var py_trees = (function() {
     experiments: {
       create_demo_tree_definition: _create_demo_tree_definition,
       add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
+    },
+    timeline: {
+    	create_graph: _create_timeline_graph,
+    	create_paper: _create_timeline_paper,
+    	add_tree_to_cache: _add_tree_to_timeline_cache,
     },
   };
 })(); // namespace py_trees

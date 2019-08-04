@@ -7,9 +7,9 @@
 #timeline {
 	position: absolute;
 	bottom: 0px;
+    box-sizing: border-box;
     /*
     padding: 0px;
-    box-sizing: border-box;
     background: #111111;
     border-style: groove;
     border-color: blue;

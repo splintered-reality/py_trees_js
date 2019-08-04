@@ -65,7 +65,7 @@ def main():
     app = qt_widgets.QApplication(sys.argv)
     demo_trees = trees.create_demo_tree_list()
     main_window = gui.main_window.MainWindow(
-        default_tree=json.dumps(demo_trees[0])
+        default_tree=demo_trees[0]
     )
 
     # sig interrupt handling

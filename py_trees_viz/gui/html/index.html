@@ -34,6 +34,10 @@
     // Canvas for rendering the timeline bar
     timeline_graph = py_trees.timeline.create_graph({tree_cache_size: 100});
     timeline_paper = py_trees.timeline.create_paper({graph: timeline_graph})
+    $(window).resize(function() {
+    	console.log("Window resizing")
+    	py_trees.timeline.scale_content_to_fit(timeline_paper)
+    })
 
     // Accept incoming trees - cache & render them
     already_rendered = false
@@ -43,12 +47,10 @@
       py_trees.layout_graph({graph: graph})
       py_trees.timeline.add_tree_to_cache({graph: timeline_graph, tree: deserialised_tree})
       if (!already_rendered) {
-        py_trees.fit_content_to_canvas(paper)
+        py_trees.scale_content_to_fit(paper)
         already_rendered = true
         return "rendered"
       } else {
-    	console.log(deserialised_tree)
-    	console.log(timeline_graph.attributes.tree_cache)
         return "already rendered"
       }
     }

@@ -16,6 +16,8 @@ Launch a qt dashboard for the tutorials.
 ##############################################################################
 
 import functools
+import json
+import time
 
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
@@ -52,8 +54,9 @@ class MainWindow(qt_widgets.QMainWindow):
         def handle_response(reply):
             console.logdebug("reply: '{}' [viewer]".format(reply))
 
+        default_tree['timestamp'] = time.time()
         self.ui.web_view_group_box.ui.web_engine_view.page().runJavaScript(
-            "render_tree({tree: '%s'});" % default_tree,
+            "render_tree({tree: '%s'});" % json.dumps(default_tree),
             handle_response
         )
 

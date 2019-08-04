@@ -461,17 +461,8 @@ var py_trees = (function() {
 
     // Log the tree for introspection
     console.log("Update the graph")
-    console.log("Behaviours")
-    for (behaviour in tree.behaviours) {
-        console.log("  Name: " + tree.behaviours[behaviour].name)
-        // console.log(tree.behaviours[behaviour])
-        console.log("    Id: " + tree.behaviours[behaviour].id)
-        console.log("    Colour: " + tree.behaviours[behaviour].colour)
-        console.log("    Details: " + tree.behaviours[behaviour].data.feedback)
-        console.log("    Status: " + tree.behaviours[behaviour].status)
-        console.log("    Visited: " + tree.visited_path.includes(tree.behaviours[behaviour].id))
-    }
-    console.log("Visited Path: " + tree.visited_path)
+    console.log("  Behaviours", tree.behaviours)
+    console.log("  Visited Path: " + tree.visited_path)
 
     // extract interactive information
     var collapsed_nodes = []
@@ -524,7 +515,6 @@ var py_trees = (function() {
     }
     for (behaviour in tree.behaviours) {
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
-            console.log("    Children: " + tree.behaviours[behaviour].children)
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
                 link = _create_link({
                     source: _nodes[tree.behaviours[behaviour].id],
@@ -658,7 +648,7 @@ var py_trees = (function() {
           _pan_canvas_move.bind(null, paper)
       )
       paper.on('blank:pointerdblclick',
-          _fit_content_to_canvas.bind(null, paper)
+          _scale_content_to_fit.bind(null, paper)
       )
       paper.on('element:pointerdblclick',
         _collapse_children_handler.bind(null)
@@ -746,8 +736,8 @@ var py_trees = (function() {
    * Fit the tree to the canvas if scale < 1.0,
    * otherwise just render it normally (scale: 1.0).
    */
-  var _fit_content_to_canvas = function(paper, event, x, y) {
-      console.log("Scaling content to fit...")
+  var _scale_content_to_fit = function(paper, event, x, y) {
+      console.log("Scaling content to fit canvas...")
       paper.scaleContentToFit({
           padding: 50,
           minScale: 0.1,
@@ -765,10 +755,31 @@ var py_trees = (function() {
    * to be bounded by the specified cache size.
    */
   var _create_timeline_graph = function({tree_cache_size}) {
-	  var graph = new joint.dia.Graph({
-		  tree_cache: [],
-		  tree_cache_size: tree_cache_size
+	  var graph = new joint.dia.Graph({});
+	  var cache = new joint.shapes.standard.Rectangle({
+		  position: { x: 0, y: 0},
+		  size: { width: 2400, height: 30 },
+		  attrs: {
+		      body: {
+		          fill: '#111111',
+		          stroke: '#AAAAAA', 'stroke-width': 1,  // border
+		          rx: 5, ry: 5,  // rounded corners
+                  filter: {
+		              name: 'highlight',
+		              args: {
+		                  color: '#999999',
+		                  width: 2,
+		                  opacity: 0.8,
+		                  blur: 5
+		              }
+		          },
+		      },
+		  }
 	  });
+	  cache.set('tree_cache_size', tree_cache_size)
+	  cache.set('tree_cache', [])
+	  cache.addTo(graph);
+	  graph.set('cache', cache)  // for easy access
       return graph
   }
 
@@ -777,22 +788,73 @@ var py_trees = (function() {
           el: document.getElementById('timeline'),
           model: graph,
           width: '100%',
-          height: '50px',
+          height: '30px',
           background: { color: '#111111' },
       });
+      _scale_content_to_fit_timeline(paper)
       return paper
+  }
+  
+  var _scale_content_to_fit_timeline = function(paper) {
+      console.log("Scaling content to fit timeline...")
+      paper.scaleContentToFit({
+          padding: 10,
+          minScale: 0.1,
+          preserveAspectRatio: false,
+          scaleGrid: 0.005,
+      });
   }
 
   /**
    * Add the incoming tree to the cache (stored in
    * the specified graph).
+   * 
+   * Also trigger any necessary actions post-update.
+   * Alternatively, could setup listeners on the tree cache
+   * variable to do similarly.
    */
   var _add_tree_to_timeline_cache = function({graph, tree}) {
-      if ( graph.attributes.tree_cache.length == graph.get('tree_cache_size')) {
-    	  graph.attributes.tree_cache.shift() // pop first element
+	  console.log("Update Timeline Cache")
+	  model = graph.get('cache')
+	  trees = model.attributes.tree_cache
+
+	  // update the tree cache
+      if ( trees.length == model.get('tree_cache_size')) {
+    	  trees.shift() // pop first element
       }
-      graph.attributes.tree_cache.push(tree)
+	  trees.push(tree)
+
+	  // clear the visual cache
+      _.each(model.getEmbeddedCells(), function(embedded) {
+    	  model.unembed(embedded)
+    	  embedded.remove()  // from the graph
+      })
+	  min_timestamp = trees.length == 1 ? 0 : trees[0]['timestamp']
+      max_timestamp = trees[trees.length - 1]['timestamp']
+	  delta = max_timestamp - min_timestamp
+	  dimensions = model.getBBox()
+	  trees.forEach(function (tree, index) {
+		  // normalise between 0.05 and 0.95
+		  normalised_x = 0.05 + 0.9 * (tree['timestamp'] - min_timestamp) / delta
+		  var sliver = new joint.shapes.basic.Rect({
+		        position: { 
+		        	x: dimensions.x + normalised_x * dimensions.width - 1,
+		        	y: 0 },
+		        size: { width: 2, height: dimensions.height },
+		        attrs: { 
+		        	rect: {
+		        		fill: '#FFFFFF',
+		        		strokeWidth: 0
+		        	}
+		        }
+		  });
+		  model.embed(sliver)
+		  sliver.addTo(graph)
+	  })
+	  // console.log("Graph")
+	  // console.log(graph)
   }
+
   // *************************************************************************
   // PyTrees
   // *************************************************************************
@@ -810,13 +872,16 @@ var py_trees = (function() {
    * versions to the js dev console.
    */
   var _print_versions = function() {
-      console.log("Backbone: %s", Backbone.VERSION)
-      console.log("Dagre   : %s", dagre.version)
-      console.log("Graphlib: %s", graphlib.version)
-      console.log("JointJS : %s", joint.version)
-      console.log("JQuery  : %s", jQuery.fn.jquery)
-      console.log("Lodash  : %s", _.VERSION)
-      console.log("PyTrees : %s", py_trees.version)
+	  versions = {
+		  "Backbone": Backbone.VERSION,
+		  "Dagre": dagre.version,
+		  "Graphlib": graphlib.version,
+		  "JointJS": joint.version,
+		  "JQuery": jQuery.fn.jquery,
+		  "Lodash": _.VERSION,
+		  "PyTrees": py_trees.version
+	  }
+	  console.log("Dependencies:", versions)
   }
 
 
@@ -827,7 +892,7 @@ var py_trees = (function() {
     create_link: _create_link,
     create_node: _create_node,
     create_paper: _create_paper,
-    fit_content_to_canvas: _fit_content_to_canvas,
+    scale_content_to_fit: _scale_content_to_fit,
     foo: _foo,
     layout_graph: _layout_graph,
     pan_canvas_begin: _pan_canvas_begin,
@@ -840,9 +905,10 @@ var py_trees = (function() {
       add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
     },
     timeline: {
+    	add_tree_to_cache: _add_tree_to_timeline_cache,
     	create_graph: _create_timeline_graph,
     	create_paper: _create_timeline_paper,
-    	add_tree_to_cache: _add_tree_to_timeline_cache,
+    	scale_content_to_fit: _scale_content_to_fit_timeline,
     },
   };
 })(); // namespace py_trees

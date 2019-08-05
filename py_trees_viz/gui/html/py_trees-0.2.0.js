@@ -814,60 +814,118 @@ var py_trees = (function() {
       return graph
   }
 
-  var _create_timeline_paper = function({graph}) {
+  var _create_timeline_paper = function({timeline_graph, canvas_graph, canvas_paper}) {
       var paper = new joint.dia.Paper({
           el: document.getElementById('timeline'),
-          model: graph,
+          model: timeline_graph,
           width: '100%',
           height: '30px',
           background: { color: '#111111' },
           interactive: false,
       });
       mouse_over_zoom_scale = 3.0
-      paper.on('element:mouseover', function(view, event) {
-    	  if ( view.model.get('type') == "trees.EventMarker") {
-              console.log("Timeline Mouseover", view.model.get('type'))
-              size = view.model.get('size')
-              view.model.translate(
-                  - (mouse_over_zoom_scale - 1) * size.width / 2.0,
-                  0.0
-    	      )
-    		  view.model.resize(mouse_over_zoom_scale * size.width, size.height)
-              view.model.attr({
-                  body: {
-					  strokeWidth: 0 // 2
-				  }                  
-    		  })
-    	  }
-      })
-      paper.on('element:mouseout', function(view, event) {
-    	  if ( view.model.get('type') == "trees.EventMarker") {
-        	  console.log("Timeline MouseOut", view.model.get('type'))
-    		  position = view.model.get('position')
-    		  size = view.model.get('size')
-    		  original_width = size.width / mouse_over_zoom_scale
-    		  view.model.translate(
-                  - (mouse_over_zoom_scale - 1) * original_width / 2.0,
-                  0.0
-              )
-    		  view.model.resize(
-                   width=size.width / mouse_over_zoom_scale,
-                   height=size.height,
-                   opt={
-                       direction: 'top-left'
-                   }
-              )
-     		  view.model.attr({
-                  body: {
-					  strokeWidth: 0
-				  }                  
-    		  })
-    	  }
-      })
+      paper.on('element:mouseover', _zoom_timeline_event_marker_appearance)
+      paper.on('element:mouseout', _restore_timeline_event_marker_appearance)
+      paper.on(
+          'element:pointerclick',
+          _render_selected_timeline_tree.bind(null, timeline_graph, canvas_graph, canvas_paper)
+      )
       _scale_content_to_fit_timeline(paper)
       return paper
   }
+
+  var _render_selected_timeline_tree = function(
+          timeline_graph,
+          canvas_graph,
+          canvas_paper,
+          event_marker_view
+  ) {
+      console.log("Rendering timeline tree")
+      tree = event_marker_view.model.get('tree')
+      
+      // render
+      _update_graph({graph: canvas_graph, tree: tree})
+      _layout_graph({graph: canvas_graph})
+      _scale_content_to_fit(canvas_paper)
+
+      // update timeline highlight
+      cache_model = timeline_graph.get('cache')
+      // TODO: optimise, i.e. cache the selected marker and update
+      // it only
+      _.each(cache_model.getEmbeddedCells(), function(embedded) {
+          _remove_timeline_event_marker_highlight({model: embedded})
+      })
+      _add_timeline_event_marker_highlight({model: event_marker_view.model})
+  }
+
+  /**
+   * Resize (enlargen) and re-position the timeline event marker
+   * centred on it's current position.
+   */
+  var _zoom_timeline_event_marker_appearance = function(view) {
+      if ( view.model.get('type') == "trees.EventMarker") {
+          console.log("Timeline Mouseover", view.model.get('type'))
+          size = view.model.get('size')
+          view.model.translate(
+              - (mouse_over_zoom_scale - 1) * size.width / 2.0,
+              0.0
+          )
+          view.model.resize(mouse_over_zoom_scale * size.width, size.height)
+          view.model.attr({
+              body: {
+                  strokeWidth: 0 // 2
+              }                  
+          })
+      }
+  }
+
+  /**
+   * Highlight the event marker, used to denote it's elevated status
+   * with respect to other event markers.
+   */
+  var _add_timeline_event_marker_highlight = function({model}) {
+      model.attr({
+          body: {
+              fill: 'red'
+          }
+      })
+  }
   
+  var _remove_timeline_event_marker_highlight = function({model}) {
+      model.attr({
+          body: {
+              fill: 'white'
+          }
+      })
+  }
+  /**
+   * Resize (shrink) and re-position the event marker to it's original position.
+   */
+  var _restore_timeline_event_marker_appearance = function(view) {
+      if ( view.model.get('type') == "trees.EventMarker") {
+          console.log("Timeline MouseOut", view.model.get('type'))
+          position = view.model.get('position')
+          size = view.model.get('size')
+          original_width = size.width / mouse_over_zoom_scale
+          view.model.translate(
+              - (mouse_over_zoom_scale - 1) * original_width / 2.0,
+              0.0
+          )
+          view.model.resize(
+               width=size.width / mouse_over_zoom_scale,
+               height=size.height,
+               opt={
+                   direction: 'top-left'
+               }
+          )
+          view.model.attr({
+              body: {
+                  strokeWidth: 0
+              }                  
+          })
+      }
+  }
+
   var _scale_content_to_fit_timeline = function(paper) {
       console.log("Scaling content to fit timeline...")
       paper.scaleContentToFit({
@@ -916,13 +974,9 @@ var py_trees = (function() {
 		        	y: 0 },
 		        size: { width: marker_width, height: dimensions.height },
 		  })
+		  event_marker.set('tree', tree)
 		  if (index == trees.length - 1) {
-			  // incoming tree (latest)
-			  event_marker.attr({
-				  body: {
-					  fill: 'red'
-				  }
-			  })
+		      _add_timeline_event_marker_highlight({model: event_marker})
 		  }
 		  model.embed(event_marker)
 		  event_marker.addTo(graph)

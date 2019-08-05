@@ -11,6 +11,8 @@
 // *************************************************************************
 
 var joint = joint
+joint.shapes = joint.shapes || {}
+joint.shapes.trees = joint.shapes.trees || {}
 
 joint.shapes.Node = joint.dia.Element.define(
   'Node', {
@@ -181,6 +183,34 @@ joint.shapes.NodeView = joint.dia.ElementView.extend({
           this.$box.remove();
       }
   });
+
+/**
+ * Used to model the cached trees in the timeline bar as think
+ * vertical slivers.
+ */
+joint.shapes.trees.EventMarker = joint.shapes.standard.Rectangle.define(
+    'trees.EventMarker', {
+        position: { x: 0, y: 0 }, 
+        size: { width: 2, height: 30 },
+        attrs: { 
+        	body: {
+            	refWidth: '100%',
+                refHeight: '100%',
+                stroke: 'black',
+                strokeWidth: 0,
+                fill: '#FFFFFF',
+                'pointer-events': 'auto',
+            }
+        }
+    },
+    { 
+    	// inherit markup from joint.shapes.standard.Rectangle
+    }
+);
+
+// *************************************************************************
+// PyTrees Namespace
+// *************************************************************************
 
 var py_trees = (function() {
 
@@ -610,6 +640,7 @@ var py_trees = (function() {
           model: graph,
           width: '100%',
           height: '100%',
+          interactive: false,  // disable dragging, but keep highlighting
           // defaultConnector: {  // doesn't seem to have any effect
           //     name: 'rounded',
           //     args: {
@@ -790,7 +821,49 @@ var py_trees = (function() {
           width: '100%',
           height: '30px',
           background: { color: '#111111' },
+          interactive: false,
       });
+      mouse_over_zoom_scale = 3.0
+      paper.on('element:mouseover', function(view, event) {
+    	  if ( view.model.get('type') == "trees.EventMarker") {
+              console.log("Timeline Mouseover", view.model.get('type'))
+              size = view.model.get('size')
+              view.model.translate(
+                  - (mouse_over_zoom_scale - 1) * size.width / 2.0,
+                  0.0
+    	      )
+    		  view.model.resize(mouse_over_zoom_scale * size.width, size.height)
+              view.model.attr({
+                  body: {
+					  strokeWidth: 0 // 2
+				  }                  
+    		  })
+    	  }
+      })
+      paper.on('element:mouseout', function(view, event) {
+    	  if ( view.model.get('type') == "trees.EventMarker") {
+        	  console.log("Timeline MouseOut", view.model.get('type'))
+    		  position = view.model.get('position')
+    		  size = view.model.get('size')
+    		  original_width = size.width / mouse_over_zoom_scale
+    		  view.model.translate(
+                  - (mouse_over_zoom_scale - 1) * original_width / 2.0,
+                  0.0
+              )
+    		  view.model.resize(
+                   width=size.width / mouse_over_zoom_scale,
+                   height=size.height,
+                   opt={
+                       direction: 'top-left'
+                   }
+              )
+     		  view.model.attr({
+                  body: {
+					  strokeWidth: 0
+				  }                  
+    		  })
+    	  }
+      })
       _scale_content_to_fit_timeline(paper)
       return paper
   }
@@ -833,23 +906,26 @@ var py_trees = (function() {
       max_timestamp = trees[trees.length - 1]['timestamp']
 	  delta = max_timestamp - min_timestamp
 	  dimensions = model.getBBox()
+	  marker_width = 6
 	  trees.forEach(function (tree, index) {
 		  // normalise between 0.05 and 0.95
 		  normalised_x = 0.05 + 0.9 * (tree['timestamp'] - min_timestamp) / delta
-		  var sliver = new joint.shapes.basic.Rect({
+		  var event_marker = new joint.shapes.trees.EventMarker({
 		        position: { 
-		        	x: dimensions.x + normalised_x * dimensions.width - 1,
+		        	x: dimensions.x + normalised_x * dimensions.width - marker_width / 2.0,
 		        	y: 0 },
-		        size: { width: 2, height: dimensions.height },
-		        attrs: { 
-		        	rect: {
-		        		fill: '#FFFFFF',
-		        		strokeWidth: 0
-		        	}
-		        }
-		  });
-		  model.embed(sliver)
-		  sliver.addTo(graph)
+		        size: { width: marker_width, height: dimensions.height },
+		  })
+		  if (index == trees.length - 1) {
+			  // incoming tree (latest)
+			  event_marker.attr({
+				  body: {
+					  fill: 'red'
+				  }
+			  })
+		  }
+		  model.embed(event_marker)
+		  event_marker.addTo(graph)
 	  })
 	  // console.log("Graph")
 	  // console.log(graph)

@@ -199,6 +199,7 @@ joint.shapes.trees.EventMarker = joint.shapes.standard.Rectangle.define(
                 stroke: 'black',
                 strokeWidth: 0,
                 fill: '#FFFFFF',
+                'pointer-events': 'auto',
             }
         }
     },
@@ -639,6 +640,7 @@ var py_trees = (function() {
           model: graph,
           width: '100%',
           height: '100%',
+          interactive: false,  // disable dragging, but keep highlighting
           // defaultConnector: {  // doesn't seem to have any effect
           //     name: 'rounded',
           //     args: {
@@ -819,6 +821,7 @@ var py_trees = (function() {
           width: '100%',
           height: '30px',
           background: { color: '#111111' },
+          interactive: false,
       });
       mouse_over_zoom_scale = 3.0
       paper.on('element:mouseover', function(view, event) {

@@ -785,11 +785,14 @@ var py_trees = (function() {
    * Create a graph for the timeline, allocating storage for the cache
    * to be bounded by the specified cache size.
    */
-  var _create_timeline_graph = function({tree_cache_size}) {
+  var _timeline_create_graph = function({tree_cache_size}) {
 	  var graph = new joint.dia.Graph({});
+      separation_width = 20
+      height = 30
+      timeline_width = 2400
 	  var cache = new joint.shapes.standard.Rectangle({
 		  position: { x: 0, y: 0},
-		  size: { width: 2400, height: 30 },
+		  size: { width: timeline_width, height: height },
 		  attrs: {
 		      body: {
 		          fill: '#111111',
@@ -809,32 +812,78 @@ var py_trees = (function() {
 	  });
 	  cache.set('tree_cache_size', tree_cache_size)
 	  cache.set('tree_cache', [])
-	  cache.addTo(graph);
-	  graph.set('cache', cache)  // for easy access
-      return graph
+      var previous = new joint.shapes.standard.Rectangle({
+          position: { x: cache.get('size').width + separation_width, y: 0},
+          size: { width: 70, height: height },
+          attrs: {
+              body: {
+                  fill: '#111111',
+                  stroke: '#AAAAAA', 'stroke-width': 1,  // border
+                  rx: 5, ry: 5,  // rounded corners
+                  filter: {
+                      name: 'highlight',
+                      args: {
+                          color: '#999999',
+                          width: 2,
+                          opacity: 0.8,
+                          blur: 5
+                      }
+                  },
+              },
+              label: {
+                  text: '<',
+                  fill: 'white',
+                  'font-size': height - 8,
+              }
+          }
+      });
+	  next = previous.clone()
+	  next.translate(previous.get('size').width + separation_width, 0)
+	  next.attr({
+	      label: { text: '>' }
+	  })
+      resume = next.clone()
+      resume.translate(next.get('size').width + separation_width, 0)
+      resume.attr({
+          label: {
+              text: '>>'
+          }
+      })
+      // populate graph
+      cache.addTo(graph);
+      previous.addTo(graph)
+      next.addTo(graph)
+      resume.addTo(graph)
+      graph.set('cache', cache)  // for easy access
+      graph.set('buttons', {'previous': previous, 'next': next, 'resume': resume})
+      _timeline_toggle_buttons({graph: graph, enabled: false})
+	  return graph
   }
 
-  var _create_timeline_paper = function({timeline_graph, canvas_graph, canvas_paper}) {
+  /**
+   * Create the timeline paper and a few mouseover events for event markers.
+   */
+  var _timeline_create_paper = function({timeline_graph, canvas_graph, canvas_paper}) {
       var paper = new joint.dia.Paper({
           el: document.getElementById('timeline'),
           model: timeline_graph,
           width: '100%',
-          height: '30px',
+          height: '35px',
           background: { color: '#111111' },
           interactive: false,
       });
       mouse_over_zoom_scale = 3.0
-      paper.on('element:mouseover', _zoom_timeline_event_marker_appearance)
-      paper.on('element:mouseout', _restore_timeline_event_marker_appearance)
+      paper.on('element:mouseover', _timeline_zoom_event_marker_appearance)
+      paper.on('element:mouseout', _timeline_restore_event_marker_appearance)
       paper.on(
           'element:pointerclick',
-          _render_selected_timeline_tree.bind(null, timeline_graph, canvas_graph, canvas_paper)
+          _timeline_render_selected_tree.bind(null, timeline_graph, canvas_graph, canvas_paper)
       )
-      _scale_content_to_fit_timeline(paper)
+      _timeline_scale_content_to_fit(paper)
       return paper
   }
 
-  var _render_selected_timeline_tree = function(
+  var _timeline_render_selected_tree = function(
           timeline_graph,
           canvas_graph,
           canvas_paper,
@@ -853,16 +902,40 @@ var py_trees = (function() {
       // TODO: optimise, i.e. cache the selected marker and update
       // it only
       _.each(cache_model.getEmbeddedCells(), function(embedded) {
-          _remove_timeline_event_marker_highlight({model: embedded})
+          _timeline_remove_event_marker_highlight({model: embedded})
       })
-      _add_timeline_event_marker_highlight({model: event_marker_view.model})
+      _timeline_add_event_marker_highlight({model: event_marker_view.model})
+  }
+
+  /**
+   * Toggle the visual and checkable state of the buttons.
+   */
+  var _timeline_toggle_buttons = function({graph, enabled}) {
+      buttons = graph.get('buttons')
+      opacity = enabled ? 1.0 : 0.3
+      console.log("Opacity: ", opacity)
+      for (var key in buttons) {
+          buttons[key].attr({
+              body: {
+                  stroke: enabled ? '#AAAAAA' : '#777777',
+                  filter: {
+                      args: {
+                          color: enabled ? '#999999' : '#333333',
+                      }
+                  },
+              },
+              label: {
+                  fill: enabled ? 'white' : '#555555',
+              }
+          })
+      }
   }
 
   /**
    * Resize (enlargen) and re-position the timeline event marker
    * centred on it's current position.
    */
-  var _zoom_timeline_event_marker_appearance = function(view) {
+  var _timeline_zoom_event_marker_appearance = function(view) {
       if ( view.model.get('type') == "trees.EventMarker") {
           console.log("Timeline Mouseover", view.model.get('type'))
           size = view.model.get('size')
@@ -883,7 +956,7 @@ var py_trees = (function() {
    * Highlight the event marker, used to denote it's elevated status
    * with respect to other event markers.
    */
-  var _add_timeline_event_marker_highlight = function({model}) {
+  var _timeline_add_event_marker_highlight = function({model}) {
       model.attr({
           body: {
               fill: 'red'
@@ -891,7 +964,7 @@ var py_trees = (function() {
       })
   }
   
-  var _remove_timeline_event_marker_highlight = function({model}) {
+  var _timeline_remove_event_marker_highlight = function({model}) {
       model.attr({
           body: {
               fill: 'white'
@@ -901,7 +974,7 @@ var py_trees = (function() {
   /**
    * Resize (shrink) and re-position the event marker to it's original position.
    */
-  var _restore_timeline_event_marker_appearance = function(view) {
+  var _timeline_restore_event_marker_appearance = function(view) {
       if ( view.model.get('type') == "trees.EventMarker") {
           console.log("Timeline MouseOut", view.model.get('type'))
           position = view.model.get('position')
@@ -926,7 +999,7 @@ var py_trees = (function() {
       }
   }
 
-  var _scale_content_to_fit_timeline = function(paper) {
+  var _timeline_scale_content_to_fit = function(paper) {
       console.log("Scaling content to fit timeline...")
       paper.scaleContentToFit({
           padding: 10,
@@ -944,7 +1017,7 @@ var py_trees = (function() {
    * Alternatively, could setup listeners on the tree cache
    * variable to do similarly.
    */
-  var _add_tree_to_timeline_cache = function({graph, tree}) {
+  var _timeline_add_tree_to_cache = function({graph, tree}) {
 	  console.log("Update Timeline Cache")
 	  model = graph.get('cache')
 	  trees = model.attributes.tree_cache
@@ -964,7 +1037,7 @@ var py_trees = (function() {
       max_timestamp = trees[trees.length - 1]['timestamp']
 	  delta = max_timestamp - min_timestamp
 	  dimensions = model.getBBox()
-	  marker_width = 6
+	  marker_width = 4
 	  trees.forEach(function (tree, index) {
 		  // normalise between 0.05 and 0.95
 		  normalised_x = 0.05 + 0.9 * (tree['timestamp'] - min_timestamp) / delta
@@ -976,7 +1049,7 @@ var py_trees = (function() {
 		  })
 		  event_marker.set('tree', tree)
 		  if (index == trees.length - 1) {
-		      _add_timeline_event_marker_highlight({model: event_marker})
+		      _timeline_add_event_marker_highlight({model: event_marker})
 		  }
 		  model.embed(event_marker)
 		  event_marker.addTo(graph)
@@ -1035,10 +1108,10 @@ var py_trees = (function() {
       add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
     },
     timeline: {
-    	add_tree_to_cache: _add_tree_to_timeline_cache,
-    	create_graph: _create_timeline_graph,
-    	create_paper: _create_timeline_paper,
-    	scale_content_to_fit: _scale_content_to_fit_timeline,
+    	add_tree_to_cache: _timeline_add_tree_to_cache,
+    	create_graph: _timeline_create_graph,
+    	create_paper: _timeline_create_paper,
+    	scale_content_to_fit: _timeline_scale_content_to_fit,
     },
   };
 })(); // namespace py_trees

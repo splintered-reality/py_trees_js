@@ -820,6 +820,7 @@ var py_trees = (function() {
                   fill: '#111111',
                   stroke: '#AAAAAA', 'stroke-width': 1,  // border
                   rx: 5, ry: 5,  // rounded corners
+                  'pointer-events': 'auto',
                   filter: {
                       name: 'highlight',
                       args: {
@@ -877,12 +878,25 @@ var py_trees = (function() {
       paper.on('element:mouseout', _timeline_restore_event_marker_appearance)
       paper.on(
           'element:pointerclick',
-          _timeline_render_selected_tree.bind(null, timeline_graph, canvas_graph, canvas_paper)
+          _timeline_handle_element_pointerclicks.bind(null, timeline_graph, canvas_graph, canvas_paper)
       )
       _timeline_scale_content_to_fit(paper)
       return paper
   }
 
+  var _timeline_handle_element_pointerclicks = function(
+      timeline_graph,
+      canvas_graph,
+      canvas_paper,
+      view
+  ) {
+      if ( view.model.get('type') == "trees.EventMarker" ) {
+          _timeline_render_selected_tree(timeline_graph, canvas_graph, canvas_paper, view)
+          _timeline_toggle_buttons({graph: timeline_graph, enabled: true})
+      } else { // buttons
+          console.log("Buttons clicked")
+      }
+  }
   var _timeline_render_selected_tree = function(
           timeline_graph,
           canvas_graph,
@@ -918,6 +932,7 @@ var py_trees = (function() {
           buttons[key].attr({
               body: {
                   stroke: enabled ? '#AAAAAA' : '#777777',
+                  'pointer-events': enabled ? 'auto' : 'none',
                   filter: {
                       args: {
                           color: enabled ? '#999999' : '#333333',

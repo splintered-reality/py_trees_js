@@ -5,7 +5,7 @@ Changelog
 Forthcoming
 -----------
 
-0.3.0 (2019-08-07)
+0.3.1 (2019-08-07)
 ------------------
 * `Milestone - Interactive Event Timeline <https://github.com/splintered-reality/py_trees_viz/milestone/5>`_
 

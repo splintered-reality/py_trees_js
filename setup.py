@@ -66,7 +66,7 @@ setup(
     #     'install': OverrideInstall
     # },
     name=package_name,
-    version='0.2.0',  # also update package.xml
+    version='0.3.0',  # also update package.xml
     packages=find_packages(exclude=['tests*', 'docs*']),
     data_files=[('share/' + package_name, ['package.xml'])],
     package_data={'py_trees_viz': ['gui/*']},

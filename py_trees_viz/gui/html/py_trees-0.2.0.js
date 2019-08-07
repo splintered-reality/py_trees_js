@@ -916,7 +916,7 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              _update_graph({graph: canvas_graph, tree: timeline_graph.get('selected')})
+              _update_graph({graph: canvas_graph, tree: cache.get('selected')})
               _layout_graph({graph: canvas_graph})
               _scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
@@ -924,7 +924,7 @@ var py_trees = (function() {
               cache = timeline_graph.get('cache')
               trees = cache.get('trees')
               events = cache.get('events')
-              selected_tree = timeline_graph.get('selected')
+              selected_tree = cache.get('selected')
               console.log("  # Trees: ", trees.length)
               console.log("  # Events: ", events.length)
               tree_timestamps = [] 
@@ -951,7 +951,7 @@ var py_trees = (function() {
               cache = timeline_graph.get('cache')
               trees = cache.get('trees')
               events = cache.get('events')
-              selected_tree = timeline_graph.get('selected')
+              selected_tree = cache.get('selected')
               tree_timestamps = [] 
               trees.forEach(function (tree, index) {
                   tree_timestamps.push(tree.timestamp)
@@ -999,7 +999,7 @@ var py_trees = (function() {
           _timeline_highlight_event({event: embedded, highlight: false})
       })
       _timeline_highlight_event({event: event, highlight: true})
-      timeline_graph.set('selected', tree)
+      cache.set('selected', tree)
   }
 
   /**
@@ -1155,10 +1155,10 @@ var py_trees = (function() {
       if ( graph.get('streaming') ) {
           if (index == trees.length - 1) {
               _timeline_highlight_event({event: event_marker, highlight: true})
-              graph.set('selected', trees[index])
+              cache.set('selected', trees[index])
           }
       } else {
-          if ( trees[index].timestamp == graph.get('selected').timestamp) {
+          if ( trees[index].timestamp == cache.get('selected').timestamp) {
               _timeline_highlight_event({event: event_marker, highlight: true})
           }
       }

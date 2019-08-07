@@ -787,7 +787,7 @@ var py_trees = (function() {
   //   cache (jointjs models) - all jointjs objects for timeline events
   //   streaming (bool)
   // cache
-  //   selected
+  //   selected (joint.shapes.trees.EventMarker) - model for the selected event
   //   trees ([dict]) - tree data (pure js structure, i.e. no jointjs)
   //   events ([joint.shapes.trees.EventMarker]) - models for the events
 
@@ -921,7 +921,7 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              _update_graph({graph: canvas_graph, tree: cache.get('selected')})
+              _update_graph({graph: canvas_graph, tree: selected.get('tree')})
               _layout_graph({graph: canvas_graph})
               _scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
@@ -938,9 +938,9 @@ var py_trees = (function() {
               })
               console.log("  Tree  Timestamps: ", tree_timestamps)
               console.log("  Event Timestamps: ", event_timestamps)
-              console.log("  Selec Timestamps: ", selected.timestamp)
+              console.log("  Selected Timestamp: ", selected.get('tree').timestamp)
               trees.forEach(function (tree, index) {
-                  if ( tree.timestamp == selected.timestamp ) {
+                  if ( tree.timestamp == selected.get('tree').timestamp ) {
                       if ( index != trees.length - 1) {
                           console.log("  Next  Timestamp : ", events[index+1].get('tree').timestamp)
                           _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index+1])
@@ -959,9 +959,9 @@ var py_trees = (function() {
               })
               console.log("  Tree  Timestamps: ", tree_timestamps)
               console.log("  Event Timestamps: ", event_timestamps)
-              console.log("  Selec Timestamps: ", selected.timestamp)
+              console.log("  Selec Timestamps: ", selected.get('tree').timestamp)
               trees.forEach(function (tree, index) {
-                  if ( tree.timestamp == selected.timestamp ) {
+                  if ( tree.timestamp == selected.get('tree').timestamp ) {
                       if ( index != 0) {
                           console.log("  Previous Timestamp: ", events[index-1].get('tree').timestamp)
                           _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index-1])
@@ -979,7 +979,7 @@ var py_trees = (function() {
           canvas_paper,
           event  // joint.shapes.trees.EventMarker
   ) {
-      console.log("Rendering timeline tree")
+      console.log("Select timeline event")
 
       cache = timeline_graph.get('cache')
       tree = event.get('tree')
@@ -996,7 +996,7 @@ var py_trees = (function() {
           _timeline_highlight_event({event: embedded, highlight: false})
       })
       _timeline_highlight_event({event: event, highlight: true})
-      cache.set('selected', tree)
+      cache.set('selected', event)
   }
 
   /**
@@ -1152,10 +1152,10 @@ var py_trees = (function() {
       if ( graph.get('streaming') ) {
           if (index == trees.length - 1) {
               _timeline_highlight_event({event: event_marker, highlight: true})
-              cache.set('selected', trees[index])
+              cache.set('selected', event_marker)
           }
       } else {
-          if ( trees[index].timestamp == cache.get('selected').timestamp) {
+          if ( trees[index].timestamp == cache.get('selected').get('tree').timestamp) {
               _timeline_highlight_event({event: event_marker, highlight: true})
           }
       }

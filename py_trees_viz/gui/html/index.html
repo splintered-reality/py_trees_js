@@ -32,7 +32,7 @@
     paper = py_trees.create_paper({graph: graph})
 
     // Canvas for rendering the timeline bar
-    timeline_graph = py_trees.timeline.create_graph({tree_cache_size: 100});
+    timeline_graph = py_trees.timeline.create_graph({event_cache_limit: 100});
     timeline_paper = py_trees.timeline.create_paper({
         timeline_graph: timeline_graph,
         canvas_graph: graph,

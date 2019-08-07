@@ -780,12 +780,21 @@ var py_trees = (function() {
   // *************************************************************************
   // PyTrees Timeline Bar
   // *************************************************************************
+  // Variables
+  //
+  // graph
+  //   streaming (bool)
+  //   cache (jointjs model for the event timeline bar)
+  // cache
+  //   selected
+  //   trees ([dict]) - tree data (pure js structure, i.e. no jointjs)
+  //   events ([joint.shapes.trees.EventMarker]) - models for the events
 
   /**
    * Create a graph for the timeline, allocating storage for the cache
    * to be bounded by the specified cache size.
    */
-  var _timeline_create_graph = function({tree_cache_size}) {
+  var _timeline_create_graph = function({event_cache_limit}) {
     var graph = new joint.dia.Graph({});
       separation_width = 20
       height = 30
@@ -810,8 +819,8 @@ var py_trees = (function() {
           },
       }
     });
-    cache.set('tree_cache_size', tree_cache_size)
-    cache.set('tree_cache', [])
+    cache.set('tree_cache_size', event_cache_limit)
+    cache.set('trees', [])
       var previous = new joint.shapes.standard.Rectangle({
           position: { x: cache.get('size').width + separation_width, y: 0},
           size: { width: 70, height: height },
@@ -856,7 +865,7 @@ var py_trees = (function() {
       next.addTo(graph)
       resume.addTo(graph)
       graph.set('streaming', true)
-      graph.set('cache', cache)  // for easy access
+      graph.set('cache', cache)
       graph.set('buttons', {'previous': previous, 'next': next, 'resume': resume})
       _timeline_toggle_buttons({graph: graph, enabled: false})
     return graph
@@ -912,7 +921,7 @@ var py_trees = (function() {
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("Next")
               cache = timeline_graph.get('cache')
-              trees = cache.get('tree_cache')
+              trees = cache.get('trees')
               events = cache.get('events')
               selected_tree = timeline_graph.get('selected')
               console.log("  # Trees: ", trees.length)
@@ -939,7 +948,7 @@ var py_trees = (function() {
           } else if ( view.model.id == timeline_graph.get('buttons')["previous"].id ) {
               console.log("Previous")
               cache = timeline_graph.get('cache')
-              trees = cache.get('tree_cache')
+              trees = cache.get('trees')
               events = cache.get('events')
               selected_tree = timeline_graph.get('selected')
               tree_timestamps = [] 
@@ -974,7 +983,7 @@ var py_trees = (function() {
   ) {
       console.log("Rendering timeline tree")
 
-      cache_model = timeline_graph.get('cache')
+      cache = timeline_graph.get('cache')
       tree = event.get('tree')
 
       // render
@@ -985,7 +994,7 @@ var py_trees = (function() {
       // update timeline highlight
       // TODO: optimise, i.e. cache the selected marker and update
       // it only
-      _.each(cache_model.getEmbeddedCells(), function(embedded) {
+      _.each(cache.getEmbeddedCells(), function(embedded) {
           _timeline_highlight_event({event: embedded, highlight: false})
       })
       _timeline_highlight_event({event: event, highlight: true})
@@ -1106,10 +1115,10 @@ var py_trees = (function() {
   var _timeline_add_tree_to_cache = function({graph, tree}) {
     console.log("Update Timeline Cache")
     cache = graph.get('cache')
-    trees = cache.get('tree_cache')
+    trees = cache.get('trees')
 
     // update the tree cache
-    if ( trees.length == cache.get('tree_cache_size')) {
+    if ( trees.length == cache.get('event_cache_limit')) {
         trees.shift() // pop first element
     }
     trees.push(tree)
@@ -1119,7 +1128,7 @@ var py_trees = (function() {
   var _timeline_rebuild_cache_event_markers = function({graph}) {
 
     cache = graph.get('cache')
-    trees = cache.get('tree_cache')
+    trees = cache.get('trees')
     
     // clear the visual cache
     _.each(cache.getEmbeddedCells(), function(embedded) {

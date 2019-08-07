@@ -892,8 +892,7 @@ var py_trees = (function() {
       view
   ) {
       if ( view.model.get('type') == "trees.EventMarker" ) {
-          tree = view.model.get('tree')
-          _timeline_render_selected_tree(timeline_graph, canvas_graph, canvas_paper, view)
+          _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, view.model)
           _timeline_toggle_buttons({graph: timeline_graph, enabled: true})
           timeline_graph.set('streaming', false)
       } else { // buttons
@@ -905,7 +904,7 @@ var py_trees = (function() {
               // _.each(cache_model.getEmbeddedCells(), function(embedded) {
               //    tree = embedded.get('tree')
               //    check timestamp with the trees' last element's timestamp
-              //    pass that model's view to  _timeline_render_selected_tree
+              //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
               _update_graph({graph: canvas_graph, tree: timeline_graph.get('selected')})
               _layout_graph({graph: canvas_graph})
@@ -918,55 +917,65 @@ var py_trees = (function() {
               selected_tree = timeline_graph.get('selected')
               console.log("  # Trees: ", trees.length)
               console.log("  # Events: ", events.length)
-              tree_ids = [] 
+              tree_timestamps = [] 
               trees.forEach(function (tree, index) {
-                  tree_ids.push(tree.timestamp)
+                  tree_timestamps.push(tree.timestamp)
               })
               event_timestamps = []
               events.forEach(function (model, index) {
                   event_timestamps.push(model.get('tree').timestamp)
               })
-              console.log("  Tree  Timestamps: ", tree_ids)
+              console.log("  Tree  Timestamps: ", tree_timestamps)
               console.log("  Event Timestamps: ", event_timestamps)
               console.log("  Selec Timestamps: ", selected_tree.timestamp)
               trees.forEach(function (tree, index) {
                   if ( tree.timestamp == selected_tree.timestamp ) {
                       if ( index != trees.length - 1) {
-                          next_view = events[index+1].findView(timeline_paper)
                           console.log("  Next  Timestamp : ", events[index+1].get('tree').timestamp)
-                          _timeline_render_selected_tree(timeline_graph, canvas_graph, canvas_paper, next_view)
+                          _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index+1])
                       }
                   }
               })
           } else if ( view.model.id == timeline_graph.get('buttons')["previous"].id ) {
-              console.log("Previous clicked")
+              console.log("Previous")
               cache = timeline_graph.get('cache')
               trees = cache.get('tree_cache')
               events = cache.get('events')
               selected_tree = timeline_graph.get('selected')
+              tree_timestamps = [] 
+              trees.forEach(function (tree, index) {
+                  tree_timestamps.push(tree.timestamp)
+              })
+              event_timestamps = []
+              events.forEach(function (model, index) {
+                  event_timestamps.push(model.get('tree').timestamp)
+              })
+              console.log("  Tree  Timestamps: ", tree_timestamps)
+              console.log("  Event Timestamps: ", event_timestamps)
+              console.log("  Selec Timestamps: ", selected_tree.timestamp)
               trees.forEach(function (tree, index) {
                   if ( tree.timestamp == selected_tree.timestamp ) {
                       if ( index != 0) {
-                          previous_view = events[index-1].findView(timeline_paper)
-                          _timeline_render_selected_tree(timeline_graph, canvas_graph, canvas_paper, previous_view)
+                          console.log("  Previous Timestamp: ", events[index-1].get('tree').timestamp)
+                          _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index-1])
                       }
                   }
               })
           } else {
-            console.log("Unknown element clicked")
+              alert("Error: unknown element clicked")
           }
       }
   }
-  var _timeline_render_selected_tree = function(
+  var _timeline_select_event = function(
           timeline_graph,
           canvas_graph,
           canvas_paper,
-          event_marker_view
+          event  // joint.shapes.trees.EventMarker
   ) {
       console.log("Rendering timeline tree")
 
       cache_model = timeline_graph.get('cache')
-      tree = event_marker_view.model.get('tree')
+      tree = event.get('tree')
 
       // render
       _update_graph({graph: canvas_graph, tree: tree})
@@ -977,9 +986,9 @@ var py_trees = (function() {
       // TODO: optimise, i.e. cache the selected marker and update
       // it only
       _.each(cache_model.getEmbeddedCells(), function(embedded) {
-          _timeline_remove_event_marker_highlight({model: embedded})
+          _timeline_highlight_event({event: embedded, highlight: false})
       })
-      _timeline_add_event_marker_highlight({model: event_marker_view.model})
+      _timeline_highlight_event({event: event, highlight: true})
       timeline_graph.set('selected', tree)
   }
 
@@ -1032,21 +1041,22 @@ var py_trees = (function() {
    * Highlight the event marker, used to denote it's elevated status
    * with respect to other event markers.
    */
-  var _timeline_add_event_marker_highlight = function({model}) {
-      model.attr({
-          body: {
-              fill: 'red'
-          }
-      })
+  var _timeline_highlight_event = function({event, highlight}) {
+      if ( highlight ) {
+          event.attr({
+              body: {
+                  fill: 'red'
+              }
+          })
+      } else {
+          event.attr({
+              body: {
+                  fill: 'white'
+              }
+          })
+      }
   }
 
-  var _timeline_remove_event_marker_highlight = function({model}) {
-      model.attr({
-          body: {
-              fill: 'white'
-          }
-      })
-  }
   /**
    * Resize (shrink) and re-position the event marker to it's original position.
    */
@@ -1134,12 +1144,12 @@ var py_trees = (function() {
       event_marker.set('tree', tree)
       if ( graph.get('streaming') ) {
           if (index == trees.length - 1) {
-              _timeline_add_event_marker_highlight({model: event_marker})
+              _timeline_highlight_event({event: event_marker, highlight: true})
               graph.set('selected', trees[index])
           }
       } else {
           if ( trees[index].timestamp == graph.get('selected').timestamp) {
-              _timeline_add_event_marker_highlight({model: event_marker})
+              _timeline_highlight_event({event: event_marker, highlight: true})
           }
       }
       cache.embed(event_marker)

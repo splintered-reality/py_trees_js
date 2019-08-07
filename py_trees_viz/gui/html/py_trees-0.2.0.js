@@ -783,8 +783,9 @@ var py_trees = (function() {
   // Variables
   //
   // graph
+  //   buttons ({string: jointjs model}) - keys are one of 'previous', 'next', 'resume'
+  //   cache (jointjs models) - all jointjs objects for timeline events
   //   streaming (bool)
-  //   cache (jointjs model for the event timeline bar)
   // cache
   //   selected
   //   trees ([dict]) - tree data (pure js structure, i.e. no jointjs)

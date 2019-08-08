@@ -908,6 +908,7 @@ var py_trees = (function() {
       if ( ( view.model.id == timeline_graph.get('buttons')["previous"].id ) ||
            ( view.model.id == timeline_graph.get('buttons')["next"].id ) ||
            ( view.model.id == timeline_graph.get('buttons')["resume"].id ) ) {
+          console.log("  button '%s'", event.type)
           view.model.attr({
               body: {
                   stroke: pressed ? '#777777' : '#AAAAAA',
@@ -970,14 +971,15 @@ var py_trees = (function() {
               console.log("    tree  timestamps: ", tree_timestamps)
               console.log("    event timestamps: ", event_timestamps)
               console.log("    selected timestamp: ", cache.get('selected').get('tree').timestamp)
-              trees.forEach(function (tree, index) {
-                  if ( tree.timestamp == cache.get('selected').get('tree').timestamp ) {
+              for (var index = 0; index < trees.length; index++) {
+                  if ( trees[index].timestamp == cache.get('selected').get('tree').timestamp ) {
                       if ( index != trees.length - 1) {
                           console.log("    next  timestamp : ", events[index+1].get('tree').timestamp)
                           _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index+1])
+                          break
                       }
                   }
-              })
+              }
           } else if ( view.model.id == timeline_graph.get('buttons')["previous"].id ) {
               console.log("  clicked 'previous'")
               tree_timestamps = [] 

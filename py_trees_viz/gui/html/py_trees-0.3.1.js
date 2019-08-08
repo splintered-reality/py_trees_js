@@ -191,10 +191,11 @@ joint.shapes.NodeView = joint.dia.ElementView.extend({
 joint.shapes.trees.EventMarker = joint.shapes.standard.Rectangle.define(
     'trees.EventMarker', {
         position: { x: 0, y: 0 },
-        size: { width: 2, height: 30 },
+        size: { width: 4, height: 30 },
+        default_width: 4,
         attrs: {
-          body: {
-              refWidth: '100%',
+            body: {
+                refWidth: '100%',
                 refHeight: '100%',
                 stroke: 'black',
                 strokeWidth: 0,
@@ -884,12 +885,15 @@ var py_trees = (function() {
           background: { color: '#111111' },
           interactive: false,
       });
-      mouse_over_zoom_scale = 3.0
       paper.on('element:mouseover', _timeline_zoom_event_marker_appearance)
       paper.on('element:mouseout', _timeline_restore_event_marker_appearance)
       paper.on(
           'element:pointerclick',
           _timeline_handle_element_pointerclicks.bind(null, timeline_graph, canvas_graph, canvas_paper)
+      )
+      paper.on(
+          'element:pointermove', 
+          _timeline_handle_dragging.bind(null, paper)
       )
       paper.on('element:pointerdown', _timeline_handle_button_pressed)
       paper.on('element:pointerup',_timeline_handle_button_pressed)
@@ -897,6 +901,27 @@ var py_trees = (function() {
       return paper
   }
 
+
+  /**
+   * Currently only used to make sure event marker appearance's
+   * are restored when moving out of their bounding box rather than
+   * on a mouseout.
+   */
+  var _timeline_handle_dragging = function(paper, view, event, x, y) {
+      console.log("_timeline_handle_dragging")
+      if ( view.model.get('type') == "trees.EventMarker" ) {
+          outside = true
+          views = paper.findViewsFromPoint({x: x, y: y})
+          for (var index = 0; index < views.length; index++) {
+              if (views[index].model.id == view.model.id) {
+                  outside = false
+              }
+          }
+          if ( outside ) {
+              _timeline_restore_event_marker_appearance(view)
+          }
+      }
+  }
   /**
    * Checks to see if a button was pressed and animate it with the
    * appearance of being pushed in and out.
@@ -1062,8 +1087,9 @@ var py_trees = (function() {
    * centred on it's current position.
    */
   var _timeline_zoom_event_marker_appearance = function(view) {
+      mouse_over_zoom_scale = 3.0
       if ( view.model.get('type') == "trees.EventMarker") {
-          console.log("Timeline Mouseover", view.model.get('type'))
+          console.log("_timeline_zoom_event_marker_appearance")
           size = view.model.get('size')
           view.model.translate(
               - (mouse_over_zoom_scale - 1) * size.width / 2.0,
@@ -1103,9 +1129,13 @@ var py_trees = (function() {
    */
   var _timeline_restore_event_marker_appearance = function(view) {
       if ( view.model.get('type') == "trees.EventMarker") {
-          console.log("Timeline MouseOut", view.model.get('type'))
+          console.log("_timeline_restore_event_marker_appearance")
           position = view.model.get('position')
           size = view.model.get('size')
+          if ( size.width == view.model.get('default_width')) {
+              return
+          }
+          mouse_over_zoom_scale = 3.0  // also used by _timeline_zoom_event_marker_appearance
           original_width = size.width / mouse_over_zoom_scale
           view.model.translate(
               - (mouse_over_zoom_scale - 1) * original_width / 2.0,
@@ -1173,16 +1203,15 @@ var py_trees = (function() {
       max_timestamp = trees[trees.length - 1]['timestamp']
     delta = max_timestamp - min_timestamp
     dimensions = cache.getBBox()
-    marker_width = 4
     trees.forEach(function (tree, index) {
       // normalise between 0.05 and 0.95
       normalised_x = 0.05 + 0.9 * (tree['timestamp'] - min_timestamp) / delta
-      var event_marker = new joint.shapes.trees.EventMarker({
-            position: {
-              x: dimensions.x + normalised_x * dimensions.width - marker_width / 2.0,
-              y: 0 },
-            size: { width: marker_width, height: dimensions.height },
-      })
+      var event_marker = new joint.shapes.trees.EventMarker()
+      event_marker.translate(
+          dimensions.x + normalised_x * dimensions.width - event_marker.get('default_width') / 2.0,
+          0
+      )
+      event_marker.resize(event_marker.get('default_width'), dimensions.height)
       event_marker.set('tree', tree)
       if ( graph.get('streaming') ) {
           if (index == trees.length - 1) {

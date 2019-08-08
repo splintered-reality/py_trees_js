@@ -891,8 +891,8 @@ var py_trees = (function() {
           'element:pointerclick',
           _timeline_handle_element_pointerclicks.bind(null, timeline_graph, canvas_graph, canvas_paper)
       )
-//      paper.on('element:pointerdown', _timeline_handle_button_pressed)
-//      paper.on('element:pointerup',_timeline_handle_button_pressed)
+      paper.on('element:pointerdown', _timeline_handle_button_pressed)
+      paper.on('element:pointerup',_timeline_handle_button_pressed)
       _timeline_scale_content_to_fit(paper)
       return paper
   }
@@ -912,7 +912,6 @@ var py_trees = (function() {
           view.model.attr({
               body: {
                   stroke: pressed ? '#777777' : '#AAAAAA',
-                  'pointer-events': pressed ? 'auto' : 'none',
                   filter: {
                       args: {
                           color: pressed ? '#333333' : '#999999',
@@ -923,6 +922,8 @@ var py_trees = (function() {
                   fill: pressed ? '#555555' : 'white',
               }
           })
+          multiplier = event.type == "mousedown" ? 1 : -1
+          view.model.translate(2 * multiplier, 2 * multiplier)
       }
   }
 

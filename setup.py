@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
-package_name = 'py_trees_viz'
+package_name = 'py_trees_js'
 
 
 # This is somewhat dodgy as it will escape any override from, e.g. the command
@@ -69,12 +69,13 @@ setup(
     version='0.3.1',  # also update package.xml
     packages=find_packages(exclude=['tests*', 'docs*']),
     data_files=[('share/' + package_name, ['package.xml'])],
-    package_data={'py_trees_viz': ['gui/*']},
+    # scripts=['scripts/py-trees-devel-viewer'], not working, but not critical
+    package_data={'py_trees_js': ['viewer/*.ui', 'viewer/html/*', 'viewer/images/*']},
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
-    url='https://github.com/splintered-reality/py_trees_viz',
+    url='https://github.com/splintered-reality/py_trees_js',
     keywords=['ROS', 'ROS2', 'behaviour-trees', 'Qt'],
     zip_safe=True,
     classifiers=[
@@ -85,18 +86,18 @@ setup(
         'Topic :: Software Development :: Libraries'
     ],
     description=(
-        "Viewer for executing or replaying py_trees"
+        "Javascript libraries for visualising executing or log-replayed behaviour trees"
     ),
     long_description=(
-        "Qt-Javascript hybrid application for viewing of executing or"
-        "replaying py_trees"
+        "Javascript libraries for visualising executing or log-replayed behaviour trees."
+        "Includes a qt-js hybrid viewer for development and demonstration purposes."
     ),
     license='BSD',
     # test_suite="tests"
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
         'console_scripts': [
-            'py-trees-viewer = py_trees_viz.viewer:main',
+            'py-trees-demo-viewer = py_trees_js.viewer.viewer:main',
         ],
     },
 )

@@ -1,18 +1,20 @@
-# PyTrees Viz
+# PyTrees Js
 
-A javascript library for visualisation and monitoring of behaviour trees.
+Javascript libraries for visualisation and monitoring of behaviour trees.
 
-It is not an editor and is also not restricted to a py_tree flavoured behaviour tree either.
+Despite primarily catering for use cases with py_trees, the javascript libraries
+can be used for behaviour trees in general since it requires only details of elements
+common to most behaviour tree implementations. Implementation specific data
+can be encapsulated in a key-value dictionary that is appropriately formatted in
+an implementation agnostic way inside the web application.
 
-The incoming serialisation of a tree and it's state requires only elements common to behaviour trees. Any implementation specific data can be encapsulated in a key-value dictionary that is appropriately formatted in an agnostic way inside the web application.
-
-While the actual functionality is provided via `py_trees.js` and `py_trees.css`, a hybrid Qt-JS application is used for the purposes of development and demonstration.
+A hybrid Qt-JS application is included and use for development and demonstration purposes.
 
 ![Status Highlights](images/screenshot.png?raw=true "Rendering a Tree")
 
 ## Roadmap
 
-This is a work-in-progress. See the [Projects](https://github.com/splintered-reality/py_trees_viz/projects?query=is%3Aopen+sort%3Acreated-asc) page for progress and planned milestones.
+This is a work-in-progress. See the [Projects](https://github.com/splintered-reality/py_trees_js/projects?query=is%3Aopen+sort%3Acreated-asc) page for progress and planned milestones.
 
 ## Development
 
@@ -28,7 +30,7 @@ Currently launching the qt-js application will fire up the app with a demo tree
 supplied by the `py_trees.js` library itself:
 
 ```
-$ py-trees-viewer
+$ py-trees-demo-viewer
 ```
 
 To launch with a js console, the qt webengine requires an environment
@@ -36,6 +38,6 @@ variable to be configured and a browser window to tune into the application.
 None of that is necessary to know though, just run the script:
 
 ```
-$ ./scripts/py-trees-viewer-devel
+$ ./scripts/py-trees-devel-viewer
 ```
 

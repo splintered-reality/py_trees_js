@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # License: BSD
-#   https://github.com/splintered-reality/py_trees_viz/raw/devel/LICENSE
+#   https://github.com/splintered-reality/py_trees_js/raw/devel/LICENSE
 #
 ##############################################################################
 # Documentation
@@ -23,7 +23,7 @@ import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
 
 from . import main_window_ui
-from .. import console
+from . import console
 
 ##############################################################################
 # Helpers

@@ -15,34 +15,35 @@ joint.shapes = joint.shapes || {}
 joint.shapes.trees = joint.shapes.trees || {}
 
 joint.shapes.Node = joint.dia.Element.define(
-  'Node', {
-    size: { width: 170, height: 50 },
-    collapse_children: false,
-    hidden: false,
-    attrs: {
-      box: {
-        refX: '0%', refY: '0%',
-        refWidth: '100%', refHeight: '100%',
-        // stroke: none
-        fill: '#333333', stroke: '#000000', 'stroke-width': 2,
-        'pointer-events': 'visiblePainted', rx: 8, ry: 8,
-      },
-      type: {
-        refX: '0%', refY: '0%',
-        refWidth: '15%', refHeight: '100%',
-        fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
-        'pointer-events': 'visiblePainted', rx: 8, ry: 8,
-      },
+    'Node', {
+        size: { width: 170, height: 50 },
+        collapse_children: false,
+        hidden: false,
+        attrs: {
+            box: {
+                refX: '0%', refY: '0%',
+                refWidth: '100%', refHeight: '100%',
+                // stroke: none
+                fill: '#333333', stroke: '#000000', 'stroke-width': 2,
+                'pointer-events': 'visiblePainted', rx: 8, ry: 8,
+            },
+            type: {
+                refX: '0%', refY: '0%',
+                refWidth: '15%', refHeight: '100%',
+                fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
+                'pointer-events': 'visiblePainted', rx: 8, ry: 8,
+            },
+        }
+    }, {
+        markup: [{
+            tagName: 'rect',
+            selector: 'box'
+        }, {
+            tagName: 'rect',
+            selector: 'type'
+        }]
     }
-  }, {
-      markup: [{
-          tagName: 'rect',
-          selector: 'box'
-      }, {
-          tagName: 'rect',
-          selector: 'type'
-      }]
-  });
+);
 
 joint.shapes.NodeView = joint.dia.ElementView.extend({
       // events: {
@@ -628,14 +629,17 @@ var py_trees = (function() {
    * Create a link, styled for the py_trees rendering.
    */
   var _create_link = function({source, target}) {
+      console.log("_canvas_create_link")
       var link = new joint.shapes.standard.Link();
       link.source(source)
       link.target(target)
       link.connector('smooth')
+      console.log("_canvas_create_link_done")
       return link
   }
 
   var _create_paper = function({graph}) {
+      console.log("_canvas_create_paper")
       var paper = new joint.dia.Paper({
           el: document.getElementById('canvas'),
           model: graph,
@@ -685,26 +689,29 @@ var py_trees = (function() {
       paper.on('element:pointerdblclick',
         _collapse_children_handler.bind(null)
       )
+      console.log("_canvas_create_paper_done")
       return paper
   }
 
   var _layout_graph = function({graph}) {
-    var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
-        marginX: 50,
-        marginY: 50,
-        nodeSep: 50,
-        edgeSep: 80,
-        rankDir: "TB"
-    });
-    console.log("Dot Graph Layout")
-    console.log('  x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
-    console.log('  width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+      console.log("_canvas_layout_graph")
+      var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
+          marginX: 50,
+          marginY: 50,
+          nodeSep: 50,
+          edgeSep: 80,
+          rankDir: "TB"
+      });
+      console.log("  dot graph layout")
+      console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+      console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+      console.log("_canvas_layout_graph_done")
   }
   /**
    * Callback for collapsing children on a click event
    */
   var _collapse_children_handler = function(view, event, x, y) {
-    _collapse_children(view.model)
+      _collapse_children(view.model)
   }
 
   /**

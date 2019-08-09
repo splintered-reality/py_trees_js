@@ -15,7 +15,8 @@ DIR=/tmp/chrome-devel-configuration
 # Generate Resources
 ###########################
 
-cd ${PWD}/../py_trees_viz/gui && ./gen.bash
+cd ${PWD}/../py_trees_js && ./gen.bash
+cd ${PWD}/../py_trees_js/viewer && ./gen.bash
 
 ###########################
 # Setup
@@ -33,6 +34,6 @@ fi
 google-chrome ${OPTIONS} --user-data-dir=${DIR} --app=http://127.0.0.1:12345 > /dev/null 2>&1 &
 pid=$!
 
-py-trees-viewer
+py-trees-demo-viewer
 
 kill -s 9 $pid > /dev/null 2>&1 || exit 0

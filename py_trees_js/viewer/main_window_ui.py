@@ -13,7 +13,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(551, 356)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/resources/images/tuxrobot.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/tuxrobot.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.central_display = QtWidgets.QWidget(MainWindow)
         self.central_display.setObjectName("central_display")
@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
         self.central_horizontal_layout.addWidget(self.web_view_group_box)
         MainWindow.setCentralWidget(self.central_display)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 35))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 29))
         self.menubar.setDefaultUp(False)
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
@@ -55,5 +55,5 @@ class Ui_MainWindow(object):
         self.web_view_group_box.setTitle(_translate("MainWindow", "Tree View"))
         self.send_button.setText(_translate("MainWindow", "Send Tree"))
 
-from py_trees_viz.gui.web_view import WebViewGroupBox
-from . import main_window_rc
+from py_trees_js.viewer.web_view import WebViewGroupBox
+from . import images_rc

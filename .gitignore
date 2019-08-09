@@ -2,4 +2,3 @@ __pycache__
 *doc/html
 *egg-info
 *.md.html
-*rc.py

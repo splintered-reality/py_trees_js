@@ -71,8 +71,10 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
     },
     render: function() {
         joint.dia.ElementView.prototype.render.apply(this, arguments);
-        this.listenTo(this.paper, 'translate', this.updateBox);
-        this.listenTo(this.paper, 'scale', this.updateBox);
+        this.listenTo(this.paper, 'translate', this.updateBox)
+        //this.listenTo(this.paper, 'translate', this.updateBox.bind(this, this.paper));
+        this.listenTo(this.paper, 'scale', this.updateBox)
+        // this.listenTo(this.paper, 'scale', this.updateBox.bind(this, this.paper));
         this.paper.$el.prepend(this.$box);
         this.updateBox();
         return this;
@@ -82,6 +84,8 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
     //     this.model.prop('faded', !this.model.prop('faded'));
     // },
     updateBox: function() {
+        if (!this.paper) return;
+
         // Set the position and dimension of the box so that it covers the JointJS element.
         var bbox = this.model.getBBox();
         // Example of updating the HTML with a data stored in the cell model.
@@ -110,10 +114,8 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
                 data[key] +
                 "</span><br/>"
         }
-        // surprisingly, paper.scale() is available,
-        // and ... this.paper is listed, but not available
-        scale = paper.scale()       // sx, sy
-        offset = paper.translate()  // tx, ty
+        scale = this.paper.scale()       // sx, sy
+        offset = this.paper.translate()  // tx, ty
         // Positioning
         this.$box.find('div.html-tooltip').css({
             width: '30em',
@@ -211,18 +213,42 @@ joint.shapes.trees.EventMarker = joint.shapes.standard.Rectangle.define(
 );
 
 // *************************************************************************
-// PyTrees Namespace
+// py_trees
 // *************************************************************************
 
 var py_trees = (function() {
 
+    var _version = '0.3.1'
+
+    /**
+     * Introduce the user to the library and print relevant info about it's discovered
+     * dependencies.
+     */
+    var _hello = function() {
+        console.log("********************************************************************************")
+        console.log("                                    Py Trees JS                                 ")
+        console.log("")
+        console.log("A javascript library for visualisation of executing behaviour trees.")
+        console.log("")
+        console.log("Version & Dependency Info:")
+        console.log(" - py_trees: ", py_trees.version)
+        console.log("   - jointjs : ", joint.version)
+        console.log("      - backbone: ", Backbone.VERSION)
+        console.log("      - dagre   : ", dagre.version)
+        console.log("      - jquery  : ", jQuery.fn.jquery)
+        console.log("      - lodash  : ", _.VERSION)
+        console.log("********************************************************************************")
+    }
+
+
   // *************************************************************************
-  // Experiments
+  // py_trees.experimental
   // *************************************************************************
-  // ****************************************
-  // Demo Tree
-  // ****************************************
-  var _create_demo_tree_definition = function() {
+  /*
+   * Create a serialised tree in javascript form. Useful for testing
+   * a web app without wiring it up to an external source.
+   */
+  var _experimental_create_demo_tree_definition = function() {
     var tree = {
         timestamp: 1563938995,
         visited_path: ['1', '2', '3', '4', '5', '7', '8'],
@@ -326,160 +352,8 @@ var py_trees = (function() {
     return tree
   }
 
-  // ****************************************
-  // Tabbed Rectangles
-  // ****************************************
-  // https://jsfiddle.net/kumilingus/Lznzjqmk/
-
-  _TabbedRectangle = joint.dia.Element.extend({
-    defaults: _.defaultsDeep({
-      type: 'TabbedRectangle',
-      fillColor: 'red',
-      outlineColor: 'black',
-      activeTab: 0,
-      numberOfTabs: 1,
-      faded: false
-    })
-  });
-
-  _TabbedRectangleView = joint.dia.ElementView.extend({
-
-    events: {
-      'dblclick': 'onDblClick',
-      'click .tab': 'onTabClick'
-    },
-
-    init: function() {
-      var model = this.model;
-      this.listenTo(model, [
-        'change:activeTab',
-        'change:fillColor',
-        'change:outlineColor',
-        ].join(' '), this.update);
-      this.listenTo(model, 'change:faded', this.toggleFade);
-      this.listenTo(model, 'change:numberOfTabs', this.render);
-    },
-
-    render: function() {
-      var markup = this.constructor.markup;
-      var body = this.vBody = markup.body.clone();
-      var tabs = this.vTabs = [];
-      var texts = this.vTexts = [];
-      for (var i = 0, n = this.model.prop('numberOfTabs'); i < n; i++) {
-        tabs.push(markup.tab.clone());
-        texts.push(markup.text.clone().text('Tab ' + (i + 1)));
-      }
-      this.vel.empty().append(
-          _.flatten([
-            body,
-            tabs
-            ])
-      );
-      this.translate();
-      this.update();
-    },
-
-    update: function() {
-      this.updateBody();
-      this.updateText();
-      this.updateTabs();
-      this.toggleFade();
-    },
-
-    updateBody: function() {
-      var model = this.model;
-      var bodyAttributes = {
-          width: model.prop('size/width'),
-          height: model.prop('size/height'),
-          fill: model.prop('fillColor'),
-          stroke: model.prop('outlineColor')
-      };
-      this.vBody.attr(bodyAttributes);
-    },
-
-    updateTabs: function() {
-      var model = this.model;
-      var numberOfTabs = model.prop('numberOfTabs');
-      var length = model.prop('size/width') / numberOfTabs;
-      var activeTab = model.prop('activeTab');
-      var vTabs = this.vTabs;
-      for (var i = 0; i < numberOfTabs; i++) {
-        var isActive = (activeTab === i);
-        var offset = +isActive;
-        vTabs[i].attr({
-          width: length - 2 * offset,
-          x: i * length + offset,
-          y: offset,
-          height: 20,
-          stroke: (isActive) ? 'none' : model.prop('outlineColor'),
-              fill: (isActive) ? model.prop('fillColor') : 'gray',
-                  'data-index': i
-        });
-      }
-    },
-
-    updateText: function() {
-      var model = this.model;
-      var activeTab = model.prop('activeTab');
-      var numberOfTabs = model.prop('numberOfTabs');
-      var vTexts = this.vTexts;
-      for (var i = 0; i < numberOfTabs; i++) {
-        var vText = vTexts[i];
-        if (i === activeTab) {
-          var tx = model.prop('size/width') / 2;
-          vText.attr({
-            transform: 'translate(' + tx + ',30)',
-            'text-anchor': 'middle'
-          });
-          this.vel.append(vText);
-        } else {
-          vText.remove();
-        }
-      }
-    },
-
-    toggleFade: function() {
-      this.vel.attr('opacity', this.model.prop('faded') ? 0.2 : 1);
-    },
-
-    onTabClick: function(evt) {
-      var index = +V(evt.target).attr('data-index');
-      this.model.prop('activeTab', index);
-    },
-
-    onDblClick: function() {
-      this.model.prop('faded', !this.model.prop('faded'));
-    }
-
-  }, {
-
-    markup: {
-      body: V('rect').addClass('body'),
-      tab: V('rect').addClass('tab'),
-      text: V('text').addClass('text')
-    }
-
-  });
-  var _add_tabbed_tree_to_graph = function({graph}) {
-    tabbed_root = new py_trees.shapes.TabbedRectangle;
-    tabbed_root.prop('numberOfTabs', 4).position(50, 50).resize(100,100).addTo(graph)
-    _.times(4, function(i) {
-      var custom_element = new py_trees.shapes.TabbedRectangle;
-      custom_element
-        .prop('numberOfTabs', i)
-        .resize(100, 100)
-        .position(50 + (i % 2) * 150, 50 + (i < 2) * 150)
-        .prop('fillColor', ['salmon', 'lightgreen', 'lightblue', 'lightgray'][i])
-        .prop('faded', i === 1)
-        .addTo(graph);
-      link = _create_link({source: tabbed_root, target: custom_element})
-      _links.push(link)
-      link.addTo(graph)
-    });
-  }
-
   // *************************************************************************
-  // PyTrees Tree Rendering
+  //  py_trees.canvas
   // *************************************************************************
 
   /**
@@ -489,12 +363,12 @@ var py_trees = (function() {
    * may be imoprtant for efficiency concerns or to retain
    * interactivity information in the graph (e.g. collapsible points).
    */
-  var _update_graph = function({graph, tree}) {
+  var _canvas_update_graph = function({graph, tree}) {
 
     // Log the tree for introspection
-    console.log("Update the graph")
-    console.log("  Behaviours", tree.behaviours)
-    console.log("  Visited Path: " + tree.visited_path)
+    console.log("_canvas_update_graph")
+    console.log("  behaviours", tree.behaviours)
+    console.log("  visited path: " + tree.visited_path)
 
     // extract interactive information
     var collapsed_nodes = []
@@ -533,7 +407,7 @@ var py_trees = (function() {
     // repopulate
     var _nodes = {}
     for (behaviour in tree.behaviours) {
-        node = _create_node({
+        node = _canvas_create_node({
             behaviour_id: tree.behaviours[behaviour].id,
             colour: tree.behaviours[behaviour].colour || '#555555',
             name: tree.behaviours[behaviour].name,
@@ -548,7 +422,7 @@ var py_trees = (function() {
     for (behaviour in tree.behaviours) {
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
-                link = _create_link({
+                link = _canvas_create_link({
                     source: _nodes[tree.behaviours[behaviour].id],
                     target: _nodes[child_id],
                 })
@@ -561,15 +435,16 @@ var py_trees = (function() {
     _.each(graph.getElements(), function(el) {
         behaviour_id = el.get("behaviour_id")
         if (collapsed_nodes.includes(behaviour_id)) {
-          _collapse_children(el)
+          _canvas_collapse_children(graph, el)
         }
     })
+    console.log("_canvas_update_graph_done")
   }
 
   /**
    * Create elided details from a details (text) snippet.
    */
-  var _create_elided_details = function(details) {
+  var _canvas_create_elided_details = function(details) {
     elided_details = joint.util.breakText(
             details || '...',
             { width: 150, height:30 },
@@ -579,12 +454,12 @@ var py_trees = (function() {
     return elided_details
   }
 
-  var _create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
+  var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
     node = new joint.shapes.trees.Node({
       name: name,
       behaviour_id: behaviour_id,
       details: details,
-      elided_details: _create_elided_details(details),
+      elided_details: _canvas_create_elided_details(details),
       status: status,
       visited: visited,
       data: data,
@@ -628,7 +503,7 @@ var py_trees = (function() {
   /**
    * Create a link, styled for the py_trees rendering.
    */
-  var _create_link = function({source, target}) {
+  var _canvas_create_link = function({source, target}) {
       console.log("_canvas_create_link")
       var link = new joint.shapes.standard.Link();
       link.source(source)
@@ -638,7 +513,7 @@ var py_trees = (function() {
       return link
   }
 
-  var _create_paper = function({graph}) {
+  var _canvas_create_paper = function({graph}) {
       console.log("_canvas_create_paper")
       var paper = new joint.dia.Paper({
           el: document.getElementById('canvas'),
@@ -671,29 +546,29 @@ var py_trees = (function() {
       })
       // cell:mousewheel gives strange scale values back (30.0!)
       paper.on('blank:mousewheel',
-          py_trees.scale_canvas.bind(null, paper)
+          _canvas_scale.bind(null, paper)
       )
        // pan canvas
       paper.on('blank:pointerdown',
-          _pan_canvas_begin.bind(null, paper)
+          _canvas_pan_begin.bind(null, paper)
       )
       paper.on('blank:pointermove',
-          _pan_canvas_move.bind(null, paper)
+          _canvas_pan_move.bind(null, paper)
       )
       paper.on('blank:pointerup',
-          _pan_canvas_move.bind(null, paper)
+          _canvas_pan_move.bind(null, paper)
       )
       paper.on('blank:pointerdblclick',
-          _scale_content_to_fit.bind(null, paper)
+          _canvas_scale_content_to_fit.bind(null, paper)
       )
       paper.on('element:pointerdblclick',
-        _collapse_children_handler.bind(null)
+        _canvas_collapse_children_handler.bind(null, graph)
       )
       console.log("_canvas_create_paper_done")
       return paper
   }
 
-  var _layout_graph = function({graph}) {
+  var _canvas_layout_graph = function({graph}) {
       console.log("_canvas_layout_graph")
       var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
           marginX: 50,
@@ -710,15 +585,15 @@ var py_trees = (function() {
   /**
    * Callback for collapsing children on a click event
    */
-  var _collapse_children_handler = function(view, event, x, y) {
-      _collapse_children(view.model)
+  var _canvas_collapse_children_handler = function(graph, view, event, x, y) {
+      _canvas_collapse_children(graph, view.model)
   }
 
   /**
    * Collapse children of the selected model. This merely
    * hides them from view, but doesn't remove them from the graph.
    */
-  var _collapse_children = function(model) {
+  var _canvas_collapse_children = function(graph, model) {
       var successors = graph.getSuccessors(model)
       if ( !successors.length ) {
           return
@@ -741,7 +616,7 @@ var py_trees = (function() {
    * needs to listen to the paper.scale trigger and react
    * to that explicitly.
    */
-  var _scale_canvas = function(paper, event, x, y, delta) {
+  var _canvas_scale = function(paper, event, x, y, delta) {
       scale = paper.scale()
       sx = scale.sx
       sy = scale.sy
@@ -753,7 +628,7 @@ var py_trees = (function() {
   /**
    * Initialise data for a panning maneuvre.
    */
-  var _pan_canvas_begin = function(paper, event, x, y) {
+  var _canvas_pan_begin = function(paper, event, x, y) {
     console.log("Panning...")
       scale = paper.scale()
       // TODO: little dirty, monkeypatching paper on the fly
@@ -765,7 +640,7 @@ var py_trees = (function() {
    * Pan the canvas, lookup the offset via paper.translate() later
    * (necessary when rendering the html views, but not the models).
    */
-  var _pan_canvas_move = function(paper, event, x, y) {
+  var _canvas_pan_move = function(paper, event, x, y) {
       paper.translate(
           event.offsetX - paper.start_drag.x,
           event.offsetY - paper.start_drag.y
@@ -775,7 +650,7 @@ var py_trees = (function() {
    * Fit the tree to the canvas if scale < 1.0,
    * otherwise just render it normally (scale: 1.0).
    */
-  var _scale_content_to_fit = function(paper, event, x, y) {
+  var _canvas_scale_content_to_fit = function(paper, event, x, y) {
       console.log("Scaling content to fit canvas...")
       paper.scaleContentToFit({
           padding: 50,
@@ -786,7 +661,7 @@ var py_trees = (function() {
   }
 
   // *************************************************************************
-  // PyTrees Timeline Bar
+  // py_trees.timeline
   // *************************************************************************
   // Variables
   //
@@ -986,9 +861,9 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              _update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
-              _layout_graph({graph: canvas_graph})
-              _scale_content_to_fit(canvas_paper)
+              _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
+              _canvas_layout_graph({graph: canvas_graph})
+              _canvas_scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
               console.log("    # trees: ", trees.length)
@@ -1051,9 +926,9 @@ var py_trees = (function() {
       tree = event.get('tree')
 
       // render
-      _update_graph({graph: canvas_graph, tree: tree})
-      _layout_graph({graph: canvas_graph})
-      _scale_content_to_fit(canvas_paper)
+      _canvas_update_graph({graph: canvas_graph, tree: tree})
+      _canvas_layout_graph({graph: canvas_graph})
+      _canvas_scale_content_to_fit(canvas_paper)
 
       // update timeline highlight
       // TODO: optimise, i.e. cache the selected marker and update
@@ -1181,17 +1056,26 @@ var py_trees = (function() {
    * Alternatively, could setup listeners on the tree cache
    * variable to do similarly.
    */
-  var _timeline_add_tree_to_cache = function({graph, tree}) {
-    console.log("Update Timeline Cache")
-    cache = graph.get('cache')
-    trees = cache.get('trees')
+  var _timeline_add_tree_to_cache = function({
+          timeline_graph,
+          canvas_graph,
+          tree
+      }) {
+      console.log("Update Timeline Cache")
+      cache = timeline_graph.get('cache')
+      trees = cache.get('trees')
 
-    // update the tree cache
-    if ( trees.length == cache.get('event_cache_limit')) {
-        trees.shift() // pop first element
-    }
-    trees.push(tree)
-    _timeline_rebuild_cache_event_markers({graph: graph})
+      // update the tree cache
+      if ( trees.length == cache.get('event_cache_limit')) {
+          trees.shift() // pop first element
+      }
+      trees.push(tree)
+      _timeline_rebuild_cache_event_markers({graph: timeline_graph})
+
+      if ( timeline_graph.get('streaming') ) {
+          _canvas_update_graph({graph: canvas_graph, tree: tree})
+          _canvas_layout_graph({graph: canvas_graph})
+      }
   }
 
   var _timeline_rebuild_cache_event_markers = function({graph}) {
@@ -1238,53 +1122,24 @@ var py_trees = (function() {
   }
 
   // *************************************************************************
-  // PyTrees
+  // Public API
   // *************************************************************************
-
-  var _version = '0.2.0'
-
-  var _foo = function({all_the_things}) {
-    console.log("Inside: " + all_the_things)
-    all_the_things.push(5)
-    console.log("Inside: " + all_the_things)
-  }
-
-  /**
-   * Print the py_trees.js version as well as it's dependency's
-   * versions to the js dev console.
-   */
-  var _print_versions = function() {
-    versions = {
-      "Backbone": Backbone.VERSION,
-      "Dagre": dagre.version,
-      "Graphlib": graphlib.version,
-      "JointJS": joint.version,
-      "JQuery": jQuery.fn.jquery,
-      "Lodash": _.VERSION,
-      "PyTrees": py_trees.version
-    }
-    console.log("Dependencies:", versions)
-  }
-
 
   return {
     // variables
     version: _version,
     // methods
-    create_link: _create_link,
-    create_node: _create_node,
-    create_paper: _create_paper,
-    scale_content_to_fit: _scale_content_to_fit,
-    foo: _foo,
-    layout_graph: _layout_graph,
-    pan_canvas_begin: _pan_canvas_begin,
-    pan_canvas_move: _pan_canvas_move,
-    print_versions: _print_versions,
-    scale_canvas: _scale_canvas,
-    update_graph: _update_graph,
-    experiments: {
-      create_demo_tree_definition: _create_demo_tree_definition,
-      add_tabbed_tree_to_graph: _add_tabbed_tree_to_graph,
+    hello: _hello,
+    canvas: {
+        create_link: _canvas_create_link,
+        create_node: _canvas_create_node,
+        create_paper: _canvas_create_paper,
+        layout_graph: _canvas_layout_graph,
+        scale_content_to_fit: _canvas_scale_content_to_fit,
+        update_graph: _canvas_update_graph,
+    },
+    experimental: {
+      create_demo_tree_definition: _experimental_create_demo_tree_definition,
     },
     timeline: {
       add_tree_to_cache: _timeline_add_tree_to_cache,

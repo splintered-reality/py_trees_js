@@ -66,7 +66,12 @@ setup(
     #     'install': OverrideInstall
     # },
     name=package_name,
-    version='0.3.1',  # also update package.xml
+    # version needs to be updated in several places
+    #   package.xml
+    #   py_trees-<version>.js (and version variable therein)
+    #   py_trees-<version.css
+    #   index.html.
+    version='0.3.1',
     packages=find_packages(exclude=['tests*', 'docs*']),
     data_files=[('share/' + package_name, ['package.xml'])],
     # scripts=['scripts/py-trees-devel-viewer'], not working, but not critical

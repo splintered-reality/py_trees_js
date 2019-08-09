@@ -19,40 +19,48 @@
 </style>
 <body>
   <script type="text/javascript">
-    py_trees.print_versions()
+    py_trees.hello()
   </script>
   <div id="window">
     <div id="canvas"></div>
     <div id="timeline"></div>
   </div>
   <script type="text/javascript">
-    // Canvas for rendering the tree
-    graph = new joint.dia.Graph({});
-    paper = py_trees.create_paper({graph: graph})
+    // rendering canvas
+    canvas_graph = new joint.dia.Graph({});
+    canvas_paper = py_trees.canvas.create_paper({graph: canvas_graph})
 
-    // Canvas for rendering the timeline bar
+    // event timeline
     timeline_graph = py_trees.timeline.create_graph({event_cache_limit: 100});
     timeline_paper = py_trees.timeline.create_paper({
         timeline_graph: timeline_graph,
-        canvas_graph: graph,
-        canvas_paper: paper,
+        canvas_graph: canvas_graph,
+        canvas_paper: canvas_paper,
     })
+    
+    // react to window resizing events
     $(window).resize(function() {
-      console.log("Window resizing")
       py_trees.timeline.scale_content_to_fit(timeline_paper)
     })
 
-    // Accept incoming trees - cache & render them
+    // 
     already_rendered = false
     render_tree = function({tree}) {
       deserialised_tree = JSON.parse(tree)
-      if ( timeline_graph.get('streaming') ) {
-          py_trees.update_graph({graph: graph, tree: deserialised_tree})
-          py_trees.layout_graph({graph: graph})
-      }
-      py_trees.timeline.add_tree_to_cache({graph: timeline_graph, tree: deserialised_tree})
+
+      // if there is no timeline
+      // py_trees.canvas.update_graph({graph: canvas_graph, tree: deserialised_tree})
+      // py_trees.canvas.layout_graph({graph: canvas_graph})
+
+      // if there is a timeline
+      py_trees.timeline.add_tree_to_cache({
+          timeline_graph: timeline_graph,
+          canvas_graph: canvas_graph,
+          tree: deserialised_tree
+      })
+
       if (!already_rendered) {
-        py_trees.scale_content_to_fit(paper)
+        py_trees.canvas.scale_content_to_fit(canvas_paper)
         already_rendered = true
         return "rendered"
       } else {

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # License: BSD
-#   https://github.com/splintered-reality/py_trees_viz/raw/devel/LICENSE
+#   https://github.com/splintered-reality/py_trees_js/raw/devel/LICENSE
 #
 ##############################################################################
 # Documentation
@@ -19,6 +19,9 @@ import PyQt5.QtWidgets as qt_widgets
 import PyQt5.QtCore as qt_core
 
 from . import web_view_ui
+
+# Import the javascript libraries (via qrc bundles)
+import py_trees_js.resources
 
 ##############################################################################
 # Helpers
@@ -39,9 +42,10 @@ class WebViewGroupBox(qt_widgets.QGroupBox):
         super().__init__(parent)
         self.ui = web_view_ui.Ui_WebViewGroupBox()
         self.ui.setupUi(self)
-        # Auto-loading from the url setting via Designer.
-        # Note: if you wish to manually determine what is loaded from python,
-        # you can refuse to load anything  by default (to avoid the
-        # twice-loadfinished trigger issue) you can remove it as a dynamic
-        # property via designer
-        # self.ui.web_engine_view.load(qt_core.QUrl("qrc:/resources/html/index.html"))
+        # Currently auto-loading the web app (index.html) from the url setting
+        # via Designer, so everything is self-contained in Ui_WebViewGroupBox setup.
+        #
+        # Alternatively, set the dynamic property for the
+        # WebEngineView's URL to about:blank and load manually:
+        #
+        # self.ui.web_engine_view.load(qt_core.QUrl("qrc:/index.html"))

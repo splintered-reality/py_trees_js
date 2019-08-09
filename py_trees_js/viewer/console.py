@@ -1,6 +1,6 @@
 #
 # License: BSD
-#   https://raw.githubusercontent.com/splintered-reality/py_trees_viz/devel/LICENSE
+#   https://raw.githubusercontent.com/splintered-reality/py_trees_js/devel/LICENSE
 #
 
 ##############################################################################

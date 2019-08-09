@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>py_trees_viz</name>
+  <name>py_trees_js</name>
   <version>0.3.1</version>
   <description>
     Qt-based viewer for py_trees in ROS.
@@ -12,9 +12,9 @@
 
   <license>BSD</license>
 
-  <url type="website">https://github.com/splintered-treality/py_trees_viz</url>
-  <url type="repository">https://github.com/splintered-treality/py_trees_viz</url>
-  <url type="bugtracker">https://github.com/splintered-treality/py_trees_viz/issues</url>
+  <url type="website">https://github.com/splintered-treality/py_trees_js</url>
+  <url type="repository">https://github.com/splintered-treality/py_trees_js</url>
+  <url type="bugtracker">https://github.com/splintered-treality/py_trees_js/issues</url>
 
   <build_depend>python3-setuptools</build_depend>
   <build_depend>pyqt5-dev-tools</build_depend>

@@ -3,25 +3,23 @@
 # Script for setting up the development environment.
 #source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 
-NAME=py_trees_js
+NAME=py_trees
 
 ##############################################################################
 # Colours
 ##############################################################################
 
 BOLD="\e[1m"
-
 CYAN="\e[36m"
 GREEN="\e[32m"
 RED="\e[31m"
 YELLOW="\e[33m"
-
 RESET="\e[0m"
 
 padded_message ()
 {
   line="........................................"
-  printf "%s %s${2}\n" ${1} "${line:${#1}}"
+  printf "%s%s${2}\n" ${1} "${line:${#1}}"
 }
 
 pretty_header ()
@@ -66,41 +64,53 @@ install_package ()
   return 0
 }
 
-##############################################################################
-
-install_package virtualenvwrapper || return
-
-# To use the installed python3
-VERSION="--python=/usr/bin/python3"
-# To use a specific version
-# VERSION="--python=python3.6"
-
-if [ "${VIRTUAL_ENV}" == "" ]; then
-  workon ${NAME}
-  result=$?
-  if [ $result -eq 1 ]; then
-    mkvirtualenv ${VERSION} ${NAME}
-  fi
-  if [ $result -eq 127 ]; then
-    pretty_error "Failed to find virtualenvwrapper aliases: 1) re-log or 2) source virtualenvwrapper.sh in your shell's .rc"
+generate_ui ()
+{
+  NAME=$1
+pyuic5 --from-imports -o ${NAME}_ui.py ${NAME}.ui
+  if [ $? -ne 0 ]; then
+    pretty_error "  $(padded_message ${NAME} "failed")"
     return 1
   fi
-fi
+  pretty_print "  $(padded_message ${NAME} "generated")"
+  return 0 
+}
 
-# Use the external pyqt5 rather than having to compile it in the virtual env
-install_package pyqt5-dev || return
-install_package python3-pyqt5 || return
-install_package python3-pyqt5.qtsvg || return
-install_package python3-sip-dev || return
-install_package pyqt5-dev-tools || return
-install_package qttools5-dev-tools || return
-install_package python3-pyqt5.qtwebengine || return
-pip install vext.pyqt5
+generate_qrc ()
+{
+  NAME=$1
+pyrcc5 -o ${NAME}_rc.py ${NAME}.qrc
+  if [ $? -ne 0 ]; then
+    pretty_error "  $(padded_message ${NAME} "failed")"
+    return 1
+  fi
+  pretty_print "  $(padded_message ${NAME} "generated")"
+  return 0 
+}
 
-python setup.py develop
+##############################################################################
+
+# Ensure reproducible results so we can avoid committing ad-nauseum to github
+#  https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=872285
+export QT_HASH_SEED=0
 
 echo ""
-echo "Leave the virtual environment with 'deactivate'"
+
+echo -e "${CYAN}Dependencies${RESET}"
+install_package pyqt5-dev-tools || return
+
+echo ""
+
+echo -e "${CYAN}Generating UIs${RESET}"
+generate_ui main_window
+generate_ui web_view
+
+echo ""
+
+echo -e "${CYAN}Generating QRCs${RESET}"
+generate_qrc images
+generate_qrc web_app
+
 echo ""
 echo "I'm grooty, you should be too."
 echo ""

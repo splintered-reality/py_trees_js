@@ -18,10 +18,10 @@
   </property>
   <layout class="QVBoxLayout" name="web_view_layout">
    <item>
-    <widget class="QWebEngineView" name="web_engine_view" native="true">
-     <property name="url" stdset="0">
+    <widget class="QWebEngineView" name="web_engine_view">
+     <property name="url">
       <url>
-       <string>qrc:/resources/html/index.html</string>
+       <string>qrc:/index.html</string>
       </url>
      </property>
     </widget>
@@ -36,7 +36,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="web_view.qrc"/>
+  <include location="web_app.qrc"/>
  </resources>
  <connections/>
 </ui>

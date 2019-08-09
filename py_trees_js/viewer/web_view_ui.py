@@ -15,7 +15,7 @@ class Ui_WebViewGroupBox(object):
         self.web_view_layout = QtWidgets.QVBoxLayout(WebViewGroupBox)
         self.web_view_layout.setObjectName("web_view_layout")
         self.web_engine_view = QtWebEngineWidgets.QWebEngineView(WebViewGroupBox)
-        self.web_engine_view.setProperty("url", QtCore.QUrl("qrc:/resources/html/index.html"))
+        self.web_engine_view.setUrl(QtCore.QUrl("qrc:/index.html"))
         self.web_engine_view.setObjectName("web_engine_view")
         self.web_view_layout.addWidget(self.web_engine_view)
 
@@ -28,4 +28,4 @@ class Ui_WebViewGroupBox(object):
         WebViewGroupBox.setTitle(_translate("WebViewGroupBox", "GroupBox"))
 
 from PyQt5 import QtWebEngineWidgets
-from . import web_view_rc
+from . import web_app_rc

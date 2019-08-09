@@ -14,8 +14,8 @@ var joint = joint
 joint.shapes = joint.shapes || {}
 joint.shapes.trees = joint.shapes.trees || {}
 
-joint.shapes.Node = joint.dia.Element.define(
-    'Node', {
+joint.shapes.trees.Node = joint.dia.Element.define(
+    'trees.Node', {
         size: { width: 170, height: 50 },
         collapse_children: false,
         hidden: false,
@@ -45,7 +45,7 @@ joint.shapes.Node = joint.dia.Element.define(
     }
 );
 
-joint.shapes.NodeView = joint.dia.ElementView.extend({
+joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
       // events: {
     //   'dblclick': 'onDblClick',
     // },
@@ -580,7 +580,7 @@ var py_trees = (function() {
   }
 
   var _create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
-    node = new joint.shapes.Node({
+    node = new joint.shapes.trees.Node({
       name: name,
       behaviour_id: behaviour_id,
       details: details,

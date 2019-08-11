@@ -14,3 +14,5 @@ PyTrees javascript libraries and development/demo qt-js hybrid viewer.
 ##############################################################################
 
 from . import resources
+
+from . import viewer

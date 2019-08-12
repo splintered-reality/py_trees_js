@@ -355,6 +355,10 @@ var py_trees = (function() {
   // *************************************************************************
   //  py_trees.canvas
   // *************************************************************************
+  // Variables
+  //
+  //   graph
+  //     scale_content_to_fit (bool, default: true) - always scale content to fit
 
   /**
    * Right now this is creating the graph. Will have to decide
@@ -512,7 +516,20 @@ var py_trees = (function() {
       console.log("_canvas_create_link_done")
       return link
   }
+  
+  /**
+   * Create graph with initialised variables.
+   */
+  var _canvas_create_graph = function() {
+      graph = new joint.dia.Graph({});
+      graph.set('scale_content_to_fit', true)
+      return graph
+  }
 
+  /**
+   * Initialise the paper with default settings and
+   * configure the interactive callbacks (mouse, clicks, etc).
+   */
   var _canvas_create_paper = function({graph}) {
       console.log("_canvas_create_paper")
       var paper = new joint.dia.Paper({
@@ -617,6 +634,8 @@ var py_trees = (function() {
    * to that explicitly.
    */
   var _canvas_scale = function(paper, event, x, y, delta) {
+      graph = paper.model
+      graph.set('scale_content_to_fit', false)
       scale = paper.scale()
       sx = scale.sx
       sy = scale.sy
@@ -629,12 +648,13 @@ var py_trees = (function() {
    * Initialise data for a panning maneuvre.
    */
   var _canvas_pan_begin = function(paper, event, x, y) {
-    console.log("Panning...")
+      console.log("_canvas_pan_begin")
       scale = paper.scale()
       // TODO: little dirty, monkeypatching paper on the fly
       paper.start_drag = {}
       paper.start_drag.x = x * scale.sx
       paper.start_drag.y = y * scale.sy
+      console.log("_canvas_pan_begin_done")
   }
   /**
    * Pan the canvas, lookup the offset via paper.translate() later
@@ -665,46 +685,46 @@ var py_trees = (function() {
   // *************************************************************************
   // Variables
   //
-  // graph
-  //   buttons ({string: jointjs model}) - keys are one of 'previous', 'next', 'resume'
-  //   cache (jointjs models) - all jointjs objects for timeline events
-  //   streaming (bool)
-  // cache
-  //   selected (joint.shapes.trees.EventMarker) - model for the selected event
-  //   trees ([dict]) - tree data (pure js structure, i.e. no jointjs)
-  //   events ([joint.shapes.trees.EventMarker]) - models for the events
+  //   graph
+  //     buttons ({string: jointjs model}) - keys are one of 'previous', 'next', 'resume'
+  //     cache (jointjs models) - all jointjs objects for timeline events
+  //     streaming (bool)
+  //   cache
+  //     selected (joint.shapes.trees.EventMarker) - model for the selected event
+  //     trees ([dict]) - tree data (pure js structure, i.e. no jointjs)
+  //     events ([joint.shapes.trees.EventMarker]) - models for the events
 
   /**
    * Create a graph for the timeline, allocating storage for the cache
    * to be bounded by the specified cache size.
    */
   var _timeline_create_graph = function({event_cache_limit}) {
-    var graph = new joint.dia.Graph({});
+      var graph = new joint.dia.Graph({});
       separation_width = 20
       height = 30
       timeline_width = 2400
-    var cache = new joint.shapes.standard.Rectangle({
-      position: { x: 0, y: 0},
-      size: { width: timeline_width, height: height },
-      attrs: {
-          body: {
-              fill: '#111111',
-              stroke: '#AAAAAA', 'stroke-width': 1,  // border
-              rx: 5, ry: 5,  // rounded corners
+      var cache = new joint.shapes.standard.Rectangle({
+          position: { x: 0, y: 0},
+          size: { width: timeline_width, height: height },
+          attrs: {
+              body: {
+                  fill: '#111111',
+                  stroke: '#AAAAAA', 'stroke-width': 1,  // border
+                  rx: 5, ry: 5,  // rounded corners
                   filter: {
-                  name: 'highlight',
-                  args: {
-                      color: '#999999',
-                      width: 2,
-                      opacity: 0.8,
-                      blur: 5
-                  }
+                      name: 'highlight',
+                      args: {
+                          color: '#999999',
+                          width: 2,
+                          opacity: 0.8,
+                          blur: 5
+                      }
+                  },
               },
-          },
-      }
-    });
-    cache.set('tree_cache_size', event_cache_limit)
-    cache.set('trees', [])
+          }
+      });
+      cache.set('tree_cache_size', event_cache_limit)
+      cache.set('trees', [])
       var previous = new joint.shapes.standard.Rectangle({
           position: { x: cache.get('size').width + separation_width, y: 0},
           size: { width: 70, height: height },
@@ -731,11 +751,11 @@ var py_trees = (function() {
               }
           }
       });
-    next = previous.clone()
-    next.translate(previous.get('size').width + separation_width, 0)
-    next.attr({
-        label: { text: '>' }
-    })
+      next = previous.clone()
+      next.translate(previous.get('size').width + separation_width, 0)
+      next.attr({
+          label: { text: '>' }
+      })
       resume = next.clone()
       resume.translate(next.get('size').width + separation_width, 0)
       resume.attr({
@@ -752,7 +772,7 @@ var py_trees = (function() {
       graph.set('cache', cache)
       graph.set('buttons', {'previous': previous, 'next': next, 'resume': resume})
       _timeline_toggle_buttons({graph: graph, enabled: false})
-    return graph
+      return graph
   }
 
   /**
@@ -863,6 +883,7 @@ var py_trees = (function() {
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
               _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
               _canvas_layout_graph({graph: canvas_graph})
+              canvas_graph.set('scale_content_to_fit', true)
               _canvas_scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
@@ -1059,6 +1080,7 @@ var py_trees = (function() {
   var _timeline_add_tree_to_cache = function({
           timeline_graph,
           canvas_graph,
+          canvas_paper,
           tree
       }) {
       console.log("Update Timeline Cache")
@@ -1075,6 +1097,9 @@ var py_trees = (function() {
       if ( timeline_graph.get('streaming') ) {
           _canvas_update_graph({graph: canvas_graph, tree: tree})
           _canvas_layout_graph({graph: canvas_graph})
+          if ( graph.get('scale_content_to_fit') ) {
+              _canvas_scale_content_to_fit(canvas_paper)
+          }
       }
   }
 
@@ -1131,6 +1156,7 @@ var py_trees = (function() {
     // methods
     hello: _hello,
     canvas: {
+        create_graph: _canvas_create_graph,
         create_link: _canvas_create_link,
         create_node: _canvas_create_node,
         create_paper: _canvas_create_paper,

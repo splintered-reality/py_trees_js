@@ -34,30 +34,19 @@ class MainWindow(qt_widgets.QMainWindow):
 
     request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
 
-    def __init__(self, default_tree):
+    def __init__(self):
         super().__init__()
         self.ui = main_window_ui.Ui_MainWindow()
         self.ui.setupUi(self)
         self.readSettings()
         self.ui.web_view_group_box.ui.web_engine_view.loadFinished.connect(
-            functools.partial(
-                self.onLoadFinished,
-                default_tree
-            )
+            self.on_load_finished
         )
 
     @qt_core.pyqtSlot()
-    def onLoadFinished(self, default_tree):
+    def on_load_finished(self):
         console.logdebug("web page loaded [main window]")
         self.ui.send_button.setEnabled(True)
-
-        def handle_response(reply):
-            console.logdebug("reply: '{}' [viewer]".format(reply))
-
-        default_tree['timestamp'] = time.time()
-        javascript_command = "render_tree({{tree: {}}})".format(default_tree)
-        web_view_page = self.ui.web_view_group_box.ui.web_engine_view.page()
-        web_view_page.runJavaScript(javascript_command, handle_response)
 
     def closeEvent(self, event):
         console.logdebug("received close event [main_window]")

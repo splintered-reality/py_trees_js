@@ -39,13 +39,13 @@ def send_tree_response(reply):
 
 @qt_core.pyqtSlot()
 def send_tree(web_view_page, demo_trees, unused_checked):
-    send_tree.index = 0 if send_tree.index == 2 else send_tree.index + 1
     demo_trees[send_tree.index]['timestamp'] = time.time()
     console.logdebug("send: tree '{}' [{}][viewer]".format(
         send_tree.index, demo_trees[send_tree.index]['timestamp'])
     )
     javascript_command = "render_tree({{tree: {}}})".format(demo_trees[send_tree.index])
     web_view_page.runJavaScript(javascript_command, send_tree_response)
+    send_tree.index = 0 if send_tree.index == 2 else send_tree.index + 1
 
 
 send_tree.index = 0
@@ -61,10 +61,7 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
-    demo_trees = trees.create_demo_tree_list()
-    window = main_window.MainWindow(
-        default_tree=demo_trees[0]
-    )
+    window = main_window.MainWindow()
 
     # sig interrupt handling
     #   use a timer to get out of the gui thread and
@@ -84,7 +81,7 @@ def main():
         functools.partial(
              send_tree,
              window.ui.web_view_group_box.ui.web_engine_view.page(),
-             demo_trees
+             trees.create_demo_tree_list()
         )
     )
     # qt bringup

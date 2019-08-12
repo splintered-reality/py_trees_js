@@ -575,9 +575,10 @@ var py_trees = (function() {
       paper.on('blank:pointerup',
           _canvas_pan_move.bind(null, paper)
       )
-      paper.on('blank:pointerdblclick',
-          _canvas_scale_content_to_fit.bind(null, paper)
-      )
+      paper.on('blank:pointerdblclick', function(event, x, y) {
+          canvas_graph.set('scale_content_to_fit', true)
+          _canvas_scale_content_to_fit(paper)
+      })
       paper.on('element:pointerdblclick',
         _canvas_collapse_children_handler.bind(null, graph)
       )

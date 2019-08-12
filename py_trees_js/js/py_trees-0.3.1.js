@@ -554,12 +554,16 @@ var py_trees = (function() {
           // ]}
       });
       paper.on('element:mouseover', function(view, event) {
-          // ugh, is there a better way than pulling [0]?
-          //    note; the method used in the view with .find().css({ ... doesn't work
-          view.$box.find('div.html-tooltip')[0].style.display = "block"
+          if ( view.model.get('type') == "trees.Node" ) {
+              // ugh, is there a better way than pulling [0]?
+              //    note; the method used in the view with .find().css({ ... doesn't work
+              view.$box.find('div.html-tooltip')[0].style.display = "block"
+          }
       })
       paper.on('element:mouseout', function(view, event) {
-          view.$box.find('div.html-tooltip')[0].style.display = "none"
+          if ( view.model.get('type') == "trees.Node" ) {
+              view.$box.find('div.html-tooltip')[0].style.display = "none"
+          }
       })
       // cell:mousewheel gives strange scale values back (30.0!)
       paper.on('blank:mousewheel',
@@ -582,6 +586,41 @@ var py_trees = (function() {
       paper.on('element:pointerdblclick',
         _canvas_collapse_children_handler.bind(null, graph)
       )
+      dimensions = paper.getComputedSize()
+      height = 0.8*dimensions.height
+      // splash banner
+      var splash = new joint.shapes.standard.Rectangle({
+          position: { x: dimensions.width / 2.0 - 100, y: 0.1*dimensions.height},
+          size: { width: 200, height: height },
+          attrs: {
+              body: {
+                  fill: '#111111',
+                  stroke: '#AAAAAA', 'stroke-width': 1,  // border
+                  rx: 5, ry: 5,  // rounded corners
+                  'pointer-events': 'none',
+                  filter: {
+                      name: 'highlight',
+                      args: {
+                          color: '#999999',
+                          width: 2,
+                          opacity: 0.8,
+                          blur: 5
+                      }
+                  },
+              },
+              label: {
+                  text: 'Shortcuts\n\n' +
+                        '-------------------------\n\n' +
+                        'Zoom In/Out ......... mousewheel\n\n' +
+                        'Scale to Fit ...... double-click\n\n' +
+                        'Collapse Node ..... single click',
+                  fill: 'white',
+                  'font-size': 10,
+              }
+          }
+      });
+      splash.addTo(graph)
+
       console.log("_canvas_create_paper_done")
       return paper
   }

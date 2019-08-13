@@ -60,6 +60,18 @@ class OverrideInstall(install):
     pass
 
 
+def gather_js_files():
+    data_files = []
+    for root, unused_subdirs, files in os.walk('js'):
+        destination = os.path.join('share', package_name, root)
+        js_files = []
+        for file in files:
+            pathname = os.path.join(root, file)
+            js_files.append(pathname)
+        data_files.append((destination, js_files))
+    return data_files
+
+
 setup(
     # cmdclass={
     #     'develop': OverrideDevelop,
@@ -73,7 +85,7 @@ setup(
     #   index.html.
     version='0.3.1',
     packages=find_packages(exclude=['tests*', 'docs*']),
-    data_files=[('share/' + package_name, ['package.xml'])],
+    data_files=[('share/' + package_name, ['package.xml'])] + gather_js_files(),
     # scripts=['scripts/py-trees-devel-viewer'], not working, but not critical
     package_data={'py_trees_js': ['viewer/*.ui', 'viewer/html/*', 'viewer/images/*']},
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)

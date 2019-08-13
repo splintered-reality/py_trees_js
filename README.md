@@ -119,6 +119,24 @@ will print version information of the loaded javascript libraries (if found) to 
 </html>
 ```
 
+Output from `py_trees.hello()`:
+
+```
+********************************************************************************
+                               Py Trees JS                                 
+
+ A javascript library for visualisation of executing behaviour trees.
+ 
+ Version & Dependency Info:
+  - py_trees:  0.3.1
+    - jointjs :  3.0.2
+       - backbone:  1.4.0
+       - dagre   :  0.8.4
+       - jquery  :  3.4.1
+       - lodash  :  4.17.11
+********************************************************************************
+```
+
 In the next iteration, the canvas is initialised and a callback for
 accepting incoming trees from an external source is prepared. To test it,
 pass it the demo tree provided by the library.

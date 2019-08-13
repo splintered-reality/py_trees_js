@@ -68,40 +68,28 @@ install_package ()
 
 ##############################################################################
 
-install_package virtualenvwrapper || return
+echo ""
+pretty_header "Using pipenv to facilitate the virtual environment"
+echo ""
 
-# To use the installed python3
-VERSION="--python=/usr/bin/python3"
-# To use a specific version
-# VERSION="--python=python3.6"
+install_package python3-pip || return
 
-if [ "${VIRTUAL_ENV}" == "" ]; then
-  workon ${NAME}
-  result=$?
-  if [ $result -eq 1 ]; then
-    mkvirtualenv ${VERSION} ${NAME}
-  fi
-  if [ $result -eq 127 ]; then
-    pretty_error "Failed to find virtualenvwrapper aliases: 1) re-log or 2) source virtualenvwrapper.sh in your shell's .rc"
-    return 1
-  fi
+PACKAGE_NAME=pipenv
+which ${PACKAGE_NAME} > /dev/null
+if [ $? -ne 0 ]; then
+  pip3 install --user pipenv
+else
+  pretty_print "  $(padded_message ${PACKAGE_NAME} "found")"
+fi
+if [ $? -ne 0 ]; then
+  pretty_print "  $(padded_message ${PACKAGE_NAME} "failed")"
+  return
 fi
 
-# Use the external pyqt5 rather than having to compile it in the virtual env
-install_package pyqt5-dev || return
-install_package python3-pyqt5 || return
-install_package python3-pyqt5.qtsvg || return
-install_package python3-sip-dev || return
-install_package pyqt5-dev-tools || return
-install_package qttools5-dev-tools || return
-install_package python3-pyqt5.qtwebengine || return
-pip install vext.pyqt5
-
-python setup.py develop
-
 echo ""
-echo "Leave the virtual environment with 'deactivate'"
+echo "Once entered, leave the virtual env with 'exit'"
 echo ""
 echo "I'm grooty, you should be too."
 echo ""
 
+pipenv shell

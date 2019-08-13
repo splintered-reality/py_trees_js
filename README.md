@@ -15,7 +15,7 @@ Despite primarily catering for use cases with py_trees, these libraries
 can be used for behaviour trees in general since it requires only properties
 common to most behaviour tree implementations and flexibly opts into implementation
 specific data via passing of a key-value dictionary that is appropriately
-formatted in an implemenation-agnostic manner inside the web application.
+formatted in an implementation-agnostic manner inside the web application.
 
 This repository also includes a hybrid Qt-JS application used for development and demonstration purposes.
 

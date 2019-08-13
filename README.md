@@ -1,6 +1,6 @@
 # PyTrees Js
 
-[[About](#about)] [[Roadmap](#roadmap)] [[Building a Web App](#building-a-web-app)] [[The HTML Canvas](#the-html-canvas)] [[Qt-Js Integration](#qt-js-integration)]
+[[About](#about)] [[Roadmap](#roadmap)] [[Building a Web App](#building-a-web-app)] [[The HTML Canvas](#the-html-canvas)] [[Qt-Js Integration](#qt-js-integration)] [[JSON Specification](#json-specification)
 
 ## About
 
@@ -331,7 +331,7 @@ def send_tree(web_view_page, demo_trees, unused_checked):
 send_tree.index = 0
 ```
 
-## Tree Specification
+## JSON Specification
 
 TODO: A JSon schema
 

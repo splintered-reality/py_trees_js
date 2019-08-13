@@ -2,15 +2,16 @@
 
 Javascript libraries for visualisation and monitoring of behaviour trees.
 
-Despite primarily catering for use cases with py_trees, the javascript libraries
-can be used for behaviour trees in general since it requires only details of elements
-common to most behaviour tree implementations. Implementation specific data
-can be encapsulated in a key-value dictionary that is appropriately formatted in
-an implementation agnostic way inside the web application.
+Despite primarily catering for use cases with py_trees, these libraries
+can be used for behaviour trees in general since it requires only properties
+common to most behaviour tree implementations and flexibly opts into implementation
+specific data via passing of a key-value dictionary that is appropriately
+formatted in an implemenation-agnostic manner inside the web application.
 
-A hybrid Qt-JS application is included and use for development and demonstration purposes.
+This repository also includes a hybrid Qt-JS application used for development and demonstration purposes.
 
-![Status Highlights](images/screenshot.png?raw=true "Rendering a Tree")
+![Splash Screen](images/splash.png?raw=true "Splash Screen")
+![Rendering a Tree](images/screenshot.png?raw=true "Rendering a Tree")
 
 ## Roadmap
 

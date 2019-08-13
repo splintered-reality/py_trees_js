@@ -31,9 +31,10 @@ py-trees-demo-viewer
 # OR launch the demo viewer with a js console for debugging
 ./scripts/py-trees-devel-viewer
 ```
-
-<img src="images/splash.png" style="display: block; margin-left: auto; margin-right: auto; width: 50%;">
-<img src="images/screenshot.png" style="display: block; margin-left: auto; margin-right: auto; width: 80%;">
+<p align="center">
+  <img src="images/splash.png" width="80%"/>
+  <img src="images/screenshot.png" width="100%"/>
+</p>
 
 ## Roadmap
 

@@ -242,14 +242,6 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
     })
 
     render_tree = function({tree}) {
-      // if there is no timeline
-      //   py_trees.canvas.update_graph({graph: canvas_graph, tree: tree})
-      //   py_trees.canvas.layout_graph({graph: canvas_graph})
-      //   if ( canvas_graph.get('scale_content_to_fit') ) {
-      //       py_trees.canvas.scale_content_to_fit(canvas_paper)
-      //   }
-
-      // if there is a timeline
       py_trees.timeline.add_tree_to_cache({
           timeline_graph: timeline_graph,
           canvas_graph: canvas_graph,

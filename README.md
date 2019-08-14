@@ -1,6 +1,6 @@
 # PyTrees Js
 
-[[About](#about)] [[Roadmap](#roadmap)] [[Building a Web App](#building-a-web-app)] [[The HTML Canvas](#the-html-canvas)] [[Qt-Js Integration](#qt-js-integration)] [[JSON Specification](#json-specification)]
+[[About](#about)] [[Roadmap](#roadmap)] [[Usage](#usage)] [[Example Integration: Qt-Js Hybrid Application](#example-integration:-qt-js-hybrid-application)] [[The JSON Specification](#the-json-specification)]
 
 ## About
 
@@ -40,20 +40,18 @@ py-trees-demo-viewer
 
 See the [Projects](https://github.com/splintered-reality/py_trees_js/projects?query=is%3Aopen+sort%3Acreated-asc) page for progress and planned milestones.
 
-## Building a Web App
+## Usage
 
-Building a complete web application that can render a behaviour tree stream is an effort that can be decomposed into two tasks:
+Building a complete application that can render a behaviour tree stream is an effort that can be decomposed into two tasks:
 
-1. Creating the html canvas that can be used to render trees and construct a timeline
-2. Wrapping the application in the framework of your choice and connecting it to an external stream
+1. Creating the web app for rendering trees and visualising a timeline
+2. Wrapping the web app in a framework and connecting it to an external stream
 
-The first stage is purely an exercise with html, css and javascript. The latter will depend on your use case - it could
-be a qt-js hybrid application (as exercised here) for developers, an electron application for cross-platform and mobile
-deployment or a cloud based service.
+The first stage is purely an exercise with html, css and javascript. The latter will depend on your use case - it could be a qt-js hybrid application (as exemplified here) for developers, an electron application for cross-platform and mobile deployment or a cloud based service.
 
-### The HTML Canvas
+This section will walk through how to build a web application with the provided js libraries. An example of wrapping the web app within a Qt-Js application will follow. 
 
-Let's start with a basic html page with two divs, one for the tree canvas and one for the timeline:
+To get started, let's begin with a basic html page with two divs, one for the tree canvas and one for the timeline:
 
 ```xhtml
 <html>
@@ -255,7 +253,7 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 </html>
 ```
 
-### Qt-Js Integration
+## Example Integration: Qt-Js Hybrid Application
 
 The demonstration application `py-trees-demo-viewer` is a qt-js hybrid application and serves
 two purposes.
@@ -276,7 +274,7 @@ devices merely requires rewriting the wrapper to fit the framework of choice.
 
 Step-by-step, how does this work?
 
-#### The JS Libraries
+### The JS Libraries
 
 The JS libraries are handled separately from the application and even deployed separately,
 with the obvious advantage that multiple applications can then take advantage of them without
@@ -292,7 +290,7 @@ in [py_trees_js/resources.qrc](py_trees_js/resources.qrc), generated using
 [py_trees_js/resources.py](py_trees_js/resources.py). From this point, any pythonic
 Qt application wishing to visualise behaviour trees need only import this module from the `py_trees_js` package.
 
-#### The Web App
+### The Web App
 
 The web application itself is made available similarly via `.qrc` resources, though
 the need to distribute it as a shareable package is not necessary. Typical steps involve:
@@ -300,17 +298,18 @@ the need to distribute it as a shareable package is not necessary. Typical steps
 1. Bundle the `.html`/`.css` pages into a `.qrc` file
 2. Import into directly into designer when building your Qt application
 
-In this case, [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) has been directly
-loaded into [py_trees_js/viewer/web_view.ui](py_trees_js/viewer/web_view.ui) and the html file loaded into the URL property of the QWebEngineView widget. You could alternatively, generate
-a module from the `.qrc` and import that into the relevant python code. 
+In this case, our web app ([py_trees_js/viewer/html/index.html](py_trees_js/viewer/html/index.html)) has been rolled into [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) which is directly loaded into [py_trees_js/viewer/web_view.ui](py_trees_js/viewer/web_view.ui) where the URL property of the QWebEngineView widget has been configured with the resources `index.html`. 
 
-#### The Qt Application
+You could alternatively, generate a module from the `.qrc` and import that into the
+relevant python code as was done for the javascript resources. 
+
+### The Qt Application
 
 The Qt application can be designed in whatever way you're most comfortable with - via
-Designer, pure C++ or python. The demonstration application in this repo starts with
-designer `.ui` files, generates python modules and finally glues the application together
-via customisation of the generated artifacts using PyQt5. Feel free to use the files
-in [py_trees_js/viewer](py_trees_js/viewer) as a starting point.
+Designer, pure C++ or python. In this case, Qt's Designer is used to produce the `.ui`
+files which are generated into python modules and finally customised and brought together
+as a PyQt5 application. Refer to [py_trees_js/viewer](py_trees_js/viewer) for more details
+or as a reference example from which to start your own Qt-Js hybrid application.
 
 Key elements:
 
@@ -320,7 +319,7 @@ Key elements:
 
 Do not use the QWebView widget - this is deprecating in favour of the QWebEngineView widget. The most notable difference is that QWebView uses Qt's old webkit, while QWebEngineView makes use of Chromium's webkit. 
 
-The second step automagically makes available the javascript resources to the application
+Note that the second step automagically makes available the javascript resources to the application
 when it's loaded. It's not terribly fussy about where it gets loaded, see [py_trees_js/viewer/web_view.py](py_trees_js/viewer/web_view.py) for an example:
 
 ```
@@ -359,7 +358,7 @@ def send_tree(web_view_page, demo_trees, unused_checked):
 send_tree.index = 0
 ```
 
-## JSON Specification
+## The JSON Specification
 
 TODO: A JSon schema
 

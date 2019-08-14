@@ -257,34 +257,46 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 
 ### Qt-Js Integration
 
-The demonstration application contained herein is a qt-js hybrid application. This is especially useful, for example, in robotics teams that lack a dedicated web team to help build and serve web applications. The usual problem being that they need visual and interactive applications in their
-typical development workflow, but the product at the end of the line also needs similar
-applications that can migrate to the cloud or handheld devices. 
+The demonstration application contained herein is a qt-js hybrid application. This is especially useful, for example, in robotics teams that lack a dedicated web team to help build and serve web applications. The usual problem being that developers need visual and interactive applications in their typical development workflow, but the product at the end of the line also needs similar
+applications that can migrate to the cloud or handheld devices. All too often, neither need
+is serviced well or often, even realised. 
 
-The Qt side of the application should endeavour to merely wrap the web application, providing
-a server (QtWebEngine - which internally embeds a chromium webkit), bridges to the ecosystem the application must communicate with and any interactive
+In a Qt-Js hybrid application, the Qt side should endeavour to merely wrap the web application,
+providing a server via QtWebEngine (which internally embeds a chromium webkit), bridges to the ecosystem the application must communicate with and any interactive
 widgets specific for development. The core functionality resides in the web application. If
 designed in this manner, migration to the cloud or handheld applications later merely requires
-rewriting the wrapper to fit the framework of choice.
+rewriting the wrapper to fit the framework of choice. The core functionality in the javascript
+libraries and web application remains the same.
 
 Step-by-step, how does this work?
 
 #### The JS Libraries
 
-The JS libraries can be treated separately and even deployed separately (with the
-obvious advantage that multiple applications can then take advantage of them without
-vendoring them into each and every application that uses them).
+The JS libraries are handled separately from the application and even deployed separately,
+with the obvious advantage that multiple applications can then take advantage of them without
+vendoring them into each and every application that uses them. Typical steps involve:
 
 1. Bundle the javascript resources into a `.qrc` file
 2. Generate the resources as a c++ library / python module
 3. Deploy the c++ library/python module in your development environment
 
+In this demo, the py_trees and jointjs javascript libraries have been collected
+in [py_trees_js/resources.qrc](py_trees_js/resources.qrc), generated using
+[py_trees_js/gen.bash](py_trees_js/gen.bash) resulting in the importable module
+[py_trees_js/resources.py](py_trees_js/resources.py). From this point, any pythonic
+Qt application need only import this module from the `py_trees_js` package.
+
 #### The Web App
 
-Make the HTML/CSS pages available
+The web application itself is made available similarly via `.qrc` resources, though
+the need to distribute it as a shareable package is not necessary. Typical steps involve:
 
 1. Bundle the `.html`/`.css` pages into a `.qrc` file
-2. Import into designer or generate the resources as a c++ library / python module
+2. Import into directly into designer when building your Qt application
+
+In this demo, [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) has been directly
+loaded into [py_trees_js/viewer/web_view.ui](py_trees_js/viewer/web_view.ui) and the html file loaded into the URL property of the QWebEngineView widget. You could alternatively, generate
+a module from the `.qrc` and import that into the relevant python code. 
 
 #### The Qt Application
 

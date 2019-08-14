@@ -1,6 +1,6 @@
 # PyTrees Js
 
-[[About](#about)] [[Roadmap](#roadmap)] [[Usage](#usage)] [[Example Integration: Qt-Js Hybrid Application](#example-integration:-qt-js-hybrid-application)] [[The JSON Specification](#the-json-specification)]
+[[About](#about)] [[Roadmap](#roadmap)] [[Usage](#usage)] [[Example Qt-Js Integration](#example-qt-js-integration)] [[The JSON Specification](#the-json-specification)]
 
 ## About
 
@@ -253,7 +253,7 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 </html>
 ```
 
-## Example Integration: Qt-Js Hybrid Application
+## Example Qt-Js Integration
 
 The demonstration application `py-trees-demo-viewer` is a qt-js hybrid application and serves
 two purposes.

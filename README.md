@@ -257,16 +257,22 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 
 ### Qt-Js Integration
 
-The demonstration application contained herein is a qt-js hybrid application. This is especially useful, for example, in robotics teams that lack a dedicated web team to help build and serve web applications. The usual problem being that developers need visual and interactive applications in their typical development workflow, but the product at the end of the line also needs similar
-applications that can migrate to the cloud or handheld devices. All too often, neither need
-is serviced well or often, even realised. 
+The demonstration application `py-trees-demo-viewer` is a qt-js hybrid application and serves
+two purposes.
 
-In a Qt-Js hybrid application, the Qt side should endeavour to merely wrap the web application,
-providing a server via QtWebEngine (which internally embeds a chromium webkit), bridges to the ecosystem the application must communicate with and any interactive
-widgets specific for development. The core functionality resides in the web application. If
-designed in this manner, migration to the cloud or handheld applications later merely requires
-rewriting the wrapper to fit the framework of choice. The core functionality in the javascript
-libraries and web application remains the same.
+The first purpose is to demonstrate connecting an external source to the `render_tree()`
+method in the web application (as defined above). The demo application here cycles through serialised trees whenever a Qt button is pressed. 
+
+The second purpose is to demonstrate the ease and utility of building a hybrid Qt-JS application. This is especially useful for robotics teams that lack a dedicated web team to help build and serve web applications. The usual problem is that developers need visual and interactive applications in their typical development workflow, whilst the product needs similar applications that can
+run as cloud services or on handheld devices. All too often, robotics developers build Qt applications to meet their needs but not the products, or endeavour to meet the product needs
+with web applications only to make their own development environment overly complex and
+cumbersome (and all too often not having the skills themselves to create polished web applications).
+
+A Qt-Js hybrid application can help meet both needs. Javscript libraries can be
+shared as libraries / modules (via the `.qrc` generation mechanisms), the application
+itself can drop neatly into the developer's environment and if the Qt side endeavours
+to merely wrap the bundled web application, then migrating to a cloud service / mobile
+devices merely requires rewriting the wrapper to fit the framework of choice.
 
 Step-by-step, how does this work?
 
@@ -280,11 +286,11 @@ vendoring them into each and every application that uses them. Typical steps inv
 2. Generate the resources as a c++ library / python module
 3. Deploy the c++ library/python module in your development environment
 
-In this demo, the py_trees and jointjs javascript libraries have been collected
+In this case, the py_trees and jointjs javascript libraries have been listed
 in [py_trees_js/resources.qrc](py_trees_js/resources.qrc), generated using
-[py_trees_js/gen.bash](py_trees_js/gen.bash) resulting in the importable module
+[py_trees_js/gen.bash](py_trees_js/gen.bash), resulting in the importable module
 [py_trees_js/resources.py](py_trees_js/resources.py). From this point, any pythonic
-Qt application need only import this module from the `py_trees_js` package.
+Qt application wishing to visualise behaviour trees need only import this module from the `py_trees_js` package.
 
 #### The Web App
 
@@ -294,7 +300,7 @@ the need to distribute it as a shareable package is not necessary. Typical steps
 1. Bundle the `.html`/`.css` pages into a `.qrc` file
 2. Import into directly into designer when building your Qt application
 
-In this demo, [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) has been directly
+In this case, [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) has been directly
 loaded into [py_trees_js/viewer/web_view.ui](py_trees_js/viewer/web_view.ui) and the html file loaded into the URL property of the QWebEngineView widget. You could alternatively, generate
 a module from the `.qrc` and import that into the relevant python code. 
 

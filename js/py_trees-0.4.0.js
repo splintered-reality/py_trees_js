@@ -359,91 +359,7 @@ var py_trees = (function() {
   //
   //   graph
   //     scale_content_to_fit (bool, default: true) - always scale content to fit
-
-  /**
-   * Right now this is creating the graph. Will have to decide
-   * in future whether new tree serialisations reset the graph
-   * and completely recreate or just update the graph. The latter
-   * may be imoprtant for efficiency concerns or to retain
-   * interactivity information in the graph (e.g. collapsible points).
-   */
-  var _canvas_update_graph = function({graph, tree}) {
-
-    // Log the tree for introspection
-    console.log("_canvas_update_graph")
-    console.log("  behaviours", tree.behaviours)
-    console.log("  visited path: " + tree.visited_path)
-
-    // extract interactive information
-    var collapsed_nodes = []
-    _.each(graph.getElements(), function(el) {
-        behaviour_id = el.get('behaviour_id')
-        if (el.get('collapse_children')) {
-          collapsed_nodes.push(behaviour_id)
-        }
-    })
-
-    // root level json checks
-    // TODO: replace with a json specification verification later
-    if (typeof tree.behaviours == 'undefined') {
-      alert("Tree Parsing Error: tree.behaviours does not exist")
-      return
-    }
-    if (typeof tree.timestamp == 'undefined') {
-        alert("Tree Parsing Error: tree.timestamp does not exist")
-        return
-    }
-    for (behaviour in tree.behaviours) {
-        // at least id, name are required, all others are optional
-        if (typeof tree.behaviours[behaviour].id == 'undefined') {
-            alert("Tree Parsing Error: tree.behaviours[n].id does not exist")
-            return
-        }
-        if (typeof tree.behaviours[behaviour].name == 'undefined') {
-            alert("Tree Parsing Error: tree.behaviours[n].name does not exist")
-            return
-        }
-    }
-
-    // reset
-    graph.clear()
-
-    // repopulate
-    var _nodes = {}
-    for (behaviour in tree.behaviours) {
-        node = _canvas_create_node({
-            behaviour_id: tree.behaviours[behaviour].id,
-            colour: tree.behaviours[behaviour].colour || '#555555',
-            name: tree.behaviours[behaviour].name,
-            status: tree.behaviours[behaviour].status || 'INVALID',
-            details: tree.behaviours[behaviour].details || '...',
-            visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
-            data: tree.behaviours[behaviour].data || {},
-        })
-        _nodes[tree.behaviours[behaviour].id] = node
-        node.addTo(graph)
-    }
-    for (behaviour in tree.behaviours) {
-        if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
-            tree.behaviours[behaviour].children.forEach(function (child_id, index) {
-                link = _canvas_create_link({
-                    source: _nodes[tree.behaviours[behaviour].id],
-                    target: _nodes[child_id],
-                })
-                link.addTo(graph)
-            });
-        }
-    }
-
-    // re-establish interactive properties
-    _.each(graph.getElements(), function(el) {
-        behaviour_id = el.get("behaviour_id")
-        if (collapsed_nodes.includes(behaviour_id)) {
-          _canvas_collapse_children(graph, el)
-        }
-    })
-    console.log("_canvas_update_graph_done")
-  }
+  //     splash (bool) - showing the splash cheat sheet or a rendered tree
 
   /**
    * Create elided details from a details (text) snippet.
@@ -586,12 +502,26 @@ var py_trees = (function() {
       paper.on('element:pointerdblclick',
         _canvas_collapse_children_handler.bind(null, graph)
       )
+
+      graph.set("splash", true)
+      _canvas_create_splash(paper)
+
+      console.log("_canvas_create_paper_done")
+      return paper
+  }
+
+  /**
+   * Create the graph that shows the splash (shortcuts sheet).
+   */
+  var _canvas_create_splash = function(paper) {
+      graph = paper.model
+      graph.clear()
       dimensions = paper.getComputedSize()
       height = 0.8*dimensions.height
       // splash banner
       var splash = new joint.shapes.standard.Rectangle({
           position: { x: dimensions.width / 2.0 - 100, y: 0.1*dimensions.height},
-          size: { width: 200, height: height },
+          size: { width: 300, height: height },
           attrs: {
               body: {
                   fill: '#111111',
@@ -615,14 +545,11 @@ var py_trees = (function() {
                         'Scale to Fit ...... double-click\n\n' +
                         'Collapse Node ..... single click',
                   fill: 'white',
-                  'font-size': 10,
+                  'font-size': 12,
               }
           }
       });
       splash.addTo(graph)
-
-      console.log("_canvas_create_paper_done")
-      return paper
   }
 
   var _canvas_layout_graph = function({graph}) {
@@ -667,21 +594,27 @@ var py_trees = (function() {
           })
       })
   }
+
   /**
-   * Scale the canvas. Note that paper will automagically
-   * re-render the models, but any html added via views
-   * needs to listen to the paper.scale trigger and react
-   * to that explicitly.
+   * Handle window resizing events. Needs to be hooked up
+   * on the outside, e.g. in the web app:
+   *
+   *    $(window).resize(function() {
+   *      py_trees.canvas.on_window_resize(canvas_paper)
+   *    })
    */
-  var _canvas_scale = function(paper, event, x, y, delta) {
+  var _canvas_on_window_resize = function(paper) {
+      console.log("_canvas_on_window_resize")
       graph = paper.model
-      graph.set('scale_content_to_fit', false)
-      scale = paper.scale()
-      sx = scale.sx
-      sy = scale.sy
-      sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 10.0)
-      sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
-      paper.scale(sx, sy)
+      console.log("  scale_content_to_fit: ", graph.get('scale_content_to_fit'))
+      if (graph.get('splash')) {
+          _canvas_create_splash(paper)
+      } else {
+          if (graph.get('scale_content_to_fit')) {
+            _canvas_scale_content_to_fit(paper)
+          }
+      }
+      console.log("_canvas_on_window_resize_done")
   }
 
   /**
@@ -707,17 +640,121 @@ var py_trees = (function() {
       )
   }
   /**
+   * Scale the canvas. Note that paper will automagically
+   * re-render the models, but any html added via views
+   * needs to listen to the paper.scale trigger and react
+   * to that explicitly.
+   */
+  var _canvas_scale = function(paper, event, x, y, delta) {
+      graph = paper.model
+      graph.set('scale_content_to_fit', false)
+      scale = paper.scale()
+      sx = scale.sx
+      sy = scale.sy
+      sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 10.0)
+      sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
+      paper.scale(sx, sy)
+  }
+  /**
    * Fit the tree to the canvas if scale < 1.0,
    * otherwise just render it normally (scale: 1.0).
    */
   var _canvas_scale_content_to_fit = function(paper, event, x, y) {
-      console.log("Scaling content to fit canvas...")
+      console.log("_canvas_scale_content_to_fit")
       paper.scaleContentToFit({
           padding: 50,
           minScale: 0.1,
           maxScale: 1.0,
-          scaleGrid: 0.1,
+          scaleGrid: 0.01,
       });
+      console.log("_canvas_scale_content_to_fit_done")
+  }
+
+  /**
+   * Right now this is creating the graph. Will have to decide
+   * in future whether new tree serialisations reset the graph
+   * and completely recreate or just update the graph. The latter
+   * may be imoprtant for efficiency concerns or to retain
+   * interactivity information in the graph (e.g. collapsible points).
+   */
+  var _canvas_update_graph = function({graph, tree}) {
+
+    // Log the tree for introspection
+    console.log("_canvas_update_graph")
+    console.log("  behaviours", tree.behaviours)
+    console.log("  visited path: " + tree.visited_path)
+
+    graph.set("splash", false)
+
+    // extract interactive information
+    var collapsed_nodes = []
+    _.each(graph.getElements(), function(el) {
+        behaviour_id = el.get('behaviour_id')
+        if (el.get('collapse_children')) {
+          collapsed_nodes.push(behaviour_id)
+        }
+    })
+
+    // root level json checks
+    // TODO: replace with a json specification verification later
+    if (typeof tree.behaviours == 'undefined') {
+      alert("Tree Parsing Error: tree.behaviours does not exist")
+      return
+    }
+    if (typeof tree.timestamp == 'undefined') {
+        alert("Tree Parsing Error: tree.timestamp does not exist")
+        return
+    }
+    for (behaviour in tree.behaviours) {
+        // at least id, name are required, all others are optional
+        if (typeof tree.behaviours[behaviour].id == 'undefined') {
+            alert("Tree Parsing Error: tree.behaviours[n].id does not exist")
+            return
+        }
+        if (typeof tree.behaviours[behaviour].name == 'undefined') {
+            alert("Tree Parsing Error: tree.behaviours[n].name does not exist")
+            return
+        }
+    }
+
+    // reset
+    graph.clear()
+
+    // repopulate
+    var _nodes = {}
+    for (behaviour in tree.behaviours) {
+        node = _canvas_create_node({
+            behaviour_id: tree.behaviours[behaviour].id,
+            colour: tree.behaviours[behaviour].colour || '#555555',
+            name: tree.behaviours[behaviour].name,
+            status: tree.behaviours[behaviour].status || 'INVALID',
+            details: tree.behaviours[behaviour].details || '...',
+            visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
+            data: tree.behaviours[behaviour].data || {},
+        })
+        _nodes[tree.behaviours[behaviour].id] = node
+        node.addTo(graph)
+    }
+    for (behaviour in tree.behaviours) {
+        if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
+            tree.behaviours[behaviour].children.forEach(function (child_id, index) {
+                link = _canvas_create_link({
+                    source: _nodes[tree.behaviours[behaviour].id],
+                    target: _nodes[child_id],
+                })
+                link.addTo(graph)
+            });
+        }
+    }
+
+    // re-establish interactive properties
+    _.each(graph.getElements(), function(el) {
+        behaviour_id = el.get("behaviour_id")
+        if (collapsed_nodes.includes(behaviour_id)) {
+          _canvas_collapse_children(graph, el)
+        }
+    })
+    console.log("_canvas_update_graph_done")
   }
 
   // *************************************************************************
@@ -730,7 +767,8 @@ var py_trees = (function() {
   //     cache (jointjs models) - all jointjs objects for timeline events
   //     streaming (bool)
   //   cache
-  //     selected (joint.shapes.trees.EventMarker) - model for the selected event
+  //     selected (joint.shapes.trees.EventMarker) - model for the selected event marker (rendered tree)
+  //     selected_index (int) - index in trees / event markers lists for currently rendered tree
   //     trees ([dict]) - tree data (pure js structure, i.e. no jointjs)
   //     events ([joint.shapes.trees.EventMarker]) - models for the events
 
@@ -948,6 +986,21 @@ var py_trees = (function() {
           }
       }
   }
+
+  /**
+   * Handle window resizing events. Needs to be hooked up
+   * on the outside, e.g. in the web app:
+   *
+   *    $(window).resize(function() {
+   *      py_trees.timeline.on_window_resize(timeline_paper)
+   *    })
+   */
+  var _timeline_on_window_resize = function(paper) {
+      console.log("_timeline_on_window_resize")
+      _timeline_scale_content_to_fit(paper)
+      console.log("_timeline_on_window_resize_done")
+  }
+
   var _timeline_select_event = function(
           timeline_graph,
           canvas_graph,
@@ -963,6 +1016,7 @@ var py_trees = (function() {
       // render
       _canvas_update_graph({graph: canvas_graph, tree: tree})
       _canvas_layout_graph({graph: canvas_graph})
+      canvas_graph.set('scale_content_to_fit', true)
       _canvas_scale_content_to_fit(canvas_paper)
 
       // update timeline highlight
@@ -1081,13 +1135,14 @@ var py_trees = (function() {
   }
 
   var _timeline_scale_content_to_fit = function(paper) {
-      console.log("Scaling content to fit timeline...")
+      console.log("_timeline_scale_content_to_fit")
       paper.scaleContentToFit({
           padding: 10,
           minScale: 0.1,
           preserveAspectRatio: false,
           scaleGrid: 0.005,
       });
+      console.log("_timeline_scale_content_to_fit_done")
   }
 
   /**
@@ -1119,7 +1174,7 @@ var py_trees = (function() {
       if ( timeline_graph.get('streaming') ) {
           _canvas_update_graph({graph: canvas_graph, tree: tree})
           _canvas_layout_graph({graph: canvas_graph})
-          if ( graph.get('scale_content_to_fit') ) {
+          if ( canvas_graph.get('scale_content_to_fit') ) {
               _canvas_scale_content_to_fit(canvas_paper)
           }
       }
@@ -1187,6 +1242,7 @@ var py_trees = (function() {
         create_node: _canvas_create_node,
         create_paper: _canvas_create_paper,
         layout_graph: _canvas_layout_graph,
+        on_window_resize: _canvas_on_window_resize,
         scale_content_to_fit: _canvas_scale_content_to_fit,
         update_graph: _canvas_update_graph,
     },
@@ -1197,7 +1253,7 @@ var py_trees = (function() {
       add_tree_to_cache: _timeline_add_tree_to_cache,
       create_graph: _timeline_create_graph,
       create_paper: _timeline_create_paper,
-      scale_content_to_fit: _timeline_scale_content_to_fit,
+      on_window_resize: _timeline_on_window_resize,
     },
   };
 })(); // namespace py_trees

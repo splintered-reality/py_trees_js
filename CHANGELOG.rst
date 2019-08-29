@@ -4,9 +4,14 @@ Changelog
 
 Forthcoming
 -----------
+* ...
+
+0.5.0 (2019-08-29)
+------------------
 * [js] robustness against identical timestamps, `#109 <https://github.com/splintered-reality/py_trees_js/pull/109>`_
 * [html] disable scrollbars, `#110 <https://github.com/splintered-reality/py_trees_js/pull/110>`_
 * [js] improved window resize handling, `#111 <https://github.com/splintered-reality/py_trees_js/pull/111>`_
+  * new public api ``py_trees.canvas.on_window_resize`` and ``py_trees.timeline.on_window_resize``
 
 0.4.0 (2019-08-13)
 ------------------

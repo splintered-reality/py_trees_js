@@ -516,7 +516,7 @@ var py_trees = (function() {
       console.log("_canvas_create_link_done")
       return link
   }
-  
+
   /**
    * Create graph with initialised variables.
    */
@@ -834,7 +834,7 @@ var py_trees = (function() {
           _timeline_handle_element_pointerclicks.bind(null, timeline_graph, canvas_graph, canvas_paper)
       )
       paper.on(
-          'element:pointermove', 
+          'element:pointermove',
           _timeline_handle_dragging.bind(null, paper)
       )
       paper.on('element:pointerdown', _timeline_handle_button_pressed)
@@ -927,50 +927,22 @@ var py_trees = (function() {
               _canvas_scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
-              console.log("    # trees: ", trees.length)
-              console.log("    # events: ", events.length)
-              tree_timestamps = [] 
-              trees.forEach(function (tree, index) {
-                  tree_timestamps.push(tree.timestamp)
-              })
-              event_timestamps = []
-              events.forEach(function (model, index) {
-                  event_timestamps.push(model.get('tree').timestamp)
-              })
-              console.log("    tree  timestamps: ", tree_timestamps)
-              console.log("    event timestamps: ", event_timestamps)
-              console.log("    selected timestamp: ", cache.get('selected').get('tree').timestamp)
-              console.log("    selected id: ", cache.get('selected').get('id'))
-              for (var index = 0; index < events.length; index++) {
-                  if ( events[index].get('id') == cache.get('selected').get('id') ) {
-                      if ( index != events.length - 1) {
-                          console.log("    next  timestamp : ", events[index+1].get('tree').timestamp)
-                          _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index+1])
-                          break
-                      }
-                  }
+              index = cache.get('selected_index')
+              if ( index != events.length - 1) {
+                  console.log("    next  timestamp : ", events[index+1].get('tree').timestamp)
+                  _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index+1])
+              } else {
+                  console.log("    obstinately refusing to advance to the 'next' event marker [already at the end of the timeline]")
               }
           } else if ( view.model.id == timeline_graph.get('buttons')["previous"].id ) {
               console.log("  clicked 'previous'")
-              tree_timestamps = [] 
-              trees.forEach(function (tree, index) {
-                  tree_timestamps.push(tree.timestamp)
-              })
-              event_timestamps = []
-              events.forEach(function (model, index) {
-                  event_timestamps.push(model.get('tree').timestamp)
-              })
-              console.log("    tree  timestamps: ", tree_timestamps)
-              console.log("    event timestamps: ", event_timestamps)
-              console.log("    selected timestamp: ", cache.get('selected').get('tree').timestamp)
-              trees.forEach(function (tree, index) {
-                  if ( tree.timestamp == cache.get('selected').get('tree').timestamp ) {
-                      if ( index != 0) {
-                          console.log("    previous timestamp: ", events[index-1].get('tree').timestamp)
-                          _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index-1])
-                      }
-                  }
-              })
+              index = cache.get('selected_index')
+              if ( index != 0) {
+                  console.log("    next  timestamp : ", events[index-1].get('tree').timestamp)
+                  _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index-1])
+              } else {
+                  console.log("    obstinately refusing to advance to the 'previous' event marker [already at the beginning of the timeline]")
+              }
           } else {
               alert("Error: unknown element clicked")
           }
@@ -985,6 +957,7 @@ var py_trees = (function() {
       console.log("Select timeline event")
 
       cache = timeline_graph.get('cache')
+      events = cache.get('events')
       tree = event.get('tree')
 
       // render
@@ -1000,6 +973,12 @@ var py_trees = (function() {
       })
       _timeline_highlight_event({event: event, highlight: true})
       cache.set('selected', event)
+      for (var index = 0; index < events.length; index++) {
+          if (events[index].get('id') == event.get('id')) {
+              cache.set('selected_index', index)
+              break
+          }
+      }
   }
 
   /**
@@ -1054,6 +1033,7 @@ var py_trees = (function() {
    */
   var _timeline_highlight_event = function({event, highlight}) {
       if ( highlight ) {
+          event.toFront()
           event.attr({
               body: {
                   fill: 'red'
@@ -1131,6 +1111,7 @@ var py_trees = (function() {
       // update the tree cache
       if ( trees.length == cache.get('event_cache_limit')) {
           trees.shift() // pop first element
+          cache.set('selected_index', cache.get('selected_index') - 1)
       }
       trees.push(tree)
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
@@ -1149,7 +1130,7 @@ var py_trees = (function() {
 
     cache = graph.get('cache')
     trees = cache.get('trees')
-    
+
     // clear the visual cache
     _.each(cache.getEmbeddedCells(), function(embedded) {
         cache.unembed(embedded)
@@ -1160,7 +1141,7 @@ var py_trees = (function() {
     max_timestamp = trees[trees.length - 1]['timestamp']
     delta = max_timestamp - min_timestamp
     // handle the case when only trees are the same timestamp (yes, can happen!)
-    delta = delta == 0 ? max_timestamp : delta 
+    delta = delta == 0 ? max_timestamp : delta
     dimensions = cache.getBBox()
     trees.forEach(function (tree, index) {
       // normalise between 0.05 and 0.95
@@ -1176,9 +1157,11 @@ var py_trees = (function() {
           if (index == trees.length - 1) {
               _timeline_highlight_event({event: event_marker, highlight: true})
               cache.set('selected', event_marker)
+              cache.set('selected_index', index)
           }
       } else {
-          if ( trees[index].timestamp == cache.get('selected').get('tree').timestamp) {
+          if (index == cache.get('selected_index')) {
+              cache.set('selected', event_marker)
               _timeline_highlight_event({event: event_marker, highlight: true})
           }
       }

@@ -15,7 +15,6 @@ A qt-javascript application for viewing executing or replaying py_trees
 ##############################################################################
 
 import functools
-import json
 import signal
 import sys
 import time
@@ -40,6 +39,7 @@ def send_tree_response(reply):
 @qt_core.pyqtSlot()
 def send_tree(web_view_page, demo_trees, unused_checked):
     demo_trees[send_tree.index]['timestamp'] = time.time()
+    # demo_trees[send_tree.index]['timestamp'] = time.time()
     console.logdebug("send: tree '{}' [{}][viewer]".format(
         send_tree.index, demo_trees[send_tree.index]['timestamp'])
     )

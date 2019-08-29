@@ -1156,8 +1156,10 @@ var py_trees = (function() {
     })
     events = []
     min_timestamp = trees.length == 1 ? 0 : trees[0]['timestamp']
-      max_timestamp = trees[trees.length - 1]['timestamp']
+    max_timestamp = trees[trees.length - 1]['timestamp']
     delta = max_timestamp - min_timestamp
+    // handle the case when only trees are the same timestamp (yes, can happen!)
+    delta = delta == 0 ? max_timestamp : delta 
     dimensions = cache.getBBox()
     trees.forEach(function (tree, index) {
       // normalise between 0.05 and 0.95

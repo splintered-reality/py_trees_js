@@ -39,7 +39,11 @@ def send_tree_response(reply):
 
 @qt_core.pyqtSlot()
 def send_tree(web_view_page, demo_trees, unused_checked):
-    demo_trees[send_tree.index]['timestamp'] = time.time()
+    if send_tree.index != 1:
+        demo_trees[send_tree.index]['timestamp'] = time.time()
+    else:
+        demo_trees[send_tree.index]['timestamp'] = demo_trees[send_tree.index -1]['timestamp']
+    # demo_trees[send_tree.index]['timestamp'] = time.time()
     console.logdebug("send: tree '{}' [{}][viewer]".format(
         send_tree.index, demo_trees[send_tree.index]['timestamp'])
     )

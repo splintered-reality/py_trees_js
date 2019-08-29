@@ -940,9 +940,10 @@ var py_trees = (function() {
               console.log("    tree  timestamps: ", tree_timestamps)
               console.log("    event timestamps: ", event_timestamps)
               console.log("    selected timestamp: ", cache.get('selected').get('tree').timestamp)
-              for (var index = 0; index < trees.length; index++) {
-                  if ( trees[index].timestamp == cache.get('selected').get('tree').timestamp ) {
-                      if ( index != trees.length - 1) {
+              console.log("    selected id: ", cache.get('selected').get('id'))
+              for (var index = 0; index < events.length; index++) {
+                  if ( events[index].get('id') == cache.get('selected').get('id') ) {
+                      if ( index != events.length - 1) {
                           console.log("    next  timestamp : ", events[index+1].get('tree').timestamp)
                           _timeline_select_event(timeline_graph, canvas_graph, canvas_paper, events[index+1])
                           break

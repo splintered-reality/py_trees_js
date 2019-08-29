@@ -4,6 +4,8 @@ Changelog
 
 Forthcoming
 -----------
+* [js] robustness against identical timestamps, `#109 <https://github.com/splintered-reality/py_trees_js/pull/109>`_
+* [html] disable scrollbars, `#110 <https://github.com/splintered-reality/py_trees_js/pull/110>`_
 
 0.4.0 (2019-08-13)
 ------------------

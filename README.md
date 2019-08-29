@@ -49,7 +49,7 @@ Building a complete application that can render a behaviour tree stream is an ef
 
 The first stage is purely an exercise with html, css and javascript. The latter will depend on your use case - it could be a qt-js hybrid application (as exemplified here) for developers, an electron application for cross-platform and mobile deployment or a cloud based service.
 
-This section will walk through how to build a web application with the provided js libraries. An example of wrapping the web app within a Qt-Js application will follow. 
+This section will walk through how to build a web application with the provided js libraries. An example of wrapping the web app within a Qt-Js application will follow.
 
 To get started, let's begin with a basic html page with two divs, one for the tree canvas and one for the timeline:
 
@@ -62,6 +62,7 @@ To get started, let's begin with a basic html page with two divs, one for the tr
 <style>
   body {
     margin: 0;
+    overflow:hidden;  <!-- no scrollbars -->
   }
 </style>
 <body>
@@ -80,7 +81,7 @@ of deployment (see next section for an example).
 Note that the `py_trees-<version>.js` library has only one dependency, [jointjs](https://resources.jointjs.com/docs/jointjs/v3.0/joint.html),
 but that in turn has a few dependencies of it's own. The bundled libraries in the `js/jointjs` folder
 of this repository correspond to the requirements for a specific version of jointjs and
-have been tested to work with the accompany `py_trees-<version>.js` library.  
+have been tested to work with the accompany `py_trees-<version>.js` library.
 
 You can verify that the libraries have been properly imported by calling `py_trees.hello()` which
 will print version information of the loaded javascript libraries (if found) to the javascript console.
@@ -103,6 +104,7 @@ will print version information of the loaded javascript libraries (if found) to 
 <style>
   body {
     margin: 0;
+    overflow:hidden;  <!-- no scrollbars -->
   }
 </style>
 <body>
@@ -121,10 +123,10 @@ Output from `py_trees.hello()`:
 
 ```
 ********************************************************************************
-                               Py Trees JS                                 
+                               Py Trees JS
 
  A javascript library for visualisation of executing behaviour trees.
- 
+
  Version & Dependency Info:
   - py_trees:  0.3.1
     - jointjs :  3.0.2
@@ -157,6 +159,7 @@ pass it the demo tree provided by the library.
 <style>
   body {
     margin: 0;
+    overflow:hidden;  <!-- no scrollbars -->
   }
 </style>
 <body>
@@ -171,7 +174,7 @@ pass it the demo tree provided by the library.
     // rendering canvas
     canvas_graph = py_trees.canvas.create_graph()
     canvas_paper = py_trees.canvas.create_paper({graph: canvas_graph})
-    
+
     render_tree = function({tree}) {
       py_trees.canvas.update_graph({graph: canvas_graph, tree: tree})
       py_trees.canvas.layout_graph({graph: canvas_graph})
@@ -211,6 +214,7 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 <style>
   body {
     margin: 0;
+    overflow:hidden;  <!-- no scrollbars -->
   }
 </style>
 <body>
@@ -233,10 +237,11 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
         canvas_graph: canvas_graph,
         canvas_paper: canvas_paper,
     })
-    
+
     // react to window resizing events
     $(window).resize(function() {
-      py_trees.timeline.scale_content_to_fit(timeline_paper)
+      py_trees.canvas.on_window_resize(canvas_paper)
+      py_trees.timeline.on_window_resize(timeline_paper)
     })
 
     render_tree = function({tree}) {
@@ -259,7 +264,7 @@ The demonstration application `py-trees-demo-viewer` is a qt-js hybrid applicati
 two purposes.
 
 The first purpose is to demonstrate connecting an external source to the `render_tree()`
-method in the web application (as defined above). The demo application here cycles through serialised trees whenever a Qt button is pressed. 
+method in the web application (as defined above). The demo application here cycles through serialised trees whenever a Qt button is pressed.
 
 The second purpose is to demonstrate the ease and utility of building a hybrid Qt-JS application. This is especially useful for robotics teams that lack a dedicated web team to help build and serve web applications. The usual problem is that developers need visual and interactive applications in their typical development workflow, whilst the product needs similar applications that can
 run as cloud services or on handheld devices. All too often, robotics developers build Qt applications to meet their needs but not the products, or endeavour to meet the product needs
@@ -298,10 +303,10 @@ the need to distribute it as a shareable package is not necessary. Typical steps
 1. Bundle the `.html`/`.css` pages into a `.qrc` file
 2. Import into directly into designer when building your Qt application
 
-In this case, our web app ([py_trees_js/viewer/html/index.html](py_trees_js/viewer/html/index.html)) has been rolled into [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) which is directly loaded into [py_trees_js/viewer/web_view.ui](py_trees_js/viewer/web_view.ui) where the URL property of the QWebEngineView widget has been configured with the resources `index.html`. 
+In this case, our web app ([py_trees_js/viewer/html/index.html](py_trees_js/viewer/html/index.html)) has been rolled into [py_trees_js/viewer/web_app.qrc](py_trees_js/viewer/web_app.qrc) which is directly loaded into [py_trees_js/viewer/web_view.ui](py_trees_js/viewer/web_view.ui) where the URL property of the QWebEngineView widget has been configured with the resources `index.html`.
 
 You could alternatively, generate a module from the `.qrc` and import that into the
-relevant python code as was done for the javascript resources. 
+relevant python code as was done for the javascript resources.
 
 ### The Qt Application
 
@@ -317,14 +322,14 @@ Key elements:
 2. Link/import the javascript module in the web engine view class
 3. Load the html page into the QWebEngineView view
 
-Do not use the QWebView widget - this is deprecating in favour of the QWebEngineView widget. The most notable difference is that QWebView uses Qt's old webkit, while QWebEngineView makes use of Chromium's webkit. 
+Do not use the QWebView widget - this is deprecating in favour of the QWebEngineView widget. The most notable difference is that QWebView uses Qt's old webkit, while QWebEngineView makes use of Chromium's webkit.
 
 Note that the second step automagically makes available the javascript resources to the application
 when it's loaded. It's not terribly fussy about where it gets loaded, see [py_trees_js/viewer/web_view.py](py_trees_js/viewer/web_view.py) for an example:
 
 ```
 # This is the module generated by running pyrcc5 on the js libraries .qrc
-# It could have been equivalently deployed in a completely different python package 
+# It could have been equivalently deployed in a completely different python package
 import py_trees_js.resources
 ```
 
@@ -365,7 +370,7 @@ TODO: A JSon schema
 Roughly, the specification expects json objects of the form:
 
 * timestamp: int
-* behaviours: dict[str, dict] 
+* behaviours: dict[str, dict]
 * (optional) visited_path: list[str]
 
 where each behaviour in the dict has specification:
@@ -374,7 +379,7 @@ where each behaviour in the dict has specification:
 * status: Union[`INVALID`,`FAILURE`, `RUNNING`, `SUCCESS`]
 * name: str
 * colour: <html style hex code>
-* (optional) children: List[str] 
+* (optional) children: List[str]
 * (optional) data: <generic key-value dictionary>
 
 Identification strings (id's) must be unique and are used as both keys for the

@@ -50,6 +50,25 @@ def send_tree(web_view_page, demo_trees, unused_checked):
 
 send_tree.index = 0
 
+
+@qt_core.pyqtSlot()
+def capture_screenshot(parent, web_engine_view, unused_checked):
+    # demo_trees[send_tree.index]['timestamp'] = time.time()
+    console.logdebug("capture screenshot [viewer]")
+    options = qt_widgets.QFileDialog.Options()
+    # options |= qt_widgets.QFileDialog.DontUseNativeDialog
+    filename, _ = qt_widgets.QFileDialog.getSaveFileName(
+        parent=parent,
+        caption="Export to Png",
+        directory="",
+        filter="BMP Files (*.bmp);;JPEG Files (*.jpeg);;PNG Files (*.png)",  # for multiple options, use ;;, e.g. 'All Files (*);;Png Files (*.png)'
+        initialFilter="PNG Files (*.png)",
+        options=options
+    )
+    if filename:
+        print(filename)
+    web_engine_view.grab().save(filename, b'PNG')
+
 ##############################################################################
 # Main
 ##############################################################################
@@ -79,11 +98,19 @@ def main():
     # sigslots
     window.ui.send_button.clicked.connect(
         functools.partial(
-             send_tree,
-             window.ui.web_view_group_box.ui.web_engine_view.page(),
-             trees.create_demo_tree_list()
+            send_tree,
+            window.ui.web_view_group_box.ui.web_engine_view.page(),
+            trees.create_demo_tree_list()
         )
     )
+    window.ui.screenshot_button.clicked.connect(
+        functools.partial(
+            capture_screenshot,
+            window,
+            window.ui.web_view_group_box.ui.web_engine_view,
+        )
+    )
+
     # qt bringup
     window.show()
     result = app.exec_()

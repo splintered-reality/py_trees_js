@@ -47,6 +47,7 @@ class MainWindow(qt_widgets.QMainWindow):
     def on_load_finished(self):
         console.logdebug("web page loaded [main window]")
         self.ui.send_button.setEnabled(True)
+        self.ui.screenshot_button.setEnabled(True)
 
     def closeEvent(self, event):
         console.logdebug("received close event [main_window]")

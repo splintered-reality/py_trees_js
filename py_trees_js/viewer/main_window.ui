@@ -47,7 +47,7 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dock_widget_contents">
-    <layout class="QVBoxLayout" name="dock_vertical_layout">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QPushButton" name="send_button">
        <property name="enabled">
@@ -55,6 +55,16 @@
        </property>
        <property name="text">
         <string>Send Tree</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="screenshot_button">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Screenshot</string>
        </property>
       </widget>
      </item>

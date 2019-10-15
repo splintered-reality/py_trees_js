@@ -35,14 +35,18 @@ class Ui_MainWindow(object):
         self.dock_widget.setObjectName("dock_widget")
         self.dock_widget_contents = QtWidgets.QWidget()
         self.dock_widget_contents.setObjectName("dock_widget_contents")
-        self.dock_vertical_layout = QtWidgets.QVBoxLayout(self.dock_widget_contents)
-        self.dock_vertical_layout.setObjectName("dock_vertical_layout")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.dock_widget_contents)
+        self.verticalLayout.setObjectName("verticalLayout")
         self.send_button = QtWidgets.QPushButton(self.dock_widget_contents)
         self.send_button.setEnabled(False)
         self.send_button.setObjectName("send_button")
-        self.dock_vertical_layout.addWidget(self.send_button)
+        self.verticalLayout.addWidget(self.send_button)
+        self.screenshot_button = QtWidgets.QPushButton(self.dock_widget_contents)
+        self.screenshot_button.setEnabled(False)
+        self.screenshot_button.setObjectName("screenshot_button")
+        self.verticalLayout.addWidget(self.screenshot_button)
         spacerItem = QtWidgets.QSpacerItem(20, 218, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.dock_vertical_layout.addItem(spacerItem)
+        self.verticalLayout.addItem(spacerItem)
         self.dock_widget.setWidget(self.dock_widget_contents)
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dock_widget)
 
@@ -54,6 +58,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "PyTrees Viewer"))
         self.web_view_group_box.setTitle(_translate("MainWindow", "Tree View"))
         self.send_button.setText(_translate("MainWindow", "Send Tree"))
+        self.screenshot_button.setText(_translate("MainWindow", "Screenshot"))
 
 from py_trees_js.viewer.web_view import WebViewGroupBox
 from . import images_rc

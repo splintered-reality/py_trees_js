@@ -426,6 +426,31 @@ var py_trees = (function() {
   var _canvas_create_link = function({source, target}) {
       console.log("_canvas_create_link")
       var link = new joint.shapes.standard.Link();
+      console.log(target)
+      console.log("Status: ", target.get("status"))
+      if (target.get("visited")) {
+          switch(target.get("status")) {
+              case "SUCCESS":
+                  stroke = 'green'
+                  break;
+              case "RUNNING":
+                  stroke = 'blue'
+                  break;
+              case "FAILURE":
+                  stroke = 'red'
+                  break;
+              case "INVALID":
+                  stroke = 'white'
+                  break;
+              default:
+                  stroke = 'gray'
+          }
+          link.attr({
+              line: { // selector for the visible <path> SVGElement
+                  stroke: stroke // SVG attribute and value
+              }
+          });
+      }
       link.source(source)
       link.target(target)
       link.connector('smooth')

@@ -4,7 +4,8 @@ Changelog
 
 Forthcoming
 -----------
-* ...
+* [qt] capture screenshots, `#114 <https://github.com/splintered-reality/py_trees_js/pull/114>`_
+* [js] highlighted links, `#115 <https://github.com/splintered-reality/py_trees_js/pull/115>`_
 
 0.5.0 (2019-08-29)
 ------------------

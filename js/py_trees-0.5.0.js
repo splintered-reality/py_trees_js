@@ -453,7 +453,27 @@ var py_trees = (function() {
       }
       link.source(source)
       link.target(target)
-      link.connector('smooth')
+      // Routers
+      //   obstacle avoiding: manhatten (orthogonal), metro (octolinear)
+      //   other: normal, orthogonal, oneSide (restricted orthogonal)
+      //   demo: https://resources.jointjs.com/demos/routing
+      // Connectors
+      //   smooth: bezier, doesn't play well with manhattan or metro
+      //   rounded: best option with manhattan or metro
+      //   other: jumpover, normal
+      // Notes
+      //   metro - can't make it work, half the links end up in the centre of the cells
+      //   normal/smooth - bezier curves to the boundary point, so arrow doesn't end up pointing to the centre of the cell
+      //   a custom 'smooth' connector?
+      //     https://resources.jointjs.com/docs/jointjs/v3.0/joint.html#connectors.custom
+      //
+      link.connector('rounded')  //
+      link.router('manhattan', {
+          step: 1,
+          padding: { top: 25 },
+          startDirections: ['bottom'],
+          endDirections: ['top']
+      })
       console.log("_canvas_create_link_done")
       return link
   }

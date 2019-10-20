@@ -117,8 +117,10 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         scale = this.paper.scale()       // sx, sy
         offset = this.paper.translate()  // tx, ty
         // Positioning
+        var tooltip_max_width = 250  // pixels
         this.$box.find('div.html-tooltip').css({
             left: 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
+            'max-width': tooltip_max_width
         })
         this.$box.find('span.html-detail').css({
             'width': 0.80*bbox.width*scale.sx,
@@ -138,7 +140,7 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
             // math says this should be 0.85/1.0, but not everything lining up correctly
             //   html-element top left corner is fine, but bottom-right corner is
             //   overhanging by some small delta in x and y directions
-            width: 0.80*bbox.width*scale.sx + 250,  // 250 is the max-width of the tooltip
+            width: 0.80*bbox.width*scale.sx + tooltip_max_width,  // 250 is the max-width of the tooltip
             height: 0.95*bbox.height*scale.sy,
             left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
             top: offset.ty + bbox.y*scale.sy,

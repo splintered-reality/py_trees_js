@@ -25,8 +25,7 @@
     z-index: 2;
     box-sizing: border-box;
     /*
-    border-style: groove;
-    border-color: red;
+    border: 1px groove red;
     */
 }
 .html-name {
@@ -78,12 +77,23 @@
     padding: 0.5em;
     box-sizing: border-box;
     /*
+       For max-width to work properly, html-element needs to completely
+       embed html-tooltip. If html-tooltip is outside, the text does
+       a best effort to get inside the parent box and so autowraps after
+       each word.
+
+       Note: html-element's width is calculated using pixels and
+       incorporates this value into the calculation so that tooltip
+       is embedded -> use pixels here too so pixels and em's aren't mixed.
+    */
+    max-width: 250px;
+    /*
     box-shadow: inset 0 0 5px black, 2px 2px 1px gray;
     box-sizing: border-box;
     padding: 5px;
     */
 }
-.html-tooltip div {
+.html-tooltip div.id {
     display: block;
     text-align: center;
     /*

@@ -722,8 +722,7 @@ var py_trees = (function() {
    * Right now this is creating the graph. Will have to decide
    * in future whether new tree serialisations reset the graph
    * and completely recreate or just update the graph. The latter
-   * may be imoprtant for efficiency concerns or to retain
-   * interactivity information in the graph (e.g. collapsible points).
+   * would be crucial to resolve computational efficiency problems.
    */
   var _canvas_update_graph = function({graph, tree}) {
 
@@ -732,8 +731,10 @@ var py_trees = (function() {
     console.log("  behaviours", tree.behaviours)
     console.log("  visited path: " + tree.visited_path)
 
+    console.log("_canvas_update_graph - set graph splash")
     graph.set("splash", false)
 
+    console.log("_canvas_update_graph - extract interactive info")
     // extract interactive information
     var collapsed_nodes = []
     _.each(graph.getElements(), function(el) {
@@ -743,6 +744,7 @@ var py_trees = (function() {
         }
     })
 
+    console.log("_canvas_update_graph - json verification")
     // root level json checks
     // TODO: replace with a json specification verification later
     if (typeof tree.behaviours == 'undefined') {
@@ -765,9 +767,11 @@ var py_trees = (function() {
         }
     }
 
+    console.log("_canvas_update_graph - clear graph")
     // reset
     graph.clear()
 
+    console.log("_canvas_update_graph - create nodes")
     // repopulate
     var _nodes = {}
     for (behaviour in tree.behaviours) {
@@ -783,6 +787,7 @@ var py_trees = (function() {
         _nodes[tree.behaviours[behaviour].id] = node
         node.addTo(graph)
     }
+    console.log("_canvas_update_graph - create links")
     for (behaviour in tree.behaviours) {
         if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
             tree.behaviours[behaviour].children.forEach(function (child_id, index) {
@@ -790,11 +795,14 @@ var py_trees = (function() {
                     source: _nodes[tree.behaviours[behaviour].id],
                     target: _nodes[child_id],
                 })
+                console.log("_canvas_update_graph - _addToGraph")
                 link.addTo(graph)
+                console.log("_canvas_update_graph - _addToGraph_done")
             });
         }
     }
 
+    console.log("_canvas_update_graph - re-establish interactivity")
     // re-establish interactive properties
     _.each(graph.getElements(), function(el) {
         behaviour_id = el.get("behaviour_id")
@@ -1207,7 +1215,7 @@ var py_trees = (function() {
           canvas_paper,
           tree
       }) {
-      console.log("Update Timeline Cache")
+      console.log("_timeline_add_tree_to_cache")
       cache = timeline_graph.get('cache')
       trees = cache.get('trees')
 
@@ -1226,6 +1234,7 @@ var py_trees = (function() {
               _canvas_scale_content_to_fit(canvas_paper)
           }
       }
+      console.log("_timeline_add_tree_to_cache_done")
   }
 
   var _timeline_rebuild_cache_event_markers = function({graph}) {
@@ -1273,6 +1282,7 @@ var py_trees = (function() {
       event_marker.addTo(graph)
     })
     cache.set('events', events)
+    console.log("_timeline_rebuild_cache_event_markers_done")
   }
 
   // *************************************************************************

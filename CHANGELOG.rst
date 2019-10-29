@@ -4,6 +4,11 @@ Changelog
 
 Forthcoming
 -----------
+* ...
+
+0.5.1 (2019-10-26)
+------------------
+* [js] performance improvements, `#120 <https://github.com/splintered-reality/py_trees_js/pull/120>`_
 * [js] highlighted links, `#115 <https://github.com/splintered-reality/py_trees_js/pull/115>`_
 * [js] orthogonal link connections, for better visualisation
 * [qt] capture screenshots, `#114 <https://github.com/splintered-reality/py_trees_js/pull/114>`_

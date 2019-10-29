@@ -97,10 +97,10 @@ will print version information of the loaded javascript libraries (if found) to 
 <script src="js/jointjs/jquery-3.4.1.min.js"></script>
 <script src="js/jointjs/lodash-4.17.11.min.js"></script>
 <script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.2.min.js"></script>
-<script src="js/py_trees-0.3.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.3.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.2.min.css"/>
+<script src="js/jointjs/joint-3.0.4.min.js"></script>
+<script src="js/py_trees-0.5.1.js"></script>
+<link rel="stylesheet" href="js/py_trees-0.5.1.css">
+<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
 <style>
   body {
     margin: 0;
@@ -129,7 +129,7 @@ Output from `py_trees.hello()`:
 
  Version & Dependency Info:
   - py_trees:  0.3.1
-    - jointjs :  3.0.2
+    - jointjs :  3.0.4
        - backbone:  1.4.0
        - dagre   :  0.8.4
        - jquery  :  3.4.1
@@ -152,10 +152,10 @@ pass it the demo tree provided by the library.
 <script src="js/jointjs/jquery-3.4.1.min.js"></script>
 <script src="js/jointjs/lodash-4.17.11.min.js"></script>
 <script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.2.min.js"></script>
-<script src="js/py_trees-0.3.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.3.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.2.min.css"/>
+<script src="js/jointjs/joint-3.0.4.min.js"></script>
+<script src="js/py_trees-0.5.1.js"></script>
+<link rel="stylesheet" href="js/py_trees-0.5.1.css">
+<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
 <style>
   body {
     margin: 0;
@@ -207,10 +207,10 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 <script src="js/jointjs/jquery-3.4.1.min.js"></script>
 <script src="js/jointjs/lodash-4.17.11.min.js"></script>
 <script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.2.min.js"></script>
-<script src="js/py_trees-0.3.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.3.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.2.min.css"/>
+<script src="js/jointjs/joint-3.0.4.min.js"></script>
+<script src="js/py_trees-0.5.1.js"></script>
+<link rel="stylesheet" href="js/py_trees-0.5.1.css">
+<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
 <style>
   body {
     margin: 0;

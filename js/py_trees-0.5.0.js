@@ -642,6 +642,9 @@ var py_trees = (function() {
    * in future whether new tree serialisations reset the graph
    * and completely recreate or just update the graph. The latter
    * would be crucial to resolve computational efficiency problems.
+   * 
+   * Returns: true or false depending on whether the graph changed
+   *   i.e. composition of nodes and cells, not their contents/styles
    */
   var _canvas_update_graph = function({graph, tree}) {
 
@@ -749,6 +752,7 @@ var py_trees = (function() {
               _canvas_collapse_children(graph, el)
             }
         })
+        graph_changed = true
     } else {
         var _elements_by_id = {}
         _.each(graph.getElements(), function(element) {
@@ -773,8 +777,10 @@ var py_trees = (function() {
                 target: graph.getCell([link.get("target").id]),
             })
         })
+        graph_changed = false
     }
     console.log("_canvas_update_graph_done")
+    return graph_changed
   }
 
   /**
@@ -1102,8 +1108,10 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
-              _canvas_layout_graph({graph: canvas_graph})
+              var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
+              if ( graph_changed ) {
+                  _canvas_layout_graph({graph: canvas_graph})
+              }
               canvas_graph.set('scale_content_to_fit', true)
               _canvas_scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
@@ -1157,8 +1165,10 @@ var py_trees = (function() {
       tree = event.get('tree')
 
       // render
-      _canvas_update_graph({graph: canvas_graph, tree: tree})
-      _canvas_layout_graph({graph: canvas_graph})
+      var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
+      if ( graph_changed ) {
+          _canvas_layout_graph({graph: canvas_graph})
+      }
       canvas_graph.set('scale_content_to_fit', true)
       _canvas_scale_content_to_fit(canvas_paper)
 
@@ -1315,8 +1325,10 @@ var py_trees = (function() {
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
 
       if ( timeline_graph.get('streaming') ) {
-          _canvas_update_graph({graph: canvas_graph, tree: tree})
-          _canvas_layout_graph({graph: canvas_graph})
+          var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
+          if ( graph_changed ) {
+              _canvas_layout_graph({graph: canvas_graph})
+          }
           if ( canvas_graph.get('scale_content_to_fit') ) {
               _canvas_scale_content_to_fit(canvas_paper)
           }

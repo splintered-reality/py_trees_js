@@ -700,6 +700,7 @@ var py_trees = (function() {
             }
         }
     }
+    need_to_clear = true
     if ( need_to_clear ) {
         // reset
         graph.clear()
@@ -765,9 +766,6 @@ var py_trees = (function() {
             })
         }
         _.each(graph.getLinks(), function(link) {
-            console.log("Link Source: ", link.get("source").id)
-            console.log("Link Target: ", link.get("target").id)
-            console.log(link)
             _canvas_update_link({
                 link: link,
                 source: graph.getCell([link.get("source").id]),
@@ -784,6 +782,8 @@ var py_trees = (function() {
    */
   var _canvas_update_link = function({link, source, target}) {
       console.log("_canvas_update_link")
+      var very_dark_gray = '#444444'
+      var stroke = very_dark_gray
       if (target.get("visited")) {
           switch(target.get("status")) {
               case "SUCCESS":
@@ -799,14 +799,14 @@ var py_trees = (function() {
                   stroke = 'white'
                   break;
               default:
-                  stroke = 'gray'
+                  stroke = very_dark_gray
           }
-          link.attr({
-              line: { // selector for the visible <path> SVGElement
-                  stroke: stroke // SVG attribute and value
-              }
-          });
       }
+      link.attr({
+          line: { // selector for the visible <path> SVGElement
+              stroke: stroke // SVG attribute and value
+          }
+      });
       link.source(source)
       link.target(target)
       // Routers
@@ -842,11 +842,13 @@ var py_trees = (function() {
   var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
       // TODO assert that behaviour_id is the same
       console.log("_canvas_update_node")
+      console.log("_canvas_update_node - set attributes")
       node.set("name", name)
       node.set("details", _canvas_create_elided_details(details))
       node.set("status", status)
       node.set("visited", visited)
       node.set("data", data)
+      console.log("_canvas_update_node_style")
       _canvas_update_node_style({
           node: node,
           colour: colour

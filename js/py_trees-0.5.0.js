@@ -377,16 +377,60 @@ var py_trees = (function() {
     return elided_details
   }
 
+  /*
+   * Take an existing node model and update it's properties rather than
+   * creating it. This assumes the passed in node's id underpins the
+   * transient nature of the other elements.
+   */
+  var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
+      // TODO assert that behaviour_id is the same
+      console.log("_canvas_update_node")
+      node.set("name", name)
+      node.set("details", _canvas_create_elided_details(details))
+      node.set("status", status)
+      node.set("visited", visited)
+      node.set("data", data)
+      _canvas_update_node_style({
+          node: node,
+          colour: colour
+      })
+      console.log("_canvas_update_node_done")
+  }
+
+  /*
+   * Construct a node given the specified properties. 
+   */
   var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
-    node = new joint.shapes.trees.Node({
-      name: name,
-      behaviour_id: behaviour_id,
-      details: details,
-      elided_details: _canvas_create_elided_details(details),
-      status: status,
-      visited: visited,
-      data: data,
-      attrs: {
+      node = new joint.shapes.trees.Node({
+          name: name,
+          behaviour_id: behaviour_id,
+          details: details,
+          elided_details: _canvas_create_elided_details(details),
+          status: status,
+          visited: visited,
+          data: data
+      })
+      _canvas_update_node_style({
+          node: node,
+          colour: colour
+      })
+      return node
+  }
+  /*
+   * Update just the style.
+   *
+   * This method is hanging on it's own since it is
+   * used in multiple places (node creation and
+   * node update).
+   *
+   * It also makes implicit use of the node's status
+   * and visited attributes (set before calling this
+   * method).
+   */
+  var _canvas_update_node_style = function({node, colour}) {
+      status = node.get("status")
+      visited = node.get("visited")
+      node.attr({
           'box': {
               opacity: visited ? 1.0 : 0.3
 
@@ -395,42 +439,37 @@ var py_trees = (function() {
               fill: colour || '#555555',
               opacity: visited ? 1.0 : 0.3
           },
-
+      })
+      var highlight_colours = {
+          'FAILURE': 'red',
+          'SUCCESS': 'green',
+          'RUNNING': 'blue',
+          'INVALID': 'gray'
       }
-    })
-    var highlight_colours = {
-        'FAILURE': 'red',
-        'SUCCESS': 'green',
-        'RUNNING': 'blue',
-        'INVALID': 'gray'
-    }
-    // TODO: consider not showing any highlight if invalid
-    if ( typeof status !== 'undefined') {
-        node.attr({
-          'box': {
-            filter: {
-                name: 'highlight',
-                args: {
-                    color: highlight_colours[status],
-                    width: 3,
-                    opacity: 0.8,
-                    blur: 5
-                }
-            }
-          },
-        })
-    }
-    return node
+      // TODO: consider not showing any highlight if invalid
+      if ( typeof status !== 'undefined') {
+          node.attr({
+            'box': {
+              filter: {
+                  name: 'highlight',
+                  args: {
+                      color: highlight_colours[status],
+                      width: 3,
+                      opacity: 0.8,
+                      blur: 5
+                  }
+              }
+            },
+          })
+      }
   }
 
   /**
-   * Create a link, styled for the py_trees rendering.
+   * Update a link - source, target, colour by status and
+   * highlight for visited.
    */
-  var _canvas_create_link = function({source, target}) {
-      console.log("_canvas_create_link")
-      var link = new joint.shapes.standard.Link();
-      console.log(target)
-      console.log("Status: ", target.get("status"))
+  var _canvas_update_link = function({link, source, target}) {
+      console.log("_canvas_update_link")
       if (target.get("visited")) {
           switch(target.get("status")) {
               case "SUCCESS":
@@ -477,7 +516,7 @@ var py_trees = (function() {
           startDirections: ['bottom'],
           endDirections: ['top']
       })
-      console.log("_canvas_create_link_done")
+      console.log("_canvas_update_link_done")
       return link
   }
 
@@ -515,7 +554,8 @@ var py_trees = (function() {
           //     args: [
           //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
           //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
-          // ]}
+          // ]},
+          // async: true
       });
       paper.on('element:mouseover', function(view, event) {
           if ( view.model.get('type') == "trees.Node" ) {
@@ -736,9 +776,12 @@ var py_trees = (function() {
 
     console.log("_canvas_update_graph - extract interactive info")
     // extract interactive information
+    // also collect old behaviour ids to later compare with new tree
     var collapsed_nodes = []
+    var _behaviour_ids = []
     _.each(graph.getElements(), function(el) {
         behaviour_id = el.get('behaviour_id')
+        _behaviour_ids.push(behaviour_id)
         if (el.get('collapse_children')) {
           collapsed_nodes.push(behaviour_id)
         }
@@ -768,48 +811,93 @@ var py_trees = (function() {
     }
 
     console.log("_canvas_update_graph - clear graph")
-    // reset
-    graph.clear()
 
-    console.log("_canvas_update_graph - create nodes")
-    // repopulate
-    var _nodes = {}
-    for (behaviour in tree.behaviours) {
-        node = _canvas_create_node({
-            behaviour_id: tree.behaviours[behaviour].id,
-            colour: tree.behaviours[behaviour].colour || '#555555',
-            name: tree.behaviours[behaviour].name,
-            status: tree.behaviours[behaviour].status || 'INVALID',
-            details: tree.behaviours[behaviour].details || '...',
-            visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
-            data: tree.behaviours[behaviour].data || {},
+    // Determine if we need to fully clear elements and links
+    need_to_clear = false
+    if (_behaviour_ids.length != Object.keys(tree.behaviours).length) {
+        need_to_clear = true
+    } else {
+        for (behaviour in tree.behaviours) {
+            if (!_behaviour_ids.includes(tree.behaviours[behaviour].id)) {
+                need_to_clear = true
+            }
+        }
+    }
+    if ( need_to_clear ) {
+        // reset
+        graph.clear()
+
+        console.log("_canvas_update_graph - create nodes")
+        // repopulate
+        var _cells = []
+        var _nodes = {}
+        for (behaviour in tree.behaviours) {
+            node = _canvas_create_node({
+                behaviour_id: tree.behaviours[behaviour].id,
+                colour: tree.behaviours[behaviour].colour || '#555555',
+                name: tree.behaviours[behaviour].name,
+                status: tree.behaviours[behaviour].status || 'INVALID',
+                details: tree.behaviours[behaviour].details || '...',
+                visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
+                data: tree.behaviours[behaviour].data || {},
+            })
+            _nodes[tree.behaviours[behaviour].id] = node
+            _cells.push(node)
+        }
+        console.log("_canvas_update_graph - create links")
+        for (behaviour in tree.behaviours) {
+            if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
+                tree.behaviours[behaviour].children.forEach(function (child_id, index) {
+                    link = new joint.shapes.standard.Link()
+                    _canvas_update_link({
+                        link: link,
+                        source: _nodes[tree.behaviours[behaviour].id],
+                        target: _nodes[child_id],
+                    })
+                    _cells.push(link)
+                });
+            }
+        }
+        console.log("_canvas_update_graph - _addToGraph")
+        graph.resetCells(_cells)
+        console.log("_canvas_update_graph - _addToGraph_done")
+
+        console.log("_canvas_update_graph - re-establish interactivity")
+        // re-establish interactive properties
+        _.each(graph.getElements(), function(el) {
+            behaviour_id = el.get("behaviour_id")
+            if (collapsed_nodes.includes(behaviour_id)) {
+              _canvas_collapse_children(graph, el)
+            }
         })
-        _nodes[tree.behaviours[behaviour].id] = node
-        node.addTo(graph)
-    }
-    console.log("_canvas_update_graph - create links")
-    for (behaviour in tree.behaviours) {
-        if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
-            tree.behaviours[behaviour].children.forEach(function (child_id, index) {
-                link = _canvas_create_link({
-                    source: _nodes[tree.behaviours[behaviour].id],
-                    target: _nodes[child_id],
-                })
-                console.log("_canvas_update_graph - _addToGraph")
-                link.addTo(graph)
-                console.log("_canvas_update_graph - _addToGraph_done")
-            });
+    } else {
+        var _elements_by_id = {}
+        _.each(graph.getElements(), function(element) {
+            _elements_by_id[element.get("behaviour_id")] = element
+        })
+        for (behaviour in tree.behaviours) {
+            _canvas_update_node({
+                node: _elements_by_id[tree.behaviours[behaviour].id],
+                behaviour_id: tree.behaviours[behaviour].id,
+                colour: tree.behaviours[behaviour].colour || '#555555',
+                name: tree.behaviours[behaviour].name,
+                status: tree.behaviours[behaviour].status || 'INVALID',
+                details: tree.behaviours[behaviour].details || '...',
+                visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
+                data: tree.behaviours[behaviour].data || {},
+            })
         }
+        _.each(graph.getLinks(), function(link) {
+            console.log("Link Source: ", link.get("source").id)
+            console.log("Link Target: ", link.get("target").id)
+            console.log(link)
+            _canvas_update_link({
+                link: link,
+                source: graph.getCell([link.get("source").id]),
+                target: graph.getCell([link.get("target").id]),
+            })
+        })
     }
-
-    console.log("_canvas_update_graph - re-establish interactivity")
-    // re-establish interactive properties
-    _.each(graph.getElements(), function(el) {
-        behaviour_id = el.get("behaviour_id")
-        if (collapsed_nodes.includes(behaviour_id)) {
-          _canvas_collapse_children(graph, el)
-        }
-    })
     console.log("_canvas_update_graph_done")
   }
 
@@ -1296,7 +1384,6 @@ var py_trees = (function() {
     hello: _hello,
     canvas: {
         create_graph: _canvas_create_graph,
-        create_link: _canvas_create_link,
         create_node: _canvas_create_node,
         create_paper: _canvas_create_paper,
         layout_graph: _canvas_layout_graph,

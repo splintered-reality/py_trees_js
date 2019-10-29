@@ -808,6 +808,8 @@ var py_trees = (function() {
               stroke: stroke // SVG attribute and value
           }
       });
+      // TODO: avoid setting these if the link already exists, not urgent
+      //       though, since the blockers are always above setting the html attrs.
       link.source(source)
       link.target(target)
       // Routers

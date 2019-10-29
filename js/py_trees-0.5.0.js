@@ -381,7 +381,7 @@ var py_trees = (function() {
    * Construct a node given the specified properties.
    */
   var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
-      console.log("_canvas_create_node")
+      // console.log("_canvas_create_node")
       node = new joint.shapes.trees.Node({
           name: name,
           behaviour_id: behaviour_id,
@@ -395,7 +395,7 @@ var py_trees = (function() {
           node: node,
           colour: colour
       })
-      console.log("_canvas_create_node_done")
+      // console.log("_canvas_create_node_done")
       return node
   }
 
@@ -528,9 +528,9 @@ var py_trees = (function() {
           edgeSep: 80,
           rankDir: "TB"
       });
-      console.log("  dot graph layout")
-      console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
-      console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+      // console.log("  dot graph layout")
+      // console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+      // console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
       console.log("_canvas_layout_graph_done")
   }
   /**
@@ -650,13 +650,12 @@ var py_trees = (function() {
 
     // Log the tree for introspection
     console.log("_canvas_update_graph")
-    console.log("  behaviours", tree.behaviours)
-    console.log("  visited path: " + tree.visited_path)
+    // console.log("  behaviours", tree.behaviours)
+    // console.log("  visited path: " + tree.visited_path)
 
-    console.log("_canvas_update_graph - set graph splash")
+    console.log("_canvas_update_graph_preparation_and_verification")
     graph.set("splash", false)
 
-    console.log("_canvas_update_graph - extract interactive info")
     // extract interactive information
     // also collect old behaviour ids to later compare with new tree
     var collapsed_nodes = []
@@ -669,7 +668,6 @@ var py_trees = (function() {
         }
     })
 
-    console.log("_canvas_update_graph - json verification")
     // root level json checks
     // TODO: replace with a json specification verification later
     if (typeof tree.behaviours == 'undefined') {
@@ -692,7 +690,7 @@ var py_trees = (function() {
         }
     }
 
-    console.log("_canvas_update_graph - clear graph")
+    console.log("_canvas_update_graph_clear_if_necessary")
 
     // Determine if we need to fully clear elements and links
     need_to_clear = false
@@ -709,7 +707,7 @@ var py_trees = (function() {
         // reset
         graph.clear()
 
-        console.log("_canvas_update_graph - create nodes")
+        console.log("_canvas_update_graph_create_nodes")
         // repopulate
         var _cells = []
         var _nodes = {}
@@ -726,7 +724,7 @@ var py_trees = (function() {
             _nodes[tree.behaviours[behaviour].id] = node
             _cells.push(node)
         }
-        console.log("_canvas_update_graph - create links")
+        console.log("_canvas_update_graph_create_links")
         for (behaviour in tree.behaviours) {
             if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
                 tree.behaviours[behaviour].children.forEach(function (child_id, index) {
@@ -740,11 +738,10 @@ var py_trees = (function() {
                 });
             }
         }
-        console.log("_canvas_update_graph - _addToGraph")
+        console.log("_canvas_update_graph_add_nodes_and_links")
         graph.resetCells(_cells)
-        console.log("_canvas_update_graph - _addToGraph_done")
 
-        console.log("_canvas_update_graph - re-establish interactivity")
+        console.log("_canvas_update_graph_re-establish_interactivity")
         // re-establish interactive properties
         _.each(graph.getElements(), function(el) {
             behaviour_id = el.get("behaviour_id")
@@ -758,6 +755,7 @@ var py_trees = (function() {
         _.each(graph.getElements(), function(element) {
             _elements_by_id[element.get("behaviour_id")] = element
         })
+        console.log("_canvas_update_graph_update_nodes")
         for (behaviour in tree.behaviours) {
             _canvas_update_node({
                 node: _elements_by_id[tree.behaviours[behaviour].id],
@@ -770,6 +768,7 @@ var py_trees = (function() {
                 data: tree.behaviours[behaviour].data || {},
             })
         }
+        console.log("_canvas_update_graph_update_links")
         _.each(graph.getLinks(), function(link) {
             _canvas_update_link({
                 link: link,
@@ -788,7 +787,7 @@ var py_trees = (function() {
    * highlight for visited.
    */
   var _canvas_update_link = function({link, source, target}) {
-      console.log("_canvas_update_link")
+      // console.log("_canvas_update_link")
       var very_dark_gray = '#444444'
       var stroke = very_dark_gray
       if (target.get("visited")) {
@@ -839,7 +838,7 @@ var py_trees = (function() {
           startDirections: ['bottom'],
           endDirections: ['top']
       })
-      console.log("_canvas_update_link_done")
+      // console.log("_canvas_update_link_done")
       return link
   }
 
@@ -850,7 +849,7 @@ var py_trees = (function() {
    */
   var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
       // TODO assert that behaviour_id is the same
-      console.log("_canvas_update_node")
+      // console.log("_canvas_update_node")
       node.set("name", name)
       node.set("details", _canvas_create_elided_details(details))
       node.set("status", status)
@@ -860,7 +859,7 @@ var py_trees = (function() {
           node: node,
           colour: colour
       })
-      console.log("_canvas_update_node_done")
+      // console.log("_canvas_update_node_done")
   }
 
   /*

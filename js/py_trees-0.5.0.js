@@ -434,7 +434,7 @@ var py_trees = (function() {
           //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
           //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
           // ]},
-          // async: true
+          async: true
       });
       paper.on('element:mouseover', function(view, event) {
           if ( view.model.get('type') == "trees.Node" ) {
@@ -628,6 +628,10 @@ var py_trees = (function() {
    */
   var _canvas_scale_content_to_fit = function(paper, event, x, y) {
       console.log("_canvas_scale_content_to_fit")
+      // Make sure views are updated to match model's contents so that
+      // appropriate dimensions can be resolved. This is only critical
+      // if using async: true on the paper
+      paper.updateViews()
       paper.scaleContentToFit({
           padding: 50,
           minScale: 0.1,
@@ -1107,6 +1111,7 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
+              canvas_paper.freeze()
               var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
               if ( graph_changed ) {
                   _canvas_layout_graph({graph: canvas_graph})
@@ -1114,6 +1119,7 @@ var py_trees = (function() {
               // force scale content to fit, even if the graph didn't change
               canvas_graph.set('scale_content_to_fit', true)
               _canvas_scale_content_to_fit(canvas_paper)
+              canvas_paper.unfreeze()
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
               index = cache.get('selected_index')
@@ -1165,6 +1171,7 @@ var py_trees = (function() {
       tree = event.get('tree')
 
       // render
+      canvas_paper.freeze()
       var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
       if ( graph_changed ) {
           _canvas_layout_graph({graph: canvas_graph})
@@ -1172,6 +1179,7 @@ var py_trees = (function() {
       // force scale content to fit, even if the graph didn't change so you get the whole tree
       canvas_graph.set('scale_content_to_fit', true)
       _canvas_scale_content_to_fit(canvas_paper)
+      canvas_paper.unfreeze()
 
       // update timeline highlight
       // TODO: optimise, i.e. cache the selected marker and update
@@ -1326,6 +1334,7 @@ var py_trees = (function() {
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
 
       if ( timeline_graph.get('streaming') ) {
+          canvas_paper.freeze()
           var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
           if ( graph_changed ) {
               _canvas_layout_graph({graph: canvas_graph})
@@ -1333,6 +1342,7 @@ var py_trees = (function() {
                   _canvas_scale_content_to_fit(canvas_paper)
               }
           }
+          canvas_paper.unfreeze()
       }
       console.log("_timeline_add_tree_to_cache_done")
   }

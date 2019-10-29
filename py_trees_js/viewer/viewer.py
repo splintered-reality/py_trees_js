@@ -35,15 +35,17 @@ from . import main_window
 
 
 def send_tree_response(reply):
-    console.logdebug("reply: '{}' [viewer]".format(reply))
+    console.logdebug("[{}] reply: '{}' [viewer]".format(time.monotonic(), reply))
 
 
 @qt_core.pyqtSlot()
 def send_tree(web_view_page, demo_trees, unused_checked):
     demo_trees[send_tree.index]['timestamp'] = time.time()
     # demo_trees[send_tree.index]['timestamp'] = time.time()
-    console.logdebug("send: tree '{}' [{}][viewer]".format(
-        send_tree.index, demo_trees[send_tree.index]['timestamp'])
+    console.logdebug("[{}] send: tree '{}' [{}][viewer]".format(
+        time.monotonic(),
+        send_tree.index,
+        demo_trees[send_tree.index]['timestamp'])
     )
     javascript_command = "render_tree({{tree: {}}})".format(demo_trees[send_tree.index])
     web_view_page.runJavaScript(javascript_command, send_tree_response)

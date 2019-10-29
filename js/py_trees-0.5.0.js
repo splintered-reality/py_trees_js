@@ -377,108 +377,26 @@ var py_trees = (function() {
     return elided_details
   }
 
-  var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
-    node = new joint.shapes.trees.Node({
-      name: name,
-      behaviour_id: behaviour_id,
-      details: details,
-      elided_details: _canvas_create_elided_details(details),
-      status: status,
-      visited: visited,
-      data: data,
-      attrs: {
-          'box': {
-              opacity: visited ? 1.0 : 0.3
-
-          },
-          'type': {
-              fill: colour || '#555555',
-              opacity: visited ? 1.0 : 0.3
-          },
-
-      }
-    })
-    var highlight_colours = {
-        'FAILURE': 'red',
-        'SUCCESS': 'green',
-        'RUNNING': 'blue',
-        'INVALID': 'gray'
-    }
-    // TODO: consider not showing any highlight if invalid
-    if ( typeof status !== 'undefined') {
-        node.attr({
-          'box': {
-            filter: {
-                name: 'highlight',
-                args: {
-                    color: highlight_colours[status],
-                    width: 3,
-                    opacity: 0.8,
-                    blur: 5
-                }
-            }
-          },
-        })
-    }
-    return node
-  }
-
-  /**
-   * Create a link, styled for the py_trees rendering.
+  /*
+   * Construct a node given the specified properties.
    */
-  var _canvas_create_link = function({source, target}) {
-      console.log("_canvas_create_link")
-      var link = new joint.shapes.standard.Link();
-      console.log(target)
-      console.log("Status: ", target.get("status"))
-      if (target.get("visited")) {
-          switch(target.get("status")) {
-              case "SUCCESS":
-                  stroke = 'green'
-                  break;
-              case "RUNNING":
-                  stroke = 'blue'
-                  break;
-              case "FAILURE":
-                  stroke = 'red'
-                  break;
-              case "INVALID":
-                  stroke = 'white'
-                  break;
-              default:
-                  stroke = 'gray'
-          }
-          link.attr({
-              line: { // selector for the visible <path> SVGElement
-                  stroke: stroke // SVG attribute and value
-              }
-          });
-      }
-      link.source(source)
-      link.target(target)
-      // Routers
-      //   obstacle avoiding: manhatten (orthogonal), metro (octolinear)
-      //   other: normal, orthogonal, oneSide (restricted orthogonal)
-      //   demo: https://resources.jointjs.com/demos/routing
-      // Connectors
-      //   smooth: bezier, doesn't play well with manhattan or metro
-      //   rounded: best option with manhattan or metro
-      //   other: jumpover, normal
-      // Notes
-      //   metro - can't make it work, half the links end up in the centre of the cells
-      //   normal/smooth - bezier curves to the boundary point, so arrow doesn't end up pointing to the centre of the cell
-      //   a custom 'smooth' connector?
-      //     https://resources.jointjs.com/docs/jointjs/v3.0/joint.html#connectors.custom
-      //
-      link.connector('rounded')  //
-      link.router('manhattan', {
-          step: 1,
-          padding: { top: 25 },
-          startDirections: ['bottom'],
-          endDirections: ['top']
+  var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
+      // console.log("_canvas_create_node")
+      node = new joint.shapes.trees.Node({
+          name: name,
+          behaviour_id: behaviour_id,
+          details: details,
+          elided_details: _canvas_create_elided_details(details),
+          status: status,
+          visited: visited,
+          data: data
       })
-      console.log("_canvas_create_link_done")
-      return link
+      _canvas_update_node_style({
+          node: node,
+          colour: colour
+      })
+      // console.log("_canvas_create_node_done")
+      return node
   }
 
   /**
@@ -515,7 +433,8 @@ var py_trees = (function() {
           //     args: [
           //         { color: '#222222', thickness: 1 }, // settings for the primary mesh
           //         { color: '#333333', scaleFactor: 5, thickness: 5 } //settings for the secondary mesh
-          // ]}
+          // ]},
+          async: true
       });
       paper.on('element:mouseover', function(view, event) {
           if ( view.model.get('type') == "trees.Node" ) {
@@ -609,9 +528,9 @@ var py_trees = (function() {
           edgeSep: 80,
           rankDir: "TB"
       });
-      console.log("  dot graph layout")
-      console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
-      console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+      // console.log("  dot graph layout")
+      // console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+      // console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
       console.log("_canvas_layout_graph_done")
   }
   /**
@@ -709,6 +628,10 @@ var py_trees = (function() {
    */
   var _canvas_scale_content_to_fit = function(paper, event, x, y) {
       console.log("_canvas_scale_content_to_fit")
+      // Make sure views are updated to match model's contents so that
+      // appropriate dimensions can be resolved. This is only critical
+      // if using async: true on the paper
+      paper.updateViews()
       paper.scaleContentToFit({
           padding: 50,
           minScale: 0.1,
@@ -722,22 +645,28 @@ var py_trees = (function() {
    * Right now this is creating the graph. Will have to decide
    * in future whether new tree serialisations reset the graph
    * and completely recreate or just update the graph. The latter
-   * may be imoprtant for efficiency concerns or to retain
-   * interactivity information in the graph (e.g. collapsible points).
+   * would be crucial to resolve computational efficiency problems.
+   *
+   * Returns: true or false depending on whether the graph changed
+   *   i.e. composition of nodes and cells, not their contents/styles
    */
   var _canvas_update_graph = function({graph, tree}) {
 
     // Log the tree for introspection
     console.log("_canvas_update_graph")
-    console.log("  behaviours", tree.behaviours)
-    console.log("  visited path: " + tree.visited_path)
+    // console.log("  behaviours", tree.behaviours)
+    // console.log("  visited path: " + tree.visited_path)
 
+    console.log("_canvas_update_graph_preparation_and_verification")
     graph.set("splash", false)
 
     // extract interactive information
+    // also collect old behaviour ids to later compare with new tree
     var collapsed_nodes = []
+    var _behaviour_ids = []
     _.each(graph.getElements(), function(el) {
         behaviour_id = el.get('behaviour_id')
+        _behaviour_ids.push(behaviour_id)
         if (el.get('collapse_children')) {
           collapsed_nodes.push(behaviour_id)
         }
@@ -765,44 +694,219 @@ var py_trees = (function() {
         }
     }
 
-    // reset
-    graph.clear()
+    console.log("_canvas_update_graph_clear_if_necessary")
 
-    // repopulate
-    var _nodes = {}
-    for (behaviour in tree.behaviours) {
-        node = _canvas_create_node({
-            behaviour_id: tree.behaviours[behaviour].id,
-            colour: tree.behaviours[behaviour].colour || '#555555',
-            name: tree.behaviours[behaviour].name,
-            status: tree.behaviours[behaviour].status || 'INVALID',
-            details: tree.behaviours[behaviour].details || '...',
-            visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
-            data: tree.behaviours[behaviour].data || {},
+    // Determine if we need to fully clear elements and links
+    need_to_clear = false
+    if (_behaviour_ids.length != Object.keys(tree.behaviours).length) {
+        need_to_clear = true
+    } else {
+        for (behaviour in tree.behaviours) {
+            if (!_behaviour_ids.includes(tree.behaviours[behaviour].id)) {
+                need_to_clear = true
+            }
+        }
+    }
+    if ( need_to_clear ) {
+        // reset
+        graph.clear()
+
+        console.log("_canvas_update_graph_create_nodes")
+        // repopulate
+        var _cells = []
+        var _nodes = {}
+        for (behaviour in tree.behaviours) {
+            node = _canvas_create_node({
+                behaviour_id: tree.behaviours[behaviour].id,
+                colour: tree.behaviours[behaviour].colour || '#555555',
+                name: tree.behaviours[behaviour].name,
+                status: tree.behaviours[behaviour].status || 'INVALID',
+                details: tree.behaviours[behaviour].details || '...',
+                visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
+                data: tree.behaviours[behaviour].data || {},
+            })
+            _nodes[tree.behaviours[behaviour].id] = node
+            _cells.push(node)
+        }
+        console.log("_canvas_update_graph_create_links")
+        for (behaviour in tree.behaviours) {
+            if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
+                tree.behaviours[behaviour].children.forEach(function (child_id, index) {
+                    link = new joint.shapes.standard.Link()
+                    _canvas_update_link({
+                        link: link,
+                        source: _nodes[tree.behaviours[behaviour].id],
+                        target: _nodes[child_id],
+                    })
+                    _cells.push(link)
+                });
+            }
+        }
+        console.log("_canvas_update_graph_add_nodes_and_links")
+        graph.resetCells(_cells)
+
+        console.log("_canvas_update_graph_re-establish_interactivity")
+        // re-establish interactive properties
+        _.each(graph.getElements(), function(el) {
+            behaviour_id = el.get("behaviour_id")
+            if (collapsed_nodes.includes(behaviour_id)) {
+              _canvas_collapse_children(graph, el)
+            }
         })
-        _nodes[tree.behaviours[behaviour].id] = node
-        node.addTo(graph)
-    }
-    for (behaviour in tree.behaviours) {
-        if ( typeof tree.behaviours[behaviour].children !== 'undefined') {
-            tree.behaviours[behaviour].children.forEach(function (child_id, index) {
-                link = _canvas_create_link({
-                    source: _nodes[tree.behaviours[behaviour].id],
-                    target: _nodes[child_id],
-                })
-                link.addTo(graph)
-            });
+        graph_changed = true
+    } else {
+        var _elements_by_id = {}
+        _.each(graph.getElements(), function(element) {
+            _elements_by_id[element.get("behaviour_id")] = element
+        })
+        console.log("_canvas_update_graph_update_nodes")
+        for (behaviour in tree.behaviours) {
+            _canvas_update_node({
+                node: _elements_by_id[tree.behaviours[behaviour].id],
+                behaviour_id: tree.behaviours[behaviour].id,
+                colour: tree.behaviours[behaviour].colour || '#555555',
+                name: tree.behaviours[behaviour].name,
+                status: tree.behaviours[behaviour].status || 'INVALID',
+                details: tree.behaviours[behaviour].details || '...',
+                visited: tree.visited_path.includes(tree.behaviours[behaviour].id) || false,
+                data: tree.behaviours[behaviour].data || {},
+            })
         }
+        console.log("_canvas_update_graph_update_links")
+        _.each(graph.getLinks(), function(link) {
+            _canvas_update_link({
+                link: link,
+                source: graph.getCell([link.get("source").id]),
+                target: graph.getCell([link.get("target").id]),
+            })
+        })
+        graph_changed = false
     }
-
-    // re-establish interactive properties
-    _.each(graph.getElements(), function(el) {
-        behaviour_id = el.get("behaviour_id")
-        if (collapsed_nodes.includes(behaviour_id)) {
-          _canvas_collapse_children(graph, el)
-        }
-    })
     console.log("_canvas_update_graph_done")
+    return graph_changed
+  }
+
+  /**
+   * Update a link - source, target, colour by status and
+   * highlight for visited.
+   */
+  var _canvas_update_link = function({link, source, target}) {
+      // console.log("_canvas_update_link")
+      var very_dark_gray = '#444444'
+      var stroke = very_dark_gray
+      if (target.get("visited")) {
+          switch(target.get("status")) {
+              case "SUCCESS":
+                  stroke = 'green'
+                  break;
+              case "RUNNING":
+                  stroke = 'blue'
+                  break;
+              case "FAILURE":
+                  stroke = 'red'
+                  break;
+              case "INVALID":
+                  stroke = 'white'
+                  break;
+              default:
+                  stroke = very_dark_gray
+          }
+      }
+      link.attr({
+          line: { // selector for the visible <path> SVGElement
+              stroke: stroke // SVG attribute and value
+          }
+      });
+      // TODO: avoid setting these if the link already exists, not urgent
+      //       though, since the blockers are always above setting the html attrs.
+      link.source(source)
+      link.target(target)
+      // Routers
+      //   obstacle avoiding: manhatten (orthogonal), metro (octolinear)
+      //   other: normal, orthogonal, oneSide (restricted orthogonal)
+      //   demo: https://resources.jointjs.com/demos/routing
+      // Connectors
+      //   smooth: bezier, doesn't play well with manhattan or metro
+      //   rounded: best option with manhattan or metro
+      //   other: jumpover, normal
+      // Notes
+      //   metro - can't make it work, half the links end up in the centre of the cells
+      //   normal/smooth - bezier curves to the boundary point, so arrow doesn't end up pointing to the centre of the cell
+      //   a custom 'smooth' connector?
+      //     https://resources.jointjs.com/docs/jointjs/v3.0/joint.html#connectors.custom
+      //
+      link.connector('rounded')  //
+      link.router('manhattan', {
+          step: 1,
+          padding: { top: 25 },
+          startDirections: ['bottom'],
+          endDirections: ['top']
+      })
+      // console.log("_canvas_update_link_done")
+      return link
+  }
+
+  /*
+   * Take an existing node model and update it's properties rather than
+   * creating it. This assumes the passed in node's id underpins the
+   * transient nature of the other elements.
+   */
+  var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
+      // TODO assert that behaviour_id is the same
+      // console.log("_canvas_update_node")
+      node.set("name", name)
+      node.set("details", _canvas_create_elided_details(details))
+      node.set("status", status)
+      node.set("visited", visited)
+      node.set("data", data)
+      _canvas_update_node_style({
+          node: node,
+          colour: colour
+      })
+      // console.log("_canvas_update_node_done")
+  }
+
+  /*
+   * Update just the style.
+   *
+   * This method is hanging on it's own since it is
+   * used in multiple places (node creation and
+   * node update).
+   *
+   * It also makes implicit use of the node's status
+   * and visited attributes (set before calling this
+   * method).
+   */
+  var _canvas_update_node_style = function({node, colour}) {
+      status = node.get("status")
+      visited = node.get("visited")
+      var highlight_colours = {
+          'FAILURE': 'red',
+          'SUCCESS': 'green',
+          'RUNNING': 'blue',
+          'INVALID': 'gray'
+      }
+      // TODO: consider not showing any highlight if invalid
+      if ( typeof status !== 'undefined') {
+          node.attr({
+            'box': {
+              opacity: visited ? 1.0 : 0.3,
+              filter: {
+                  name: 'highlight',
+                  args: {
+                      color: highlight_colours[status],
+                      width: 3,
+                      opacity: 0.8,
+                      blur: 5
+                  }
+              }
+            },
+            'type': {
+                fill: colour || '#555555',
+                opacity: visited ? 1.0 : 0.3
+            },
+          })
+      }
   }
 
   // *************************************************************************
@@ -1007,10 +1111,15 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
-              _canvas_layout_graph({graph: canvas_graph})
+              canvas_paper.freeze()
+              var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
+              if ( graph_changed ) {
+                  _canvas_layout_graph({graph: canvas_graph})
+              }
+              // force scale content to fit, even if the graph didn't change
               canvas_graph.set('scale_content_to_fit', true)
               _canvas_scale_content_to_fit(canvas_paper)
+              canvas_paper.unfreeze()
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
               index = cache.get('selected_index')
@@ -1062,10 +1171,15 @@ var py_trees = (function() {
       tree = event.get('tree')
 
       // render
-      _canvas_update_graph({graph: canvas_graph, tree: tree})
-      _canvas_layout_graph({graph: canvas_graph})
+      canvas_paper.freeze()
+      var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
+      if ( graph_changed ) {
+          _canvas_layout_graph({graph: canvas_graph})
+      }
+      // force scale content to fit, even if the graph didn't change so you get the whole tree
       canvas_graph.set('scale_content_to_fit', true)
       _canvas_scale_content_to_fit(canvas_paper)
+      canvas_paper.unfreeze()
 
       // update timeline highlight
       // TODO: optimise, i.e. cache the selected marker and update
@@ -1207,7 +1321,7 @@ var py_trees = (function() {
           canvas_paper,
           tree
       }) {
-      console.log("Update Timeline Cache")
+      console.log("_timeline_add_tree_to_cache")
       cache = timeline_graph.get('cache')
       trees = cache.get('trees')
 
@@ -1220,12 +1334,17 @@ var py_trees = (function() {
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
 
       if ( timeline_graph.get('streaming') ) {
-          _canvas_update_graph({graph: canvas_graph, tree: tree})
-          _canvas_layout_graph({graph: canvas_graph})
-          if ( canvas_graph.get('scale_content_to_fit') ) {
-              _canvas_scale_content_to_fit(canvas_paper)
+          canvas_paper.freeze()
+          var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
+          if ( graph_changed ) {
+              _canvas_layout_graph({graph: canvas_graph})
+              if ( canvas_graph.get('scale_content_to_fit') ) {
+                  _canvas_scale_content_to_fit(canvas_paper)
+              }
           }
+          canvas_paper.unfreeze()
       }
+      console.log("_timeline_add_tree_to_cache_done")
   }
 
   var _timeline_rebuild_cache_event_markers = function({graph}) {
@@ -1273,6 +1392,7 @@ var py_trees = (function() {
       event_marker.addTo(graph)
     })
     cache.set('events', events)
+    console.log("_timeline_rebuild_cache_event_markers_done")
   }
 
   // *************************************************************************
@@ -1286,7 +1406,6 @@ var py_trees = (function() {
     hello: _hello,
     canvas: {
         create_graph: _canvas_create_graph,
-        create_link: _canvas_create_link,
         create_node: _canvas_create_node,
         create_paper: _canvas_create_paper,
         layout_graph: _canvas_layout_graph,

@@ -378,7 +378,7 @@ var py_trees = (function() {
   }
 
   /*
-   * Construct a node given the specified properties. 
+   * Construct a node given the specified properties.
    */
   var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
       console.log("_canvas_create_node")
@@ -642,7 +642,7 @@ var py_trees = (function() {
    * in future whether new tree serialisations reset the graph
    * and completely recreate or just update the graph. The latter
    * would be crucial to resolve computational efficiency problems.
-   * 
+   *
    * Returns: true or false depending on whether the graph changed
    *   i.e. composition of nodes and cells, not their contents/styles
    */
@@ -1112,6 +1112,7 @@ var py_trees = (function() {
               if ( graph_changed ) {
                   _canvas_layout_graph({graph: canvas_graph})
               }
+              // force scale content to fit, even if the graph didn't change
               canvas_graph.set('scale_content_to_fit', true)
               _canvas_scale_content_to_fit(canvas_paper)
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
@@ -1169,6 +1170,7 @@ var py_trees = (function() {
       if ( graph_changed ) {
           _canvas_layout_graph({graph: canvas_graph})
       }
+      // force scale content to fit, even if the graph didn't change so you get the whole tree
       canvas_graph.set('scale_content_to_fit', true)
       _canvas_scale_content_to_fit(canvas_paper)
 
@@ -1328,9 +1330,9 @@ var py_trees = (function() {
           var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
           if ( graph_changed ) {
               _canvas_layout_graph({graph: canvas_graph})
-          }
-          if ( canvas_graph.get('scale_content_to_fit') ) {
-              _canvas_scale_content_to_fit(canvas_paper)
+              if ( canvas_graph.get('scale_content_to_fit') ) {
+                  _canvas_scale_content_to_fit(canvas_paper)
+              }
           }
       }
       console.log("_timeline_add_tree_to_cache_done")

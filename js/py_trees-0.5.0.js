@@ -381,6 +381,7 @@ var py_trees = (function() {
    * Construct a node given the specified properties. 
    */
   var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
+      console.log("_canvas_create_node")
       node = new joint.shapes.trees.Node({
           name: name,
           behaviour_id: behaviour_id,
@@ -394,6 +395,7 @@ var py_trees = (function() {
           node: node,
           colour: colour
       })
+      console.log("_canvas_create_node_done")
       return node
   }
 
@@ -700,7 +702,6 @@ var py_trees = (function() {
             }
         }
     }
-    need_to_clear = true
     if ( need_to_clear ) {
         // reset
         graph.clear()
@@ -842,13 +843,11 @@ var py_trees = (function() {
   var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
       // TODO assert that behaviour_id is the same
       console.log("_canvas_update_node")
-      console.log("_canvas_update_node - set attributes")
       node.set("name", name)
       node.set("details", _canvas_create_elided_details(details))
       node.set("status", status)
       node.set("visited", visited)
       node.set("data", data)
-      console.log("_canvas_update_node_style")
       _canvas_update_node_style({
           node: node,
           colour: colour
@@ -870,16 +869,6 @@ var py_trees = (function() {
   var _canvas_update_node_style = function({node, colour}) {
       status = node.get("status")
       visited = node.get("visited")
-      node.attr({
-          'box': {
-              opacity: visited ? 1.0 : 0.3
-
-          },
-          'type': {
-              fill: colour || '#555555',
-              opacity: visited ? 1.0 : 0.3
-          },
-      })
       var highlight_colours = {
           'FAILURE': 'red',
           'SUCCESS': 'green',
@@ -890,6 +879,7 @@ var py_trees = (function() {
       if ( typeof status !== 'undefined') {
           node.attr({
             'box': {
+              opacity: visited ? 1.0 : 0.3,
               filter: {
                   name: 'highlight',
                   args: {
@@ -899,6 +889,10 @@ var py_trees = (function() {
                       blur: 5
                   }
               }
+            },
+            'type': {
+                fill: colour || '#555555',
+                opacity: visited ? 1.0 : 0.3
             },
           })
       }

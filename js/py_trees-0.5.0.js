@@ -378,26 +378,6 @@ var py_trees = (function() {
   }
 
   /*
-   * Take an existing node model and update it's properties rather than
-   * creating it. This assumes the passed in node's id underpins the
-   * transient nature of the other elements.
-   */
-  var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
-      // TODO assert that behaviour_id is the same
-      console.log("_canvas_update_node")
-      node.set("name", name)
-      node.set("details", _canvas_create_elided_details(details))
-      node.set("status", status)
-      node.set("visited", visited)
-      node.set("data", data)
-      _canvas_update_node_style({
-          node: node,
-          colour: colour
-      })
-      console.log("_canvas_update_node_done")
-  }
-
-  /*
    * Construct a node given the specified properties. 
    */
   var _canvas_create_node = function({behaviour_id, colour, name, details, status, visited, data}) {
@@ -415,109 +395,6 @@ var py_trees = (function() {
           colour: colour
       })
       return node
-  }
-  /*
-   * Update just the style.
-   *
-   * This method is hanging on it's own since it is
-   * used in multiple places (node creation and
-   * node update).
-   *
-   * It also makes implicit use of the node's status
-   * and visited attributes (set before calling this
-   * method).
-   */
-  var _canvas_update_node_style = function({node, colour}) {
-      status = node.get("status")
-      visited = node.get("visited")
-      node.attr({
-          'box': {
-              opacity: visited ? 1.0 : 0.3
-
-          },
-          'type': {
-              fill: colour || '#555555',
-              opacity: visited ? 1.0 : 0.3
-          },
-      })
-      var highlight_colours = {
-          'FAILURE': 'red',
-          'SUCCESS': 'green',
-          'RUNNING': 'blue',
-          'INVALID': 'gray'
-      }
-      // TODO: consider not showing any highlight if invalid
-      if ( typeof status !== 'undefined') {
-          node.attr({
-            'box': {
-              filter: {
-                  name: 'highlight',
-                  args: {
-                      color: highlight_colours[status],
-                      width: 3,
-                      opacity: 0.8,
-                      blur: 5
-                  }
-              }
-            },
-          })
-      }
-  }
-
-  /**
-   * Update a link - source, target, colour by status and
-   * highlight for visited.
-   */
-  var _canvas_update_link = function({link, source, target}) {
-      console.log("_canvas_update_link")
-      if (target.get("visited")) {
-          switch(target.get("status")) {
-              case "SUCCESS":
-                  stroke = 'green'
-                  break;
-              case "RUNNING":
-                  stroke = 'blue'
-                  break;
-              case "FAILURE":
-                  stroke = 'red'
-                  break;
-              case "INVALID":
-                  stroke = 'white'
-                  break;
-              default:
-                  stroke = 'gray'
-          }
-          link.attr({
-              line: { // selector for the visible <path> SVGElement
-                  stroke: stroke // SVG attribute and value
-              }
-          });
-      }
-      link.source(source)
-      link.target(target)
-      // Routers
-      //   obstacle avoiding: manhatten (orthogonal), metro (octolinear)
-      //   other: normal, orthogonal, oneSide (restricted orthogonal)
-      //   demo: https://resources.jointjs.com/demos/routing
-      // Connectors
-      //   smooth: bezier, doesn't play well with manhattan or metro
-      //   rounded: best option with manhattan or metro
-      //   other: jumpover, normal
-      // Notes
-      //   metro - can't make it work, half the links end up in the centre of the cells
-      //   normal/smooth - bezier curves to the boundary point, so arrow doesn't end up pointing to the centre of the cell
-      //   a custom 'smooth' connector?
-      //     https://resources.jointjs.com/docs/jointjs/v3.0/joint.html#connectors.custom
-      //
-      link.connector('rounded')  //
-      link.router('manhattan', {
-          step: 1,
-          padding: { top: 25 },
-          startDirections: ['bottom'],
-          endDirections: ['top']
-      })
-      console.log("_canvas_update_link_done")
-      return link
   }
 
   /**
@@ -899,6 +776,130 @@ var py_trees = (function() {
         })
     }
     console.log("_canvas_update_graph_done")
+  }
+
+  /**
+   * Update a link - source, target, colour by status and
+   * highlight for visited.
+   */
+  var _canvas_update_link = function({link, source, target}) {
+      console.log("_canvas_update_link")
+      if (target.get("visited")) {
+          switch(target.get("status")) {
+              case "SUCCESS":
+                  stroke = 'green'
+                  break;
+              case "RUNNING":
+                  stroke = 'blue'
+                  break;
+              case "FAILURE":
+                  stroke = 'red'
+                  break;
+              case "INVALID":
+                  stroke = 'white'
+                  break;
+              default:
+                  stroke = 'gray'
+          }
+          link.attr({
+              line: { // selector for the visible <path> SVGElement
+                  stroke: stroke // SVG attribute and value
+              }
+          });
+      }
+      link.source(source)
+      link.target(target)
+      // Routers
+      //   obstacle avoiding: manhatten (orthogonal), metro (octolinear)
+      //   other: normal, orthogonal, oneSide (restricted orthogonal)
+      //   demo: https://resources.jointjs.com/demos/routing
+      // Connectors
+      //   smooth: bezier, doesn't play well with manhattan or metro
+      //   rounded: best option with manhattan or metro
+      //   other: jumpover, normal
+      // Notes
+      //   metro - can't make it work, half the links end up in the centre of the cells
+      //   normal/smooth - bezier curves to the boundary point, so arrow doesn't end up pointing to the centre of the cell
+      //   a custom 'smooth' connector?
+      //     https://resources.jointjs.com/docs/jointjs/v3.0/joint.html#connectors.custom
+      //
+      link.connector('rounded')  //
+      link.router('manhattan', {
+          step: 1,
+          padding: { top: 25 },
+          startDirections: ['bottom'],
+          endDirections: ['top']
+      })
+      console.log("_canvas_update_link_done")
+      return link
+  }
+
+  /*
+   * Take an existing node model and update it's properties rather than
+   * creating it. This assumes the passed in node's id underpins the
+   * transient nature of the other elements.
+   */
+  var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
+      // TODO assert that behaviour_id is the same
+      console.log("_canvas_update_node")
+      node.set("name", name)
+      node.set("details", _canvas_create_elided_details(details))
+      node.set("status", status)
+      node.set("visited", visited)
+      node.set("data", data)
+      _canvas_update_node_style({
+          node: node,
+          colour: colour
+      })
+      console.log("_canvas_update_node_done")
+  }
+
+  /*
+   * Update just the style.
+   *
+   * This method is hanging on it's own since it is
+   * used in multiple places (node creation and
+   * node update).
+   *
+   * It also makes implicit use of the node's status
+   * and visited attributes (set before calling this
+   * method).
+   */
+  var _canvas_update_node_style = function({node, colour}) {
+      status = node.get("status")
+      visited = node.get("visited")
+      node.attr({
+          'box': {
+              opacity: visited ? 1.0 : 0.3
+
+          },
+          'type': {
+              fill: colour || '#555555',
+              opacity: visited ? 1.0 : 0.3
+          },
+      })
+      var highlight_colours = {
+          'FAILURE': 'red',
+          'SUCCESS': 'green',
+          'RUNNING': 'blue',
+          'INVALID': 'gray'
+      }
+      // TODO: consider not showing any highlight if invalid
+      if ( typeof status !== 'undefined') {
+          node.attr({
+            'box': {
+              filter: {
+                  name: 'highlight',
+                  args: {
+                      color: highlight_colours[status],
+                      width: 3,
+                      opacity: 0.8,
+                      blur: 5
+                  }
+              }
+            },
+          })
+      }
   }
 
   // *************************************************************************

@@ -23,6 +23,7 @@ import copy
 
 def create_demo_tree_definition():
     tree = {
+        'changed': "true",
         'timestamp': 1563938995,
         'visited_path': ['1', '2', '7'],
         'behaviours': {
@@ -150,21 +151,24 @@ def create_demo_tree_list():
     trees = []
     tree = create_demo_tree_definition()
     trees.append(copy.deepcopy(tree))
+    # sequence progressed, but running
     tree['visited_path'] = ['1', '2', '7', '8']
-    tree['behaviours']['7']['status'] = 'SUCCESS'
-    tree['behaviours']['8']['status'] = 'RUNNING'
+    tree['behaviours']['7']['status'] = 'SUCCESS'  # first worker
+    tree['behaviours']['8']['status'] = 'RUNNING'  # middle worker
     trees.append(copy.deepcopy(tree))
-    # sequence
+    # not changed
+    tree['changed'] = 'false'
+    trees.append(copy.deepcopy(tree))
+    # sequence failed
+    tree['changed'] = 'true'
     tree['visited_path'] = ['1', '2', '3', '4', '5', '8', '9', '10', '11']
-    tree['behaviours']['2']['status'] = 'FAILURE'
-    tree['behaviours']['8']['status'] = 'SUCCESS'
-    tree['behaviours']['9']['status'] = 'FAILURE'
-    # parallel
-    tree['behaviours']['3']['status'] = 'SUCCESS'
-    tree['behaviours']['10']['status'] = 'SUCCESS'
-    tree['behaviours']['11']['status'] = 'RUNNING'
-    # decorated
-    tree['behaviours']['4']['status'] = 'RUNNING'
-    tree['behaviours']['5']['status'] = 'RUNNING'
+    tree['behaviours']['2']['status'] = 'FAILURE'  # sequence
+    tree['behaviours']['8']['status'] = 'SUCCESS'  # middle worker
+    tree['behaviours']['9']['status'] = 'FAILURE'  # final worker
+    tree['behaviours']['3']['status'] = 'SUCCESS'  # parallel
+    tree['behaviours']['10']['status'] = 'SUCCESS'  # first parallelised
+    tree['behaviours']['11']['status'] = 'RUNNING'  # second parallelised
+    tree['behaviours']['4']['status'] = 'RUNNING'  # decorator
+    tree['behaviours']['5']['status'] = 'RUNNING'  # decorator child
     trees.append(copy.deepcopy(tree))
     return trees

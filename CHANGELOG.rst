@@ -4,7 +4,7 @@ Changelog
 
 Forthcoming
 -----------
-* ...
+* [js] accepting trees flagged with no status/graph change, `#122 <https://github.com/splintered-reality/py_trees_js/pull/122>`_
 
 0.5.1 (2019-10-26)
 ------------------

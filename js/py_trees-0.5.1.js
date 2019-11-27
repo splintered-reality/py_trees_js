@@ -199,6 +199,7 @@ joint.shapes.trees.EventMarker = joint.shapes.standard.Rectangle.define(
         position: { x: 0, y: 0 },
         size: { width: 4, height: 30 },
         default_width: 4,
+        significant: true,  // denotes a significant tree status/graph change or otherwise
         attrs: {
             body: {
                 refWidth: '100%',
@@ -1250,18 +1251,17 @@ var py_trees = (function() {
   var _timeline_highlight_event = function({event, highlight}) {
       if ( highlight ) {
           event.toFront()
-          event.attr({
-              body: {
-                  fill: 'red'
-              }
-          })
+          colour = 'red'
+      } else if ( event.get('significant') ) {
+          colour = 'white'
       } else {
-          event.attr({
-              body: {
-                  fill: 'white'
-              }
-          })
+          colour = 'grey'
       }
+      event.attr({
+          body: {
+              fill: colour
+          }
+      })
   }
 
   /**
@@ -1330,6 +1330,9 @@ var py_trees = (function() {
           trees.shift() // pop first element
           cache.set('selected_index', cache.get('selected_index') - 1)
       }
+      // ugly hack since I can't pass in a boolean except as a string
+      //   mayhap there is some way...load the json object into javascript?
+      tree['changed'] = tree['changed'] == 'true' ? true : false
       trees.push(tree)
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
 
@@ -1369,23 +1372,22 @@ var py_trees = (function() {
       // normalise between 0.05 and 0.95
       normalised_x = 0.05 + 0.9 * (tree['timestamp'] - min_timestamp) / delta
       var event_marker = new joint.shapes.trees.EventMarker()
+      event_marker.set('significant', tree['changed'])
       event_marker.translate(
           dimensions.x + normalised_x * dimensions.width - event_marker.get('default_width') / 2.0,
           0
       )
       event_marker.resize(event_marker.get('default_width'), dimensions.height)
       event_marker.set('tree', tree)
-      if ( graph.get('streaming') ) {
-          if (index == trees.length - 1) {
-              _timeline_highlight_event({event: event_marker, highlight: true})
-              cache.set('selected', event_marker)
-              cache.set('selected_index', index)
-          }
+      if ( !graph.get('streaming') && (index == cache.get('selected_index')) ) {
+          cache.set('selected', event_marker)
+          _timeline_highlight_event({event: event_marker, highlight: true})
+      } else if ( graph.get('streaming') && (index == trees.length - 1) ) {
+          _timeline_highlight_event({event: event_marker, highlight: true})
+          cache.set('selected', event_marker)
+          cache.set('selected_index', index)
       } else {
-          if (index == cache.get('selected_index')) {
-              cache.set('selected', event_marker)
-              _timeline_highlight_event({event: event_marker, highlight: true})
-          }
+          _timeline_highlight_event({event: event_marker, highlight: false})
       }
       cache.embed(event_marker)
       events.push(event_marker)

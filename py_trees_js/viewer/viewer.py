@@ -40,6 +40,7 @@ def send_tree_response(reply):
 
 @qt_core.pyqtSlot()
 def send_tree(web_view_page, demo_trees, unused_checked):
+    number_of_trees = len(demo_trees)
     demo_trees[send_tree.index]['timestamp'] = time.time()
     # demo_trees[send_tree.index]['timestamp'] = time.time()
     console.logdebug("[{}] send: tree '{}' [{}][viewer]".format(
@@ -49,7 +50,7 @@ def send_tree(web_view_page, demo_trees, unused_checked):
     )
     javascript_command = "render_tree({{tree: {}}})".format(demo_trees[send_tree.index])
     web_view_page.runJavaScript(javascript_command, send_tree_response)
-    send_tree.index = 0 if send_tree.index == 2 else send_tree.index + 1
+    send_tree.index = 0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1
 
 
 send_tree.index = 0

@@ -107,12 +107,30 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
             "</span><br/>"
         data = this.model.get('data')
         for (var key in data) {
-            this.$box.find('div.html-tooltip')[0].innerHTML +=
-               "<span><b>" +
-                key +
-                ": </b>" +
-                data[key] +
-                "</span><br/>"
+            // Not a reliable way of checking for types, but since
+            // the user has control over the input (fundamentals or arrays or dicts)
+            // this will do. JS has *no* reliable way. See also:
+            //   http://tobyho.com/2011/01/28/checking-types-in-javascript/
+            if (data[key].constructor == Object) {
+            } else if (Array.isArray(data[key])) {
+                this.$box.find('div.html-tooltip')[0].innerHTML +=
+                    "<span><b>" +
+                     key +
+                     ":</b></span><br/>"
+                for (var index in data[key]) {
+                    this.$box.find('div.html-tooltip')[0].innerHTML +=
+                        "<span>&nbsp;&nbsp;" +
+                         data[key][index] +
+                         "</span><br/>"
+                }
+            } else {
+                this.$box.find('div.html-tooltip')[0].innerHTML +=
+                   "<span><b>" +
+                    key +
+                    ": </b>" +
+                    data[key] +
+                    "</span><br/>"
+            }
         }
         scale = this.paper.scale()       // sx, sy
         offset = this.paper.translate()  // tx, ty
@@ -1255,7 +1273,7 @@ var py_trees = (function() {
       } else if ( event.get('significant') ) {
           colour = 'white'
       } else {
-          colour = 'grey'
+          colour = 'green'  // grey doesn't sufficiently distinguish itself from white
       }
       event.attr({
           body: {

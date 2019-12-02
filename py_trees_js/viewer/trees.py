@@ -99,7 +99,10 @@ def create_demo_tree_definition():
                 'colour': '#555555',
                 'data': {
                     'Type': 'py_trees.composites.Behaviour',
-                    'Feedback': "..."
+                    'Feedback': "...",
+                    'Blackboard': [
+                        '/state/worker_a (x)'
+                    ]
                 },
             },
             '8': {
@@ -109,7 +112,11 @@ def create_demo_tree_definition():
                 'colour': '#555555',
                 'data': {
                     'Type': 'py_trees.composites.Behaviour',
-                    'Feedback': "..."
+                    'Feedback': "...",
+                    'Blackboard': [
+                        '/foobar (w)',
+                        '/state/worker_b (x)',
+                    ]
                 },
             },
             '9': {
@@ -119,7 +126,11 @@ def create_demo_tree_definition():
                 'colour': '#555555',
                 'data': {
                     'Type': 'py_trees.composites.Behaviour',
-                    'Feedback': "..."
+                    'Feedback': "...",
+                    'Blackboard': [
+                        '/foobar (r)',
+                        '/state/worker_c (x)',
+                    ]
                 },
             },
             '10': {
@@ -139,7 +150,10 @@ def create_demo_tree_definition():
                 'colour': '#555555',
                 'data': {
                     'Type': 'py_trees.composites.Behaviour',
-                    'Feedback': "..."
+                    'Feedback': "...",
+                    'Blackboard': [
+                        '/foobar (r)',
+                    ]
                 },
             },
         }

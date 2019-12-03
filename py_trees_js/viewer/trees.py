@@ -156,6 +156,25 @@ def create_demo_tree_definition():
                     ]
                 },
             },
+        },
+        'blackboard': {
+            'behaviours': {
+                '7': {
+                    '/state/worker_a': 'x'
+                },
+                '8': {
+                    '/foobar': 'w',
+                    '/state/worker_b': 'x',
+                },
+                '9': {
+                    '/foobar': 'r',
+                    '/state/worker_c': 'x',
+                },
+                '11': {
+                    '/foobar': 'r',
+                },
+            },
+            'data': {},
         }
     }
     return tree
@@ -164,11 +183,14 @@ def create_demo_tree_definition():
 def create_demo_tree_list():
     trees = []
     tree = create_demo_tree_definition()
+    tree['blackboard']['data']['/state/worker_a'] = 'lookin good'
     trees.append(copy.deepcopy(tree))
     # sequence progressed, but running
     tree['visited_path'] = ['1', '2', '7', '8']
     tree['behaviours']['7']['status'] = 'SUCCESS'  # first worker
     tree['behaviours']['8']['status'] = 'RUNNING'  # middle worker
+    tree['blackboard']['data']['/foobar'] = 'oi'  # TODO: flip to True, and fix dump/load problems
+    tree['blackboard']['data']['/state/worker_b'] = 5
     trees.append(copy.deepcopy(tree))
     # not changed
     tree['changed'] = 'false'
@@ -184,5 +206,7 @@ def create_demo_tree_list():
     tree['behaviours']['11']['status'] = 'RUNNING'  # second parallelised
     tree['behaviours']['4']['status'] = 'RUNNING'  # decorator
     tree['behaviours']['5']['status'] = 'RUNNING'  # decorator child
+    del tree['blackboard']['data']['/state/worker_a']
+    tree['blackboard']['data']['/state/worker_c'] = 'boinked'
     trees.append(copy.deepcopy(tree))
     return trees

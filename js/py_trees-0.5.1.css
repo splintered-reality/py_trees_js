@@ -1,9 +1,3 @@
-
-/* 
- * Most settings are handled programmatically in js paper creation.
- * These two however cause problems...? Rendering of the tree
- * canvas goes awol.
- */
 #timeline {
 	position: absolute;
 	bottom: 0px;
@@ -15,6 +9,30 @@
     border-style: groove;
     border-color: blue;
     */
+}
+
+#blackboard_view {
+    border: 1px groove white;
+    position: absolute;
+    bottom: 45px;
+    right: 10px;
+    margin: 0px;
+    padding: 3px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 9px;
+}
+
+.blackboard_view_header {
+    text-align: center;
+    font-size: 10px;
+}
+.blackboard_view_namespace {
+    text-align: left;
+    font-weight: bold;
+}
+.blackboard_view_variables {
+    text-align: left;
 }
 
 .html-element {

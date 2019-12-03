@@ -18,6 +18,7 @@ joint.shapes.trees.Node = joint.dia.Element.define(
     'trees.Node', {
         size: { width: 170, height: 50 },
         collapse_children: false,
+        selected: false,
         hidden: false,
         attrs: {
             box: {
@@ -164,14 +165,17 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
             top: offset.ty + bbox.y*scale.sy,
             transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
         });
-        if ( this.model.get('collapse_children') ) {
-          this.model.attr({
-            box: {
+        sepia = "#704214"
+        if ( this.model.get('selected') ) {
+            colour_low = this.model.get('collapse_children') ? sepia : '#555555'
+            colour_high = "#777777"
+            this.model.attr({
+                box: {
                     fill: {
                         type: 'linearGradient',
                         stops: [
-                            { offset: '0%',  color: '#333333' },
-                            { offset: '100%', color: '#555555' }
+                            { offset: '0%',  color: colour_low },
+                            { offset: '100%', color: colour_high }
                         ],
                         attrs: {
                             x1: '0%',
@@ -179,14 +183,20 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
                             x2: '0%',
                             y2: '100%'
                         },
-                  },
-            }
-          })
+                    },
+                }
+            })
+        } else if ( this.model.get('collapse_children') ) {
+            this.model.attr({
+                box: {
+                    fill: sepia
+                }
+            })
         } else {
-          this.model.attr({
-            box: {
-              fill: '#333333'
-            }
+            this.model.attr({
+                box: {
+                    fill: '#333333'
+                }
             })
         }
         // Hiding
@@ -384,6 +394,35 @@ var py_trees = (function() {
   //     splash (bool) - showing the splash cheat sheet or a rendered tree
 
   /**
+   * Callback for collapsing children on a click event
+   */
+  var _canvas_collapse_children_handler = function(graph, view, event, x, y) {
+      _canvas_collapse_children(graph, view.model)
+  }
+
+  /**
+   * Collapse children of the selected model. This merely
+   * hides them from view, but doesn't remove them from the graph.
+   */
+  var _canvas_collapse_children = function(graph, model) {
+      var successors = graph.getSuccessors(model)
+      if ( !successors.length ) {
+          return
+      }
+      model.set('collapse_children', !model.get('collapse_children'))
+      collapse_children = model.get('collapse_children')
+      _.each(successors, function(behaviour) {
+          behaviour.set('hidden', collapse_children)
+          var links = graph.getConnectedLinks(behaviour, { inbound: true })
+          _.each(links, function(link) {
+              // prefer to set a variable in the model and do this in a view,
+              // but this will do till we have a custom link and link view
+              link.attr('line/visibility', collapse_children ? 'hidden' : 'visible')
+          })
+      })
+  }
+
+  /**
    * Create elided details from a details (text) snippet.
    */
   var _canvas_create_elided_details = function(details) {
@@ -424,6 +463,9 @@ var py_trees = (function() {
   var _canvas_create_graph = function() {
       graph = new joint.dia.Graph({});
       graph.set('scale_content_to_fit', true)
+      // Date.now() returns ms since Jan 1, 1970
+      graph.set('last_single_click_ms', Date.now())
+      graph.set('last_double_click_ms', Date.now())
       return graph
   }
 
@@ -488,6 +530,9 @@ var py_trees = (function() {
       paper.on('element:pointerdblclick',
         _canvas_collapse_children_handler.bind(null, graph)
       )
+      paper.on('element:pointerclick',
+        _canvas_select_node_handler.bind(null, graph)
+      )
 
       graph.set("splash", true)
       _canvas_create_splash(paper)
@@ -551,34 +596,6 @@ var py_trees = (function() {
       // console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
       // console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
       console.log("_canvas_layout_graph_done")
-  }
-  /**
-   * Callback for collapsing children on a click event
-   */
-  var _canvas_collapse_children_handler = function(graph, view, event, x, y) {
-      _canvas_collapse_children(graph, view.model)
-  }
-
-  /**
-   * Collapse children of the selected model. This merely
-   * hides them from view, but doesn't remove them from the graph.
-   */
-  var _canvas_collapse_children = function(graph, model) {
-      var successors = graph.getSuccessors(model)
-      if ( !successors.length ) {
-          return
-      }
-      model.set('collapse_children', !model.get('collapse_children'))
-      collapse_children = model.get('collapse_children')
-      _.each(successors, function(behaviour) {
-          behaviour.set('hidden', collapse_children)
-          var links = graph.getConnectedLinks(behaviour, { inbound: true })
-          _.each(links, function(link) {
-              // prefer to set a variable in the model and do this in a view,
-              // but this will do till we have a custom link and link view
-              link.attr('line/visibility', collapse_children ? 'hidden' : 'visible')
-          })
-      })
   }
 
   /**
@@ -658,6 +675,160 @@ var py_trees = (function() {
           scaleGrid: 0.01,
       });
       console.log("_canvas_scale_content_to_fit_done")
+  }
+
+  /**
+   * React to an event triggered by selecting (one-click) a node. Just toggle
+   * the selected flag on the node here. Rendering the node and the blackboard
+   * view will take advantage of that flag elsewhere.
+   */
+  var _canvas_select_node_handler = function(graph, view, event, x, y) {
+      // make sure we're not picking up double click events, see
+      //   https://stackoverflow.com/questions/5497073/how-to-differentiate-single-click-event-and-double-click-event/53939059#53939059
+      timestamp_ms = Date.now()
+      if (event.detail == 1) {
+          graph.set("last_single_click_ms", timestamp_ms)
+          setTimeout(() => {
+              if ( graph.get("last_single_click_ms") > graph.get("last_double_click_ms") ) {
+                  console.log("Operation >")
+                  view.model.set('selected', !view.model.get('selected'))
+                  selected = view.model.get('selected')
+              }
+          }, 350); // ms
+      } else {  // event.detail == 2+
+          graph.set("last_double_click_ms", Date.now())
+          // do nothing, handled in the separate double click handler
+      }
+  }
+
+  /**
+   * Update the blackboard view that hangs in the upper right
+   * corner of the canvas div.
+   *
+   * Args:
+   *     selected: list of behaviour id's to track
+   *     visited: list of behaviour id's visited
+   *     blackboard: expects a dict with the following structure
+   *
+   * {
+   *     "behaviours": {
+   *         <id>: {
+   *             <key>: <access>
+   *         }
+   *     },
+   *     "data": {
+   *         <key>: <value>
+   *     }
+   * }
+   *
+   * If required fields are not present or empty, this method returns
+   * immediately.
+   */
+  var _canvas_update_blackboard_view = function({selected, visited, blackboard}) {
+      console.log("_canvas_update_blackboard_view")
+      var existing_blackboard_view = document.getElementById("blackboard_view")
+      if ( existing_blackboard_view ) {
+          existing_blackboard_view.parentNode.removeChild(existing_blackboard_view)
+      }
+      if (!("behaviours" in blackboard)) {
+          console.log("_canvas_update_blackboard_view_done - no behaviours")
+          return
+      }
+      if (!("data" in blackboard)) {
+          console.log("_canvas_update_blackboard_view_done - no data")
+          return
+      }
+      if ( Object.keys(blackboard.behaviours).length === 0 ) {
+          console.log("_canvas_update_blackboard_view_done - behaviours empty")
+          return
+      }
+      if ( Object.keys(blackboard.data).length === 0 ) {
+          console.log("_canvas_update_blackboard_view_done - data empty")
+          return
+      }
+      if ( selected.length === 0 ) {
+          console.log("_canvas_update_blackboard_view_done - nothing selected")
+          return
+      }
+      var canvas = document.getElementById("canvas")
+      var blackboard_view = document.createElement("div")
+      var blackboard_view_header = document.createElement("div")
+      var blackboard_view_namespace = document.createElement("div")
+      var blackboard_view_variables = document.createElement("div")
+      blackboard_view.id = "blackboard_view"
+      blackboard_view_header.className = "blackboard_view_header"
+      blackboard_view_namespace.className = "blackboard_view_namespace"
+      blackboard_view_variables.className = "blackboard_view_variables"
+      blackboard_view_header.innerHTML =
+          "<b>Blackboard View</b><br/>" +
+          "(click behaviours to populate)<br/>" +
+          "<hr/>"
+      var blackboard_variables = {}
+      // determine intersection of selected and visited / selected and not visited
+      selected_and_visited = []
+      selected_and_not_visited = []
+      for (var i = 0; i < selected.length; i++) {
+          var behaviour_id = selected[i]
+          if (visited.includes(behaviour_id)) {
+              selected_and_visited.push(behaviour_id)
+          } else {
+              selected_and_not_visited.push(behaviour_id)
+          }
+      }
+      // collect visited variables
+      for (var i = 0; i < selected_and_visited.length; i++) {
+          var behaviour_id = selected_and_visited[i]
+          if ( behaviour_id in blackboard.behaviours ) {
+              for (var key in blackboard.behaviours[behaviour_id]) {
+                  if (key in blackboard.data) {
+                      blackboard_variables[key] = blackboard.data[key]
+                  } else {
+                      blackboard_variables[key] = '-'
+                  }
+              }
+          }
+      }
+      // collect and tag not visited variables
+      var not_visited_blackboard_variables = []
+      for (var i = 0; i < selected_and_not_visited.length; i++) {
+          var behaviour_id = selected_and_not_visited[i]
+          if ( behaviour_id in blackboard.behaviours ) {
+              for (var key in blackboard.behaviours[behaviour_id]) {
+                  if (!(key in blackboard_variables)) {
+                      if (key in blackboard.data) {
+                          blackboard_variables[key] = blackboard.data[key]
+                      } else {
+                          blackboard_variables[key] = '-'
+                      }
+                      not_visited_blackboard_variables.push(key)
+                  }
+              }
+          }
+      }
+      console.log("Selected", selected)
+      console.log("Visited", visited)
+      console.log("Selected and Visited", selected_and_visited)
+      console.log("Selected and Not Visited", selected_and_not_visited)
+      console.log("Blackboard Variables", blackboard_variables)
+      console.log("Not Visited Blackboard Variables", not_visited_blackboard_variables)
+      var keys = Object.keys(blackboard_variables)
+      keys.sort()
+      for (var i=0; i<keys.length; i++) {
+          var key = keys[i]
+          if ( not_visited_blackboard_variables.includes(key) ) {
+              blackboard_view_variables.innerHTML +=
+                  "<span style='color: green;'><b>" + key + "</b>" + ": " +
+                  blackboard_variables[key] + "</span><br/>"
+          } else {
+              blackboard_view_variables.innerHTML +=
+                  "<b>" + key + "</b>" + ": " + blackboard_variables[key] + "<br/>"
+          }
+      }
+      blackboard_view.appendChild(blackboard_view_header)
+      blackboard_view.appendChild(blackboard_view_namespace)
+      blackboard_view.appendChild(blackboard_view_variables)
+      canvas.appendChild(blackboard_view)
+      console.log("_canvas_update_blackboard_view_done")
   }
 
   /**
@@ -801,6 +972,22 @@ var py_trees = (function() {
         })
         graph_changed = false
     }
+    console.log("_canvas_update_graph_update_blackboard_view")
+    var selected_nodes = []
+    _.each(graph.getElements(), function(el) {
+        behaviour_id = el.get('behaviour_id')
+        if (el.get('selected')) {
+            selected_nodes.push(behaviour_id)
+        }
+    })
+    if ("blackboard" in tree) {
+        _canvas_update_blackboard_view({
+            selected: selected_nodes,
+            visited: tree.visited_path,
+            blackboard: tree.blackboard
+        })
+    }
+
     console.log("_canvas_update_graph_done")
     return graph_changed
   }

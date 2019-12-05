@@ -34,6 +34,12 @@ joint.shapes.trees.Node = joint.dia.Element.define(
                 fill: '#00FF00', stroke: '#000000', 'stroke-width': 2,
                 'pointer-events': 'visiblePainted', rx: 8, ry: 8,
             },
+            collapse: {
+                refX: "50%", refY: '100%',
+                refWidth: '6%', refHeight: '6%',
+                fill: '#704214', stroke: '#000000', 'stroke-width': 2,
+                'pointer-events': 'visiblePainted', r: 5,
+            }
         }
     }, {
         markup: [{
@@ -42,6 +48,9 @@ joint.shapes.trees.Node = joint.dia.Element.define(
         }, {
             tagName: 'rect',
             selector: 'type'
+        }, {
+            tagName: 'circle',
+            selector: 'collapse'
         }]
     }
 );
@@ -166,16 +175,20 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
             transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
         });
         sepia = "#704214"
+        this.model.attr({
+            collapse: {
+                fill: sepia,
+                visibility: this.model.get('collapse_children') ? "visible" : "hidden"
+            }
+        })
         if ( this.model.get('selected') ) {
-            colour_low = this.model.get('collapse_children') ? sepia : '#555555'
-            colour_high = "#777777"
             this.model.attr({
                 box: {
                     fill: {
                         type: 'linearGradient',
                         stops: [
-                            { offset: '0%',  color: colour_low },
-                            { offset: '100%', color: colour_high }
+                            { offset: '0%',  color: sepia },
+                            { offset: '100%', color: "#d9822b" }
                         ],
                         attrs: {
                             x1: '0%',
@@ -184,12 +197,6 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
                             y2: '100%'
                         },
                     },
-                }
-            })
-        } else if ( this.model.get('collapse_children') ) {
-            this.model.attr({
-                box: {
-                    fill: sepia
                 }
             })
         } else {

@@ -401,13 +401,6 @@ var py_trees = (function() {
   //     splash (bool) - showing the splash cheat sheet or a rendered tree
 
   /**
-   * Callback for collapsing children on a click event
-   */
-  var _canvas_collapse_children_handler = function(graph, view, event, x, y) {
-      _canvas_collapse_children(graph, view.model)
-  }
-
-  /**
    * Collapse children of the selected model. This merely
    * hides them from view, but doesn't remove them from the graph.
    */
@@ -473,6 +466,7 @@ var py_trees = (function() {
       // Date.now() returns ms since Jan 1, 1970
       graph.set('last_single_click_ms', Date.now())
       graph.set('last_double_click_ms', Date.now())
+      graph.set('tree', {})
       return graph
   }
 
@@ -535,10 +529,10 @@ var py_trees = (function() {
           _canvas_scale_content_to_fit(paper)
       })
       paper.on('element:pointerdblclick',
-        _canvas_collapse_children_handler.bind(null, graph)
+        _canvas_handle_collapse_children.bind(null, graph)
       )
       paper.on('element:pointerclick',
-        _canvas_select_node_handler.bind(null, graph)
+        _canvas_handle_select_node.bind(null, graph)
       )
 
       graph.set("splash", true)
@@ -577,17 +571,65 @@ var py_trees = (function() {
                   },
               },
               label: {
-                  text: 'Shortcuts\n\n' +
-                        '-------------------------\n\n' +
-                        'Zoom In/Out ......... mousewheel\n\n' +
-                        'Scale to Fit ...... double-click\n\n' +
-                        'Collapse Node ..... single click',
+                  text: 'Shortcuts - Background\n\n' +
+                        '-------------------------------------\n\n' +
+                        'Zoom In/Out ............. mousewheel\n\n' +
+                        'Scale to Fit ............ double-click\n\n\n' +
+                        'Shortcuts - Behaviours\n\n' +
+                        '-------------------------------------\n\n' +
+                        'Blackboard Tracking ..... single-click\n\n' +
+                        'Collapse Children ....... double-click',
                   fill: 'white',
                   'font-size': 12,
               }
           }
       });
       splash.addTo(graph)
+  }
+
+  /**
+   * Callback for collapsing children on a click event
+   */
+  var _canvas_handle_collapse_children = function(graph, view, event, x, y) {
+      _canvas_collapse_children(graph, view.model)
+  }
+
+  /**
+   * React to an event triggered by selecting (one-click) a node. Just toggle
+   * the selected flag on the node here. Rendering the node and the blackboard
+   * view will take advantage of that flag elsewhere.
+   */
+  var _canvas_handle_select_node = function(graph, view, event, x, y) {
+      // make sure we're not picking up double click events, see
+      //   https://stackoverflow.com/questions/5497073/how-to-differentiate-single-click-event-and-double-click-event/53939059#53939059
+      timestamp_ms = Date.now()
+      if (event.detail == 1) {
+          graph.set("last_single_click_ms", timestamp_ms)
+          setTimeout(() => {
+              if ( graph.get("last_single_click_ms") > graph.get("last_double_click_ms") ) {
+                  view.model.set('selected', !view.model.get('selected'))
+                  // update the blackboard view
+                  var selected_nodes = []
+                  _.each(graph.getElements(), function(el) {
+                      behaviour_id = el.get('behaviour_id')
+                      if (el.get('selected')) {
+                          selected_nodes.push(behaviour_id)
+                      }
+                  })
+                  tree = graph.get("tree")
+                  if ("blackboard" in tree) {
+                      _canvas_update_blackboard_view({
+                          selected: selected_nodes,
+                          visited: tree.visited_path,
+                          blackboard: tree.blackboard
+                      })
+                  }
+              }
+          }, 350); // ms
+      } else {  // event.detail == 2+
+          graph.set("last_double_click_ms", Date.now())
+          // do nothing, handled in the separate double click handler
+      }
   }
 
   var _canvas_layout_graph = function({graph}) {
@@ -685,30 +727,6 @@ var py_trees = (function() {
   }
 
   /**
-   * React to an event triggered by selecting (one-click) a node. Just toggle
-   * the selected flag on the node here. Rendering the node and the blackboard
-   * view will take advantage of that flag elsewhere.
-   */
-  var _canvas_select_node_handler = function(graph, view, event, x, y) {
-      // make sure we're not picking up double click events, see
-      //   https://stackoverflow.com/questions/5497073/how-to-differentiate-single-click-event-and-double-click-event/53939059#53939059
-      timestamp_ms = Date.now()
-      if (event.detail == 1) {
-          graph.set("last_single_click_ms", timestamp_ms)
-          setTimeout(() => {
-              if ( graph.get("last_single_click_ms") > graph.get("last_double_click_ms") ) {
-                  console.log("Operation >")
-                  view.model.set('selected', !view.model.get('selected'))
-                  selected = view.model.get('selected')
-              }
-          }, 350); // ms
-      } else {  // event.detail == 2+
-          graph.set("last_double_click_ms", Date.now())
-          // do nothing, handled in the separate double click handler
-      }
-  }
-
-  /**
    * Update the blackboard view that hangs in the upper right
    * corner of the canvas div.
    *
@@ -728,35 +746,37 @@ var py_trees = (function() {
    *     }
    * }
    *
-   * If required fields are not present or empty, this method returns
-   * immediately.
+   * If relevant fields are not present or empty, this method returns
+   * quietly without generating the view.
    */
   var _canvas_update_blackboard_view = function({selected, visited, blackboard}) {
       console.log("_canvas_update_blackboard_view")
+
+      // clean
       var existing_blackboard_view = document.getElementById("blackboard_view")
       if ( existing_blackboard_view ) {
           existing_blackboard_view.parentNode.removeChild(existing_blackboard_view)
       }
+
+      // do the optional blackboard fields exist? if not, don't show anything
       if (!("behaviours" in blackboard)) {
-          console.log("_canvas_update_blackboard_view_done - no behaviours")
+          console.log("_canvas_update_blackboard_view_abort - no behaviours")
           return
       }
       if (!("data" in blackboard)) {
-          console.log("_canvas_update_blackboard_view_done - no data")
+          console.log("_canvas_update_blackboard_view_abort - no data")
           return
       }
       if ( Object.keys(blackboard.behaviours).length === 0 ) {
-          console.log("_canvas_update_blackboard_view_done - behaviours empty")
+          console.log("_canvas_update_blackboard_view_abort - behaviours empty")
           return
       }
       if ( Object.keys(blackboard.data).length === 0 ) {
-          console.log("_canvas_update_blackboard_view_done - data empty")
+          console.log("_canvas_update_blackboard_view_abort - data empty")
           return
       }
-      if ( selected.length === 0 ) {
-          console.log("_canvas_update_blackboard_view_done - nothing selected")
-          return
-      }
+
+      // the blackboard view (sans variables)
       var canvas = document.getElementById("canvas")
       var blackboard_view = document.createElement("div")
       var blackboard_view_header = document.createElement("div")
@@ -768,8 +788,21 @@ var py_trees = (function() {
       blackboard_view_variables.className = "blackboard_view_variables"
       blackboard_view_header.innerHTML =
           "<b>Blackboard View</b><br/>" +
-          "(click behaviours to populate)<br/>" +
+          "(defaults to visited variables)<br/>" +
+          "(select behaviours to track individually)<br/>" +
           "<hr/>"
+      blackboard_view.appendChild(blackboard_view_header)
+      blackboard_view.appendChild(blackboard_view_namespace)
+      blackboard_view.appendChild(blackboard_view_variables)
+      canvas.appendChild(blackboard_view)
+
+      // anything selected?
+      if ( selected.length === 0 ) {
+          selected = visited
+          // console.log("_canvas_update_blackboard_view_abort - nothing selected")
+          // return
+      }
+      // populate
       var blackboard_variables = {}
       // determine intersection of selected and visited / selected and not visited
       selected_and_visited = []
@@ -812,12 +845,6 @@ var py_trees = (function() {
               }
           }
       }
-      console.log("Selected", selected)
-      console.log("Visited", visited)
-      console.log("Selected and Visited", selected_and_visited)
-      console.log("Selected and Not Visited", selected_and_not_visited)
-      console.log("Blackboard Variables", blackboard_variables)
-      console.log("Not Visited Blackboard Variables", not_visited_blackboard_variables)
       var keys = Object.keys(blackboard_variables)
       keys.sort()
       for (var i=0; i<keys.length; i++) {
@@ -828,13 +855,10 @@ var py_trees = (function() {
                   blackboard_variables[key] + "</span><br/>"
           } else {
               blackboard_view_variables.innerHTML +=
-                  "<b>" + key + "</b>" + ": " + blackboard_variables[key] + "<br/>"
+                  "<span style='color: cyan;'><b>" + key + "</b>" + ": " +
+                  "<span style='color: yellow;'>" + blackboard_variables[key] + "</span><br/>"
           }
       }
-      blackboard_view.appendChild(blackboard_view_header)
-      blackboard_view.appendChild(blackboard_view_namespace)
-      blackboard_view.appendChild(blackboard_view_variables)
-      canvas.appendChild(blackboard_view)
       console.log("_canvas_update_blackboard_view_done")
   }
 
@@ -994,7 +1018,7 @@ var py_trees = (function() {
             blackboard: tree.blackboard
         })
     }
-
+    graph.set("tree", tree)
     console.log("_canvas_update_graph_done")
     return graph_changed
   }
@@ -1534,6 +1558,7 @@ var py_trees = (function() {
           tree
       }) {
       console.log("_timeline_add_tree_to_cache")
+      time_start_ms = Date.now()
       cache = timeline_graph.get('cache')
       trees = cache.get('trees')
 
@@ -1559,6 +1584,7 @@ var py_trees = (function() {
           }
           canvas_paper.unfreeze()
       }
+      console.log("_timeline_add_tree_to_cache_ms: ", Date.now() - time_start_ms)
       console.log("_timeline_add_tree_to_cache_done")
   }
 

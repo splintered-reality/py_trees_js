@@ -192,7 +192,8 @@ def create_demo_tree_list():
     tree['blackboard']['data']['/foobar'] = 'oi'  # TODO: flip to True, and fix dump/load problems
     tree['blackboard']['data']['/state/worker_b'] = 5
     trees.append(copy.deepcopy(tree))
-    # not changed
+    # tree not changed, only blackboard values
+    tree['blackboard']['data']['/state/worker_b'] = 6
     tree['changed'] = 'false'
     trees.append(copy.deepcopy(tree))
     # sequence failed
@@ -206,7 +207,7 @@ def create_demo_tree_list():
     tree['behaviours']['11']['status'] = 'RUNNING'  # second parallelised
     tree['behaviours']['4']['status'] = 'RUNNING'  # decorator
     tree['behaviours']['5']['status'] = 'RUNNING'  # decorator child
-    del tree['blackboard']['data']['/state/worker_a']
+    # del tree['blackboard']['data']['/state/worker_a']
     tree['blackboard']['data']['/state/worker_c'] = 'boinked'
     trees.append(copy.deepcopy(tree))
     return trees

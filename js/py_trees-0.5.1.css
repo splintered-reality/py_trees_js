@@ -14,14 +14,16 @@
 #blackboard_view {
     border: 1px groove white;
     position: absolute;
-    bottom: 45px;
+    bottom: 0px;
     right: 0px;
-    margin: 0px 1% 0px 1%;
+    margin: 0px 1% 45px 1%;  /* top, right, bottom, left */
     padding: 3px;
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     font-size: 9px;
-    max-width: 48%
+    max-width: 48%;
+    max-height: 50%;
+    overflow-y: auto;
 }
 
 .blackboard_view_header {

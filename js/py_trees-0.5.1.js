@@ -802,7 +802,7 @@ var py_trees = (function() {
           // console.log("_canvas_update_blackboard_view_abort - nothing selected")
           // return
       }
-      // populate
+      // gather variables
       var blackboard_variables = {}
       // determine intersection of selected and visited / selected and not visited
       selected_and_visited = []
@@ -815,7 +815,7 @@ var py_trees = (function() {
               selected_and_not_visited.push(behaviour_id)
           }
       }
-      // collect visited variables
+      // collect data
       for (var i = 0; i < selected_and_visited.length; i++) {
           var behaviour_id = selected_and_visited[i]
           if ( behaviour_id in blackboard.behaviours ) {
@@ -847,6 +847,7 @@ var py_trees = (function() {
       }
       var keys = Object.keys(blackboard_variables)
       keys.sort()
+      // populate html
       for (var i=0; i<keys.length; i++) {
           var key = keys[i]
           if ( not_visited_blackboard_variables.includes(key) ) {
@@ -1004,14 +1005,14 @@ var py_trees = (function() {
         graph_changed = false
     }
     console.log("_canvas_update_graph_update_blackboard_view")
-    var selected_nodes = []
-    _.each(graph.getElements(), function(el) {
-        behaviour_id = el.get('behaviour_id')
-        if (el.get('selected')) {
-            selected_nodes.push(behaviour_id)
-        }
-    })
     if ("blackboard" in tree) {
+        var selected_nodes = []
+        _.each(graph.getElements(), function(el) {
+            behaviour_id = el.get('behaviour_id')
+            if (el.get('selected')) {
+                selected_nodes.push(behaviour_id)
+            }
+        })
         _canvas_update_blackboard_view({
             selected: selected_nodes,
             visited: tree.visited_path,

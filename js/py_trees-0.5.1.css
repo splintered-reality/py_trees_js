@@ -1,6 +1,6 @@
 #timeline {
-  position: absolute;
-  bottom: 0px;
+    position: absolute;
+    bottom: 0px;
     box-sizing: border-box;
     pointer-events: none;
     /*

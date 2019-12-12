@@ -1,6 +1,6 @@
 #timeline {
-	position: absolute;
-	bottom: 0px;
+  position: absolute;
+  bottom: 0px;
     box-sizing: border-box;
     pointer-events: none;
     /*
@@ -16,11 +16,12 @@
     position: absolute;
     bottom: 45px;
     right: 0px;
-    margin: 0px 10px 0px 10px;
+    margin: 0px 1% 0px 1%;
     padding: 3px;
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     font-size: 9px;
+    max-width: 48%
 }
 
 .blackboard_view_header {

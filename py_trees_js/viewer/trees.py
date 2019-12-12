@@ -183,7 +183,7 @@ def create_demo_tree_definition():
 def create_demo_tree_list():
     trees = []
     tree = create_demo_tree_definition()
-    tree['blackboard']['data']['/state/worker_a'] = 'lookin good'
+    tree['blackboard']['data']['/state/worker_a'] = 'And his noodly appendage reached forth to tickle the blessed...'
     trees.append(copy.deepcopy(tree))
     # sequence progressed, but running
     tree['visited_path'] = ['1', '2', '7', '8']

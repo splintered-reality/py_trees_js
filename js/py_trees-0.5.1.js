@@ -397,6 +397,9 @@ var py_trees = (function() {
   // Variables
   //
   //   graph
+  //     bounding_box ({x, y, width, height}) - dimensions of the dot style graph layout
+  //     last_double_click_ms (float) - used to help distinguish between single-double clicks
+  //     last_single_click_ms (float) - used to help distinguish between single-double clicks
   //     scale_content_to_fit (bool, default: true) - always scale content to fit
   //     splash (bool) - showing the splash cheat sheet or a rendered tree
 
@@ -634,13 +637,16 @@ var py_trees = (function() {
 
   var _canvas_layout_graph = function({graph}) {
       console.log("_canvas_layout_graph")
-      var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
-          marginX: 50,
-          marginY: 50,
-          nodeSep: 50,
-          edgeSep: 80,
-          rankDir: "TB"
-      });
+      graph.set(
+          "bounding_box",
+          joint.layout.DirectedGraph.layout(graph, {
+              marginX: 50,
+              marginY: 50,
+              nodeSep: 50,
+              edgeSep: 80,
+              rankDir: "TB"
+          })
+      );
       // console.log("  dot graph layout")
       // console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
       // console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
@@ -885,6 +891,18 @@ var py_trees = (function() {
           _canvas_scale_content_to_fit(canvas_paper)
       } else if ( canvas_graph.get('scale_content_to_fit') ) {
           _canvas_scale_content_to_fit(canvas_paper)
+      }
+      dimensions = paper.getComputedSize()
+      console.log("  paper dimensions", dimensions)
+      console.log('    width:', dimensions.width, 'height:', dimensions.height);
+      graph_bounding_box = graph.get("bounding_box")
+      console.log("  dot graph dimensions")
+      console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
+      console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
+      // clean
+      var existing_blackboard_view = document.getElementById("blackboard_view")
+      if ( existing_blackboard_view ) {
+          console.log("  blackboard view dimensions")
       }
       paper.unfreeze()
   }

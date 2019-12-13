@@ -864,6 +864,32 @@ var py_trees = (function() {
   }
 
   /**
+   * Complete update of the canvas - this encapsulates many of the
+   * other functions that update, then layout the canvas for both
+   * graph and views.
+   * 
+   * paper: jointjs view for the canvas
+   * graph: jointjs model for the canvas
+   * tree: data for the model
+   * force_scale_content_to_fit(bool): scale graph to fit horizontally inside the canvas
+   */
+  var _canvas_update = function({paper, graph, tree, force_scale_content_to_fit}) {
+      paper.freeze()
+      var graph_changed = _canvas_update_graph({graph: graph, tree: tree})
+      if ( graph_changed ) {
+          _canvas_layout_graph({graph: canvas_graph})
+      }
+      // force scale content to fit, even if the graph didn't change
+      if ( force_scale_content_to_fit ) {
+          canvas_graph.set('scale_content_to_fit', true)
+          _canvas_scale_content_to_fit(canvas_paper)
+      } else if ( canvas_graph.get('scale_content_to_fit') ) {
+          _canvas_scale_content_to_fit(canvas_paper)
+      }
+      paper.unfreeze()
+  }
+
+  /**
    * Right now this is creating the graph. Will have to decide
    * in future whether new tree serialisations reset the graph
    * and completely recreate or just update the graph. The latter
@@ -1349,15 +1375,12 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              canvas_paper.freeze()
-              var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
-              if ( graph_changed ) {
-                  _canvas_layout_graph({graph: canvas_graph})
-              }
-              // force scale content to fit, even if the graph didn't change
-              canvas_graph.set('scale_content_to_fit', true)
-              _canvas_scale_content_to_fit(canvas_paper)
-              canvas_paper.unfreeze()
+              _canvas_update({
+                  paper: canvas_paper,
+                  graph: canvas_graph,
+                  tree: cache.get('selected').get('tree'),
+                  force_scale_content_to_fit: true
+              })
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
               index = cache.get('selected_index')
@@ -1408,16 +1431,13 @@ var py_trees = (function() {
       events = cache.get('events')
       tree = event.get('tree')
 
-      // render
-      canvas_paper.freeze()
-      var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
-      if ( graph_changed ) {
-          _canvas_layout_graph({graph: canvas_graph})
-      }
       // force scale content to fit, even if the graph didn't change so you get the whole tree
-      canvas_graph.set('scale_content_to_fit', true)
-      _canvas_scale_content_to_fit(canvas_paper)
-      canvas_paper.unfreeze()
+      _canvas_update({
+          paper: canvas_paper,
+          graph: canvas_graph,
+          tree: tree,
+          force_scale_content_to_fit: true
+      })
 
       // update timeline highlight
       // TODO: optimise, i.e. cache the selected marker and update
@@ -1575,15 +1595,12 @@ var py_trees = (function() {
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
 
       if ( timeline_graph.get('streaming') ) {
-          canvas_paper.freeze()
-          var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
-          if ( graph_changed ) {
-              _canvas_layout_graph({graph: canvas_graph})
-              if ( canvas_graph.get('scale_content_to_fit') ) {
-                  _canvas_scale_content_to_fit(canvas_paper)
-              }
-          }
-          canvas_paper.unfreeze()
+          _canvas_update({
+              paper: canvas_paper,
+              graph: canvas_graph,
+              tree: tree,
+              force_scale_content_to_fit: false
+          })
       }
       console.log("_timeline_add_tree_to_cache_ms: ", Date.now() - time_start_ms)
       console.log("_timeline_add_tree_to_cache_done")

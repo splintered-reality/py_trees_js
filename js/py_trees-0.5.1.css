@@ -22,7 +22,7 @@
     color: white;
     font-size: 9px;
     max-width: 48%;
-    max-height: 50%;
+    /* max-height: 50%; */
     overflow-y: auto;
 }
 
@@ -30,10 +30,7 @@
     text-align: center;
     font-size: 10px;
 }
-.blackboard_view_namespace {
-    text-align: left;
-    font-weight: bold;
-}
+
 .blackboard_view_variables {
     text-align: left;
 }

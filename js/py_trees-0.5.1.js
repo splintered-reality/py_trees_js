@@ -397,9 +397,13 @@ var py_trees = (function() {
   // Variables
   //
   //   graph
+  //     blackboard_minimum_height (float) - initial 'fit content' height of the view
+  //     bounding_box ({x, y, width, height}) - dimensions of the dot style graph layout
+  //     last_double_click_ms (float) - used to help distinguish between single-double clicks
+  //     last_single_click_ms (float) - used to help distinguish between single-double clicks
   //     scale_content_to_fit (bool, default: true) - always scale content to fit
   //     splash (bool) - showing the splash cheat sheet or a rendered tree
-
+  //
   /**
    * Collapse children of the selected model. This merely
    * hides them from view, but doesn't remove them from the graph.
@@ -527,6 +531,10 @@ var py_trees = (function() {
       paper.on('blank:pointerdblclick', function(event, x, y) {
           canvas_graph.set('scale_content_to_fit', true)
           _canvas_scale_content_to_fit(paper)
+          _canvas_scale_blackboard_view({
+              paper: paper,
+              graph: paper.model
+          })
       })
       paper.on('element:pointerdblclick',
         _canvas_handle_collapse_children.bind(null, graph)
@@ -634,13 +642,16 @@ var py_trees = (function() {
 
   var _canvas_layout_graph = function({graph}) {
       console.log("_canvas_layout_graph")
-      var graph_bounding_box = joint.layout.DirectedGraph.layout(graph, {
-          marginX: 50,
-          marginY: 50,
-          nodeSep: 50,
-          edgeSep: 80,
-          rankDir: "TB"
-      });
+      graph.set(
+          "bounding_box",
+          joint.layout.DirectedGraph.layout(graph, {
+              marginX: 50,
+              marginY: 50,
+              nodeSep: 50,
+              edgeSep: 80,
+              rankDir: "TB"
+          })
+      );
       // console.log("  dot graph layout")
       // console.log('    x:', graph_bounding_box.x, 'y:', graph_bounding_box.y)
       // console.log('    width:', graph_bounding_box.width, 'height:', graph_bounding_box.height);
@@ -690,6 +701,10 @@ var py_trees = (function() {
           event.offsetX - paper.start_drag.x,
           event.offsetY - paper.start_drag.y
       )
+      if ( event.type == "mouseup" ) {
+          console.log("equality")
+          _canvas_scale_blackboard_view({paper: paper, graph: paper.model})
+      }
   }
   /**
    * Scale the canvas. Note that paper will automagically
@@ -706,11 +721,43 @@ var py_trees = (function() {
       sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 10.0)
       sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
       paper.scale(sx, sy)
+      _canvas_scale_blackboard_view({paper: paper, graph: graph})
   }
+
+  var _canvas_scale_blackboard_view = function({paper, graph}) {
   /**
-   * Fit the tree to the canvas if scale < 1.0,
-   * otherwise just render it normally (scale: 1.0).
+   * Scale the blackboard if there is empty space, otherwise leave it
+   * scaled to just fit it's own content, even if it overlaps the graph.
    */
+      var blackboard_view = document.getElementById("blackboard_view")
+      if ( blackboard_view ) {
+          canvas_height = paper.getComputedSize().height
+          canvas_scale = canvas_paper.scale().sy       // sx, sy
+          canvas_offset_height = canvas_paper.translate().ty  // tx, ty
+          graph_bounding_box = graph.get("bounding_box")
+          scaled_graph_height = canvas_scale * (graph_bounding_box.y + graph_bounding_box.height)
+          // initially stored 'fit content' height
+          blackboard_height = graph.get("blackboard_minimum_height")
+          // console.log("  canvas scale: " + canvas_scale)
+          // console.log("  canvas height: ", canvas_height)
+          // console.log("--------------------------------")
+          // console.log("  canvas offset: ", canvas_offset_height)
+          // console.log("  graph  height: ", graph.get("bounding_box").height)
+          // console.log("  graph  height (scaled): ", scaled_graph_height)
+          // console.log("  blackboard height: ", blackboard_height)
+          /*
+          */
+          // The 45 is a bit of a hack, it keeps the bottom above a timeline if it is present
+          // (timeline height is 35px. Otherwise, just leaves that sized margin if no timeline
+          // is present.
+          if ( canvas_offset_height + scaled_graph_height + blackboard_height + 45 < canvas_height ) {
+              // pull it up
+              blackboard_view.style.top = canvas_offset_height + scaled_graph_height + 45
+              // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
+          }
+      }
+  }
+
   var _canvas_scale_content_to_fit = function(paper, event, x, y) {
       console.log("_canvas_scale_content_to_fit")
       // Make sure views are updated to match model's contents so that
@@ -724,6 +771,37 @@ var py_trees = (function() {
           scaleGrid: 0.01,
       });
       console.log("_canvas_scale_content_to_fit_done")
+  }
+
+
+  /**
+   * Complete update of the canvas - this encapsulates many of the
+   * other functions that update, then layout the canvas for both
+   * graph and views.
+   * 
+   * paper: jointjs view for the canvas
+   * graph: jointjs model for the canvas
+   * tree: data for the model
+   * force_scale_content_to_fit(bool): scale graph to fit horizontally inside the canvas
+   */
+  var _canvas_update = function({paper, graph, tree, force_scale_content_to_fit}) {
+      paper.freeze()
+      var graph_changed = _canvas_update_graph({graph: graph, tree: tree})
+      if ( graph_changed ) {
+          _canvas_layout_graph({graph: canvas_graph})
+      }
+      // force scale content to fit, even if the graph didn't change
+      if ( force_scale_content_to_fit ) {
+          canvas_graph.set('scale_content_to_fit', true)
+          _canvas_scale_content_to_fit(canvas_paper)
+      } else if ( canvas_graph.get('scale_content_to_fit') ) {
+          _canvas_scale_content_to_fit(canvas_paper)
+      }
+      _canvas_scale_blackboard_view({
+          paper: canvas_paper,
+          graph: canvas_graph
+      })
+      paper.unfreeze()
   }
 
   /**
@@ -780,11 +858,9 @@ var py_trees = (function() {
       var canvas = document.getElementById("canvas")
       var blackboard_view = document.createElement("div")
       var blackboard_view_header = document.createElement("div")
-      var blackboard_view_namespace = document.createElement("div")
       var blackboard_view_variables = document.createElement("div")
       blackboard_view.id = "blackboard_view"
       blackboard_view_header.className = "blackboard_view_header"
-      blackboard_view_namespace.className = "blackboard_view_namespace"
       blackboard_view_variables.className = "blackboard_view_variables"
       blackboard_view_header.innerHTML =
           "<b>Blackboard View</b><br/>" +
@@ -792,7 +868,6 @@ var py_trees = (function() {
           "(select behaviours to track individually)<br/>" +
           "<hr/>"
       blackboard_view.appendChild(blackboard_view_header)
-      blackboard_view.appendChild(blackboard_view_namespace)
       blackboard_view.appendChild(blackboard_view_variables)
       canvas.appendChild(blackboard_view)
 
@@ -860,6 +935,8 @@ var py_trees = (function() {
                   "<span style='color: yellow;'>" + blackboard_variables[key] + "</span><br/>"
           }
       }
+      graph.set("blackboard_minimum_height", blackboard_view.offsetHeight)
+      console.log("blackboard_minimum_height...", blackboard_view.offsetHeight)
       console.log("_canvas_update_blackboard_view_done")
   }
 
@@ -1349,15 +1426,12 @@ var py_trees = (function() {
               //    check timestamp with the trees' last element's timestamp
               //    pass that model's view to  _timeline_select_event
               _timeline_rebuild_cache_event_markers({graph: timeline_graph})
-              canvas_paper.freeze()
-              var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: cache.get('selected').get('tree')})
-              if ( graph_changed ) {
-                  _canvas_layout_graph({graph: canvas_graph})
-              }
-              // force scale content to fit, even if the graph didn't change
-              canvas_graph.set('scale_content_to_fit', true)
-              _canvas_scale_content_to_fit(canvas_paper)
-              canvas_paper.unfreeze()
+              _canvas_update({
+                  paper: canvas_paper,
+                  graph: canvas_graph,
+                  tree: cache.get('selected').get('tree'),
+                  force_scale_content_to_fit: true
+              })
           } else if ( view.model.id == timeline_graph.get('buttons')["next"].id ) {
               console.log("  clicked 'next'")
               index = cache.get('selected_index')
@@ -1408,16 +1482,13 @@ var py_trees = (function() {
       events = cache.get('events')
       tree = event.get('tree')
 
-      // render
-      canvas_paper.freeze()
-      var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
-      if ( graph_changed ) {
-          _canvas_layout_graph({graph: canvas_graph})
-      }
       // force scale content to fit, even if the graph didn't change so you get the whole tree
-      canvas_graph.set('scale_content_to_fit', true)
-      _canvas_scale_content_to_fit(canvas_paper)
-      canvas_paper.unfreeze()
+      _canvas_update({
+          paper: canvas_paper,
+          graph: canvas_graph,
+          tree: tree,
+          force_scale_content_to_fit: true
+      })
 
       // update timeline highlight
       // TODO: optimise, i.e. cache the selected marker and update
@@ -1575,15 +1646,12 @@ var py_trees = (function() {
       _timeline_rebuild_cache_event_markers({graph: timeline_graph})
 
       if ( timeline_graph.get('streaming') ) {
-          canvas_paper.freeze()
-          var graph_changed = _canvas_update_graph({graph: canvas_graph, tree: tree})
-          if ( graph_changed ) {
-              _canvas_layout_graph({graph: canvas_graph})
-              if ( canvas_graph.get('scale_content_to_fit') ) {
-                  _canvas_scale_content_to_fit(canvas_paper)
-              }
-          }
-          canvas_paper.unfreeze()
+          _canvas_update({
+              paper: canvas_paper,
+              graph: canvas_graph,
+              tree: tree,
+              force_scale_content_to_fit: false
+          })
       }
       console.log("_timeline_add_tree_to_cache_ms: ", Date.now() - time_start_ms)
       console.log("_timeline_add_tree_to_cache_done")

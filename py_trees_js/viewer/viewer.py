@@ -14,6 +14,7 @@ A qt-javascript application for viewing executing or replaying py_trees
 # Imports
 ##############################################################################
 
+import copy
 import datetime
 import functools
 import os
@@ -39,16 +40,19 @@ def send_tree_response(reply):
 
 
 @qt_core.pyqtSlot()
-def send_tree(web_view_page, demo_trees, unused_checked):
+def send_tree(parameters, web_view_page, demo_trees, unused_checked):
     number_of_trees = len(demo_trees)
-    demo_trees[send_tree.index]['timestamp'] = time.time()
+    tree = copy.deepcopy(demo_trees[send_tree.index])
+    tree['timestamp'] = time.time()
     # demo_trees[send_tree.index]['timestamp'] = time.time()
     console.logdebug("[{}] send: tree '{}' [{}][viewer]".format(
         time.monotonic(),
         send_tree.index,
-        demo_trees[send_tree.index]['timestamp'])
+        tree['timestamp'])
     )
-    javascript_command = "render_tree({{tree: {}}})".format(demo_trees[send_tree.index])
+    if not parameters.send_blackboard_data:
+        del tree['blackboard']
+    javascript_command = "render_tree({{tree: {}}})".format(tree)
     web_view_page.runJavaScript(javascript_command, send_tree_response)
     send_tree.index = 0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1
 
@@ -100,6 +104,13 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
             extension = b'PNG'
         web_engine_view.grab().save(filename, extension)
 
+
+class Parameters(object):
+
+    def __init__(self):
+        self.send_blackboard_data = False
+        self.send_blackboard_activity = False
+
 ##############################################################################
 # Main
 ##############################################################################
@@ -111,7 +122,8 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
-    window = main_window.MainWindow()
+    parameters = Parameters()
+    window = main_window.MainWindow(parameters)
 
     # sig interrupt handling
     #   use a timer to get out of the gui thread and
@@ -130,6 +142,7 @@ def main():
     window.ui.send_button.clicked.connect(
         functools.partial(
             send_tree,
+            parameters,
             window.ui.web_view_group_box.ui.web_engine_view.page(),
             trees.create_demo_tree_list()
         )

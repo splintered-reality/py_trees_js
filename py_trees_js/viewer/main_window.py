@@ -34,7 +34,7 @@ class MainWindow(qt_widgets.QMainWindow):
 
     request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
 
-    def __init__(self):
+    def __init__(self, parameters):
         super().__init__()
         self.ui = main_window_ui.Ui_MainWindow()
         self.ui.setupUi(self)
@@ -42,12 +42,35 @@ class MainWindow(qt_widgets.QMainWindow):
         self.ui.web_view_group_box.ui.web_engine_view.loadFinished.connect(
             self.on_load_finished
         )
+        self.parameters = parameters
+        self.ui.blackboard_data_checkbox.stateChanged.connect(self.on_blackboard_data_checked)
+        self.ui.blackboard_activity_checkbox.stateChanged.connect(self.on_blackboard_activity_checked)
 
     @qt_core.pyqtSlot()
     def on_load_finished(self):
         console.logdebug("web page loaded [main window]")
         self.ui.send_button.setEnabled(True)
         self.ui.screenshot_button.setEnabled(True)
+        self.ui.blackboard_data_checkbox.setEnabled(True)
+        self.parameters.send_blackboard_data = True if self.ui.blackboard_data_checkbox.checkState() == qt_core.Qt.Checked else False
+        # self.ui.blackboard_activity_checkbox.setEnabled(True)
+        # self.parameters.send_blackboard_activity = True if self.ui.blackboard_activity_checkbox.checkState() == qt_core.Qt.Checked else False
+
+    def on_blackboard_data_checked(self, state):
+        self.parameters.send_blackboard_data = True if state == qt_core.Qt.Checked else False
+        console.logdebug(
+            "received blackboard data parameter change signal [send_blackboard_data: {}]".format(
+                self.parameters.send_blackboard_data
+            )
+        )
+
+    def on_blackboard_activity_checked(self, state):
+        self.parameters.send_blackboard_activity = True if state == qt_core.Qt.Checked else False
+        console.logdebug(
+            "received blackboard activity parameter change signal [send_blackboard_activity: {}]".format(
+                self.parameters.send_blackboard_activity
+            )
+        )
 
     def closeEvent(self, event):
         console.logdebug("received close event [main_window]")

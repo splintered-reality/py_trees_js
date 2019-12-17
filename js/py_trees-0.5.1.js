@@ -778,7 +778,7 @@ var py_trees = (function() {
    * Complete update of the canvas - this encapsulates many of the
    * other functions that update, then layout the canvas for both
    * graph and views.
-   * 
+   *
    * paper: jointjs view for the canvas
    * graph: jointjs model for the canvas
    * tree: data for the model
@@ -827,7 +827,7 @@ var py_trees = (function() {
    * If relevant fields are not present or empty, this method returns
    * quietly without generating the view.
    */
-  var _canvas_update_blackboard_view = function({selected, visited, blackboard}) {
+  var _canvas_update_blackboard_view = function({graph, visited, blackboard}) {
       console.log("_canvas_update_blackboard_view")
 
       // clean
@@ -836,6 +836,10 @@ var py_trees = (function() {
           existing_blackboard_view.parentNode.removeChild(existing_blackboard_view)
       }
 
+      if ( blackboard == null ) {
+          console.log("_canvas_update_blackboard_view_abort - no blackboard")
+          return
+      }
       // do the optional blackboard fields exist? if not, don't show anything
       if (!("behaviours" in blackboard)) {
           console.log("_canvas_update_blackboard_view_abort - no behaviours")
@@ -854,7 +858,16 @@ var py_trees = (function() {
           return
       }
 
-      // the blackboard view (sans variables)
+      // selected nodes
+      var selected = []
+      _.each(graph.getElements(), function(el) {
+          behaviour_id = el.get('behaviour_id')
+          if (el.get('selected')) {
+              selected.push(behaviour_id)
+          }
+      })
+
+      // (re)create the blackboard view (sans variables)
       var canvas = document.getElementById("canvas")
       var blackboard_view = document.createElement("div")
       var blackboard_view_header = document.createElement("div")
@@ -936,7 +949,6 @@ var py_trees = (function() {
           }
       }
       graph.set("blackboard_minimum_height", blackboard_view.offsetHeight)
-      console.log("blackboard_minimum_height...", blackboard_view.offsetHeight)
       console.log("_canvas_update_blackboard_view_done")
   }
 
@@ -1082,20 +1094,11 @@ var py_trees = (function() {
         graph_changed = false
     }
     console.log("_canvas_update_graph_update_blackboard_view")
-    if ("blackboard" in tree) {
-        var selected_nodes = []
-        _.each(graph.getElements(), function(el) {
-            behaviour_id = el.get('behaviour_id')
-            if (el.get('selected')) {
-                selected_nodes.push(behaviour_id)
-            }
-        })
-        _canvas_update_blackboard_view({
-            selected: selected_nodes,
-            visited: tree.visited_path,
-            blackboard: tree.blackboard
-        })
-    }
+    _canvas_update_blackboard_view({
+        graph: graph,
+        visited: tree.visited_path,
+        blackboard: tree.blackboard
+    })
     graph.set("tree", tree)
     console.log("_canvas_update_graph_done")
     return graph_changed

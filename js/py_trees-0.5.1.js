@@ -540,7 +540,7 @@ var py_trees = (function() {
         _canvas_handle_collapse_children.bind(null, graph)
       )
       paper.on('element:pointerclick',
-        _canvas_handle_select_node.bind(null, graph)
+        _canvas_handle_select_node.bind(null, paper, graph)
       )
 
       graph.set("splash", true)
@@ -607,7 +607,7 @@ var py_trees = (function() {
    * the selected flag on the node here. Rendering the node and the blackboard
    * view will take advantage of that flag elsewhere.
    */
-  var _canvas_handle_select_node = function(graph, view, event, x, y) {
+  var _canvas_handle_select_node = function(paper, graph, view, event, x, y) {
       // make sure we're not picking up double click events, see
       //   https://stackoverflow.com/questions/5497073/how-to-differentiate-single-click-event-and-double-click-event/53939059#53939059
       timestamp_ms = Date.now()
@@ -617,21 +617,16 @@ var py_trees = (function() {
               if ( graph.get("last_single_click_ms") > graph.get("last_double_click_ms") ) {
                   view.model.set('selected', !view.model.get('selected'))
                   // update the blackboard view
-                  var selected_nodes = []
-                  _.each(graph.getElements(), function(el) {
-                      behaviour_id = el.get('behaviour_id')
-                      if (el.get('selected')) {
-                          selected_nodes.push(behaviour_id)
-                      }
-                  })
                   tree = graph.get("tree")
-                  if ("blackboard" in tree) {
-                      _canvas_update_blackboard_view({
-                          selected: selected_nodes,
-                          visited: tree.visited_path,
-                          blackboard: tree.blackboard
-                      })
-                  }
+                  _canvas_update_blackboard_view({
+                      graph: graph,
+                      visited: tree.visited_path,
+                      blackboard: tree.blackboard
+                  })
+                  _canvas_scale_blackboard_view({
+                      paper: paper,
+                      graph: graph
+                  })
               }
           }, 350); // ms
       } else {  // event.detail == 2+
@@ -877,8 +872,7 @@ var py_trees = (function() {
       blackboard_view_variables.className = "blackboard_view_variables"
       blackboard_view_header.innerHTML =
           "<b>Blackboard View</b><br/>" +
-          "(defaults to visited variables)<br/>" +
-          "(select behaviours to track individually)<br/>" +
+          "(select behaviours or default to visited path)<br/>" +
           "<hr/>"
       blackboard_view.appendChild(blackboard_view_header)
       blackboard_view.appendChild(blackboard_view_variables)

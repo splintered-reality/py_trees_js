@@ -697,7 +697,6 @@ var py_trees = (function() {
           event.offsetY - paper.start_drag.y
       )
       if ( event.type == "mouseup" ) {
-          console.log("equality")
           _canvas_scale_blackboard_view({paper: paper, graph: paper.model})
       }
   }
@@ -740,15 +739,21 @@ var py_trees = (function() {
           // console.log("  graph  height: ", graph.get("bounding_box").height)
           // console.log("  graph  height (scaled): ", scaled_graph_height)
           // console.log("  blackboard height: ", blackboard_height)
-          /*
-          */
           // The 45 is a bit of a hack, it keeps the bottom above a timeline if it is present
           // (timeline height is 35px. Otherwise, just leaves that sized margin if no timeline
           // is present.
-          if ( canvas_offset_height + scaled_graph_height + blackboard_height + 45 < canvas_height ) {
-              // pull it up
-              blackboard_view.style.top = canvas_offset_height + scaled_graph_height + 45
+          timeline_margin = 45
+          epsilon_hack = 20
+          if ( canvas_offset_height + scaled_graph_height + blackboard_height + timeline_margin + epsilon_hack < canvas_height ) {
+              // view fits inside the space between graph bottom and canvas bottom, pull it up
+              blackboard_view.style.top = canvas_offset_height + scaled_graph_height + epsilon_hack
               // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
+          } else if ( blackboard_height + timeline_margin > canvas_height / 3.0 ) {
+              // view doesn't fit and would swamp the canvas - limit it
+              blackboard_view.style.top = 2.0 * canvas_height / 3.0
+          } else {
+              // view doesn't fit but is small, let it grow as needed
+              blackboard_view.style.top = "auto"
           }
       }
   }

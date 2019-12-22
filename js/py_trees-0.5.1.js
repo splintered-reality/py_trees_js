@@ -531,10 +531,8 @@ var py_trees = (function() {
       paper.on('blank:pointerdblclick', function(event, x, y) {
           canvas_graph.set('scale_content_to_fit', true)
           _canvas_scale_content_to_fit(paper)
-          _canvas_scale_blackboard_view({
-              paper: paper,
-              graph: paper.model
-          })
+          _canvas_scale_activity_view({paper: paper, graph: paper.model})
+          _canvas_scale_blackboard_view({paper: paper, graph: paper.model})
       })
       paper.on('element:pointerdblclick',
         _canvas_handle_collapse_children.bind(null, graph)
@@ -623,10 +621,8 @@ var py_trees = (function() {
                       visited: tree.visited_path,
                       blackboard: tree.blackboard
                   })
-                  _canvas_scale_blackboard_view({
-                      paper: paper,
-                      graph: graph
-                  })
+                  _canvas_scale_activity_view({paper: paper, graph: graph})
+                  _canvas_scale_blackboard_view({paper: paper, graph: graph})
               }
           }, 350); // ms
       } else {  // event.detail == 2+
@@ -697,6 +693,7 @@ var py_trees = (function() {
           event.offsetY - paper.start_drag.y
       )
       if ( event.type == "mouseup" ) {
+          _canvas_scale_activity_view({paper: paper, graph: paper.model})
           _canvas_scale_blackboard_view({paper: paper, graph: paper.model})
       }
   }
@@ -715,8 +712,49 @@ var py_trees = (function() {
       sx = (sx < 0.2 && delta < 0 ? sx : sx + delta / 10.0)
       sy = (sy < 0.2 && delta < 0  ? sy : sy + delta / 10.0)
       paper.scale(sx, sy)
+      _canvas_scale_activity_view({paper: paper, graph: graph})
       _canvas_scale_blackboard_view({paper: paper, graph: graph})
   }
+
+  var _canvas_scale_activity_view = function({paper, graph}) {
+      /**
+       * Scale the activity view if there is empty space, otherwise leave it
+       * scaled to just fit it's own content, even if it overlaps the graph.
+       */
+          var activity_view = document.getElementById("activity_view")
+          if ( activity_view ) {
+              canvas_height = paper.getComputedSize().height
+              canvas_scale = canvas_paper.scale().sy       // sx, sy
+              canvas_offset_height = canvas_paper.translate().ty  // tx, ty
+              graph_bounding_box = graph.get("bounding_box")
+              scaled_graph_height = canvas_scale * (graph_bounding_box.y + graph_bounding_box.height)
+              // initially stored 'fit content' height
+              activity_height = graph.get("activity_minimum_height")
+              // console.log("  canvas scale: " + canvas_scale)
+              // console.log("  canvas height: ", canvas_height)
+              // console.log("--------------------------------")
+              // console.log("  canvas offset: ", canvas_offset_height)
+              // console.log("  graph  height: ", graph.get("bounding_box").height)
+              // console.log("  graph  height (scaled): ", scaled_graph_height)
+              // console.log("  blackboard height: ", blackboard_height)
+              // The 45 is a bit of a hack, it keeps the bottom above a timeline if it is present
+              // (timeline height is 35px. Otherwise, just leaves that sized margin if no timeline
+              // is present.
+              timeline_margin = 45
+              epsilon_hack = 20
+              if ( canvas_offset_height + scaled_graph_height + activity_height + timeline_margin + epsilon_hack < canvas_height ) {
+                  // view fits inside the space between graph bottom and canvas bottom, pull it up
+                  activity_view.style.top = canvas_offset_height + scaled_graph_height + epsilon_hack
+                  // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
+              } else if ( activity_height + timeline_margin > canvas_height / 3.0 ) {
+                  // view doesn't fit and would swamp the canvas - limit it
+                  activity_view.style.top = 2.0 * canvas_height / 3.0
+              } else {
+                  // view doesn't fit but is small, let it grow as needed
+                  activity_view.style.top = "auto"
+              }
+          }
+      }
 
   var _canvas_scale_blackboard_view = function({paper, graph}) {
   /**
@@ -797,11 +835,64 @@ var py_trees = (function() {
       } else if ( canvas_graph.get('scale_content_to_fit') ) {
           _canvas_scale_content_to_fit(canvas_paper)
       }
-      _canvas_scale_blackboard_view({
-          paper: canvas_paper,
-          graph: canvas_graph
-      })
+      _canvas_scale_activity_view({paper: canvas_paper, graph: canvas_graph })
+      _canvas_scale_blackboard_view({paper: canvas_paper, graph: canvas_graph })
       paper.unfreeze()
+  }
+
+  /**
+   * Update the activity view that hangs in the lower left
+   * corner of the canvas div.
+   *
+   * Args:
+   *     graph: graph, for computing position of the activity view
+   *     activity: list of activity items
+   *
+   * {
+   *     "activity": {
+   *         <id>: {
+   *             <key>: <access>
+   *         }
+   *     },
+   * }
+   *
+   * If relevant fields are not present or empty, this method returns
+   * quietly without generating the view.
+   */
+  var _canvas_update_activity_view = function({graph, activity}) {
+      console.log("_canvas_update_activity_view")
+
+      // clean
+      var existing_activity_view = document.getElementById("activity_view")
+      if ( existing_activity_view ) {
+          existing_activity_view.parentNode.removeChild(existing_activity_view)
+      }
+
+      if ( activity == null ) {
+          console.log("_canvas_update_activity_view_abort - no activity")
+          return
+      }
+
+      // (re)create the activity view (sans variables)
+      var canvas = document.getElementById("canvas")
+      var activity_view = document.createElement("div")
+      var activity_view_header = document.createElement("div")
+      var activity_view_items = document.createElement("div")
+      activity_view.id = "activity_view"
+      activity_view_header.className = "activity_view_header"
+      activity_view_items.className = "activity_view_items"
+      activity_view_header.innerHTML =
+          "<b>Activity View</b><br/>" +
+          "<hr/>"
+      activity_view.appendChild(activity_view_header)
+      activity_view.appendChild(activity_view_items)
+      canvas.appendChild(activity_view)
+
+      activity_view_items.innerHTML +=
+          "<span style='color: green;'><b>" + "Funky" + "</b>" + ": " +
+          "Dude" + "</span><br/>"
+      graph.set("activity_minimum_height", activity_view.offsetHeight)
+      console.log("_canvas_update_activity_view_done")
   }
 
   /**
@@ -1092,7 +1183,11 @@ var py_trees = (function() {
         })
         graph_changed = false
     }
-    console.log("_canvas_update_graph_update_blackboard_view")
+    console.log("_canvas_update_graph_update_views")
+    _canvas_update_activity_view({
+        graph: graph,
+        activity: tree.activity,
+    })
     _canvas_update_blackboard_view({
         graph: graph,
         visited: tree.visited_path,

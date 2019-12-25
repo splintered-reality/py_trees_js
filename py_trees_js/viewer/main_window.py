@@ -30,11 +30,22 @@ from . import console
 ##############################################################################
 
 
+class Parameters(object):
+
+    def __init__(self):
+        self.send_blackboard_data = False
+        self.send_activity_stream = False
+
+
+##############################################################################
+# Main Window
+##############################################################################
+
 class MainWindow(qt_widgets.QMainWindow):
 
     request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
 
-    def __init__(self, parameters):
+    def __init__(self):
         super().__init__()
         self.ui = main_window_ui.Ui_MainWindow()
         self.ui.setupUi(self)
@@ -42,19 +53,19 @@ class MainWindow(qt_widgets.QMainWindow):
         self.ui.web_view_group_box.ui.web_engine_view.loadFinished.connect(
             self.on_load_finished
         )
-        self.parameters = parameters
-        self.ui.blackboard_data_checkbox.stateChanged.connect(self.on_blackboard_data_checked)
-        self.ui.blackboard_activity_checkbox.stateChanged.connect(self.on_blackboard_activity_checked)
+        self.parameters = Parameters()
+        self.ui.send_blackboard_data_checkbox.stateChanged.connect(self.on_blackboard_data_checked)
+        self.ui.send_activity_stream_checkbox.stateChanged.connect(self.on_activity_stream_checked)
 
     @qt_core.pyqtSlot()
     def on_load_finished(self):
         console.logdebug("web page loaded [main window]")
         self.ui.send_button.setEnabled(True)
         self.ui.screenshot_button.setEnabled(True)
-        self.ui.blackboard_data_checkbox.setEnabled(True)
-        self.parameters.send_blackboard_data = True if self.ui.blackboard_data_checkbox.checkState() == qt_core.Qt.Checked else False
-        # self.ui.blackboard_activity_checkbox.setEnabled(True)
-        # self.parameters.send_blackboard_activity = True if self.ui.blackboard_activity_checkbox.checkState() == qt_core.Qt.Checked else False
+        self.ui.send_blackboard_data_checkbox.setEnabled(True)
+        self.parameters.send_blackboard_data = True if self.ui.send_blackboard_data_checkbox.checkState() == qt_core.Qt.Checked else False
+        self.ui.send_activity_stream_checkbox.setEnabled(True)
+        self.parameters.send_activity_stream = True if self.ui.send_activity_stream_checkbox.checkState() == qt_core.Qt.Checked else False
 
     def on_blackboard_data_checked(self, state):
         self.parameters.send_blackboard_data = True if state == qt_core.Qt.Checked else False
@@ -64,11 +75,11 @@ class MainWindow(qt_widgets.QMainWindow):
             )
         )
 
-    def on_blackboard_activity_checked(self, state):
-        self.parameters.send_blackboard_activity = True if state == qt_core.Qt.Checked else False
+    def on_activity_stream_checked(self, state):
+        self.parameters.send_activity_stream = True if state == qt_core.Qt.Checked else False
         console.logdebug(
-            "received blackboard activity parameter change signal [send_blackboard_activity: {}]".format(
-                self.parameters.send_blackboard_activity
+            "received blackboard activity parameter change signal [send_activity_stream: {}]".format(
+                self.parameters.send_activity_stream
             )
         )
 
@@ -87,9 +98,23 @@ class MainWindow(qt_widgets.QMainWindow):
         window_state = settings.value("window_state")  # full size, maximised, minimised, no state
         if window_state is not None:
             self.restoreState(window_state)
+        self.ui.send_blackboard_data_checkbox.setChecked(
+            settings.value("send_blackboard_data", defaultValue=True, type=bool)
+        )
+        self.ui.send_activity_stream_checkbox.setChecked(
+            settings.value("send_activity_stream", defaultValue=False, type=bool)
+        )
 
     def writeSettings(self):
         console.logdebug("write settings [main_window]")
         settings = qt_core.QSettings("Splintered Reality", "PyTrees Viewer")
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("window_state", self.saveState())  # full size, maximised, minimised, no state
+        settings.setValue(
+            "send_blackboard_data",
+            self.ui.send_blackboard_data_checkbox.isChecked()
+        )
+        settings.setValue(
+            "send_activity_stream",
+            self.ui.send_activity_stream_checkbox.isChecked()
+        )

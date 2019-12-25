@@ -34,7 +34,7 @@
      <x>0</x>
      <y>0</y>
      <width>1645</width>
-     <height>40</height>
+     <height>29</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -69,12 +69,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="blackboard_data_checkbox">
+      <widget class="QCheckBox" name="send_blackboard_data_checkbox">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Blackboard Data</string>
+        <string>Send Blackboard Data</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -85,12 +85,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="blackboard_activity_checkbox">
+      <widget class="QCheckBox" name="send_activity_stream_checkbox">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Blackboard Activity</string>
+        <string>Send Activity Stream</string>
        </property>
        <property name="checked">
         <bool>false</bool>

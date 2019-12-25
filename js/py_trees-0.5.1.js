@@ -846,17 +846,9 @@ var py_trees = (function() {
    *
    * Args:
    *     graph: graph, for computing position of the activity view
-   *     activity: list of activity items
+   *     activity [str]: list of activity items as xhtml snippets
    *
-   * {
-   *     "activity": {
-   *         <id>: {
-   *             <key>: <access>
-   *         }
-   *     },
-   * }
-   *
-   * If relevant fields are not present or empty, this method returns
+   * If the activity field is not present (null) this method returns
    * quietly without generating the view.
    */
   var _canvas_update_activity_view = function({graph, activity}) {
@@ -888,9 +880,9 @@ var py_trees = (function() {
       activity_view.appendChild(activity_view_items)
       canvas.appendChild(activity_view)
 
-      activity_view_items.innerHTML +=
-          "<span style='color: green;'><b>" + "Funky" + "</b>" + ": " +
-          "Dude" + "</span><br/>"
+      _.each(activity, function(item) {
+          activity_view_items.innerHTML += item + "<br/>"
+      })
       graph.set("activity_minimum_height", activity_view.offsetHeight)
       console.log("_canvas_update_activity_view_done")
   }
@@ -1030,11 +1022,11 @@ var py_trees = (function() {
           var key = keys[i]
           if ( not_visited_blackboard_variables.includes(key) ) {
               blackboard_view_variables.innerHTML +=
-                  "<span style='color: green;'><b>" + key + "</b>" + ": " +
+                  "<span style='color: green;'>" + key + ": " +
                   blackboard_variables[key] + "</span><br/>"
           } else {
               blackboard_view_variables.innerHTML +=
-                  "<span style='color: cyan;'><b>" + key + "</b>" + ": " +
+                  "<span style='color: cyan;'>" + key + ": " +
                   "<span style='color: yellow;'>" + blackboard_variables[key] + "</span><br/>"
           }
       }

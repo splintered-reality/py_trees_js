@@ -159,7 +159,7 @@ def create_demo_tree_definition():
             },
         },
         'blackboard': {
-            'behaviours': {
+            'behaviours': {  # key metadata per behaviour
                 '7': {
                     '/state/worker_a': 'x'
                 },
@@ -175,9 +175,9 @@ def create_demo_tree_definition():
                     '/foobar': 'r',
                 },
             },
-            'data': {},
+            'data': {},  # key-value store
         },
-        'activity': [],
+        'activity': [],  # list of xhtml snippets
     }
     return tree
 
@@ -186,14 +186,14 @@ def generate_activity_timeline() -> typing.List[typing.List[str]]:
     space = '<text>&#xa0;</text>'
     left_arrow = '<text>&#x2190;</text>'
     right_arrow = '<text>&#x2192;</text>'
-    left_right_arrow = '<text>&#x2194;</text>'
+    # left_right_arrow = '<text>&#x2194;</text>'
     reset = '</text>'
     normal = '<text>'
     cyan = '<text style="color:cyan;">'
     green = '<text style="color:green;">'
     yellow = '<text style="color:darkgoldenrod;">'
-    red = '<text style="color:red;">'
-    monospace = '<text style="font-family: monospace;">'
+    # red = '<text style="color:red;">'
+    # monospace = '<text style="font-family: monospace;">'
     colon_separator = space + ":" + space
     bar_separator = space + "|" + space
     activity = [
@@ -229,7 +229,19 @@ def generate_activity_timeline() -> typing.List[typing.List[str]]:
                 normal + client_name + reset + (client_width - len(client_name)) * space + bar_separator +
                 green + info + reset
             )
-        formatted_activity.append(formatted_snippets)
+        # formatted_activity.append(formatted_snippets)
+        xhtml_snippet = "<table>"
+        for (key, activity_type, client_name, info) in snippets:
+            xhtml_snippet += (
+                "<tr>"
+                "<td>" + cyan + key + reset + "</td>"
+                "<td>" + yellow + activity_type + reset + "</td>"
+                "<td>" + normal + client_name + reset + "</td>"
+                "<td>" + green + info + reset + "</td>"
+                "</tr>"
+            )
+        xhtml_snippet += "</table>"
+        formatted_activity.append([xhtml_snippet])
     return formatted_activity
 
 

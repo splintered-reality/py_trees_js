@@ -33,7 +33,7 @@
 
 .activity_view_items {
     text-align: left;
-    font-family: monospace;
+    /* font-family: monospace; */
 }
 
 #blackboard_view {

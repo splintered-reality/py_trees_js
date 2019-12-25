@@ -54,8 +54,6 @@ def send_tree(parameters, web_view_page, demo_trees, unused_checked):
         del tree['blackboard']['data']
     if not parameters.send_activity_stream:
         del tree['activity']
-    else:
-        print("Activity: {}".format(tree['activity']))
     javascript_command = "render_tree({{tree: {}}})".format(tree)
     web_view_page.runJavaScript(javascript_command, send_tree_response)
     send_tree.index = 0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1

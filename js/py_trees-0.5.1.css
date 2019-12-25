@@ -11,6 +11,31 @@
     */
 }
 
+#activity_view {
+    border: 1px groove white;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    margin: 0px 1% 45px 1%;  /* top, right, bottom, left */
+    padding: 3px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 9px;
+    max-width: 47%;
+    /* max-height: 50%; */
+    overflow-y: auto;
+}
+
+.activity_view_header {
+    text-align: center;
+    font-size: 10px;
+}
+
+.activity_view_items {
+    text-align: left;
+    /* font-family: monospace; */
+}
+
 #blackboard_view {
     border: 1px groove white;
     position: absolute;
@@ -21,7 +46,7 @@
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     font-size: 9px;
-    max-width: 48%;
+    max-width: 47%;
     /* max-height: 50%; */
     overflow-y: auto;
 }
@@ -33,6 +58,7 @@
 
 .blackboard_view_variables {
     text-align: left;
+    /* font-family: monospace; */
 }
 
 .html-element {

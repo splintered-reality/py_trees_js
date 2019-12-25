@@ -51,7 +51,9 @@ def send_tree(parameters, web_view_page, demo_trees, unused_checked):
         tree['timestamp'])
     )
     if not parameters.send_blackboard_data:
-        del tree['blackboard']
+        del tree['blackboard']['data']
+    if not parameters.send_activity_stream:
+        del tree['activity']
     javascript_command = "render_tree({{tree: {}}})".format(tree)
     web_view_page.runJavaScript(javascript_command, send_tree_response)
     send_tree.index = 0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1
@@ -68,8 +70,7 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
         "BMP Files (*.bmp)",
         "JPEG Files (*.jpeg)",
         "PNG Files (*.png)"
-        ]
-    )
+    ])
     file_dialog.selectNameFilter("PNG Files (*.png)")
     file_dialog.setDefaultSuffix((".png"))
     file_dialog.setAcceptMode(qt_widgets.QFileDialog.AcceptSave)
@@ -105,12 +106,6 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
         web_engine_view.grab().save(filename, extension)
 
 
-class Parameters(object):
-
-    def __init__(self):
-        self.send_blackboard_data = False
-        self.send_blackboard_activity = False
-
 ##############################################################################
 # Main
 ##############################################################################
@@ -122,8 +117,7 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
-    parameters = Parameters()
-    window = main_window.MainWindow(parameters)
+    window = main_window.MainWindow()
 
     # sig interrupt handling
     #   use a timer to get out of the gui thread and
@@ -142,7 +136,7 @@ def main():
     window.ui.send_button.clicked.connect(
         functools.partial(
             send_tree,
-            parameters,
+            window.parameters,
             window.ui.web_view_group_box.ui.web_engine_view.page(),
             trees.create_demo_tree_list()
         )

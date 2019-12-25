@@ -1,31 +1,35 @@
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>PyTrees Viewer</title>
+  <link rel="stylesheet" href="js/py_trees-0.5.1.css"/>
+  <link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
+  <script src="js/jointjs/dagre-0.8.4.min.js"></script>
+  <script src="js/jointjs/graphlib-2.1.7.min.js"></script>
+  <script src="js/jointjs/jquery-3.4.1.min.js"></script>
+  <script src="js/jointjs/lodash-4.17.11.min.js"></script>
+  <script src="js/jointjs/backbone-1.4.0.js"></script>
+  <script src="js/jointjs/joint-3.0.4.min.js"></script>
+  <script src="js/py_trees-0.5.1.js"></script>
+  <!-- Web app integration css here -->
+  <style>
+    html {
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+    body {
+      margin: 0;
+      overflow:hidden;  /* no scrollbars */
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+  </style>
 </head>
-<script src="js/jointjs/dagre-0.8.4.min.js"></script>
-<script src="js/jointjs/graphlib-2.1.7.min.js"></script>
-<script src="js/jointjs/jquery-3.4.1.min.js"></script>
-<script src="js/jointjs/lodash-4.17.11.min.js"></script>
-<script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.4.min.js"></script>
-<script src="js/py_trees-0.5.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.5.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
-<style>
-  body {
-    margin: 0;
-    overflow:hidden;  /* no scrollbars */
-  }
-</style>
 <body>
   <script type="text/javascript">
     py_trees.hello()
   </script>
-  <div id="window">
-    <div id="canvas"></div>
-    <div id="timeline"></div>
-  </div>
+  <div id="canvas"></div>
+  <div id="timeline"></div>
   <script type="text/javascript">
     // rendering canvas
     canvas_graph = py_trees.canvas.create_graph()
@@ -47,13 +51,15 @@
 
     render_tree = function({tree}) {
       // if there is no timeline
-      // var graph_changed = py_trees.canvas.update_graph({graph: canvas_graph, tree: tree})
-      // if ( graph_changed ) {
-      //     py_trees.canvas.layout_graph({graph: canvas_graph})
-      //     if ( canvas_graph.get('scale_content_to_fit') ) {
-      //         py_trees.canvas.scale_content_to_fit(canvas_paper)
-      //     }
-      // }
+      /*
+      var graph_changed = py_trees.canvas.update_graph({graph: canvas_graph, tree: tree})
+      if ( graph_changed ) {
+          py_trees.canvas.layout_graph({graph: canvas_graph})
+          if ( canvas_graph.get('scale_content_to_fit') ) {
+              py_trees.canvas.scale_content_to_fit(canvas_paper)
+          }
+      }
+      */
 
       // if there is a timeline
       py_trees.timeline.add_tree_to_cache({

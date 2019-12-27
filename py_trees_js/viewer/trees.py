@@ -214,21 +214,6 @@ def generate_activity_timeline() -> typing.List[typing.List[str]]:
     ]
     formatted_activity = []
     for snippets in activity:
-        formatted_snippets = []
-        key_width = 0
-        activity_type_width = 0
-        client_width = 0
-        for (key, activity_type, client_name, info) in snippets:
-            key_width = max(len(key), key_width)
-            activity_type_width = max(len(activity_type), activity_type_width)
-            client_width = max(len(client_name), client_width)
-        for (key, activity_type, client_name, info) in snippets:
-            formatted_snippets.append(
-                cyan + key + reset + (key_width - len(key)) * space + colon_separator +
-                yellow + activity_type + reset + (activity_type_width - len(activity_type)) * space + bar_separator +
-                normal + client_name + reset + (client_width - len(client_name)) * space + bar_separator +
-                green + info + reset
-            )
         # formatted_activity.append(formatted_snippets)
         xhtml_snippet = "<table>"
         for (key, activity_type, client_name, info) in snippets:
@@ -236,7 +221,7 @@ def generate_activity_timeline() -> typing.List[typing.List[str]]:
                 "<tr>"
                 "<td>" + cyan + key + reset + "</td>"
                 "<td>" + yellow + activity_type + reset + "</td>"
-                "<td>" + normal + client_name + reset + "</td>"
+                "<td style='text-align: center;'>" + normal + client_name + reset + "</td>"
                 "<td>" + green + info + reset + "</td>"
                 "</tr>"
             )

@@ -82,8 +82,9 @@ setup(
     #   package.xml
     #   py_trees-<version>.js (and version variable therein)
     #   py_trees-<version.css
-    #   index.html.
-    version='0.5.1',
+    #   py_trees_js/viewer/html/index.html
+    #   py_trees_js/resources.qrc
+    version='0.6.0',
     packages=find_packages(exclude=['tests*', 'docs*']),
     data_files=[('share/' + package_name, ['package.xml'])] + gather_js_files(),
     # scripts=['scripts/py-trees-devel-viewer'], not working, but not critical

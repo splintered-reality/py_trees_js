@@ -257,7 +257,7 @@ joint.shapes.trees.EventMarker = joint.shapes.standard.Rectangle.define(
 
 var py_trees = (function() {
 
-    var _version = '0.5.1'
+    var _version = '0.6.0'
 
     /**
      * Introduce the user to the library and print relevant info about it's discovered
@@ -746,11 +746,13 @@ var py_trees = (function() {
               epsilon_hack = 20
               if ( canvas_offset_height + scaled_graph_height + activity_height + timeline_margin + epsilon_hack < canvas_height ) {
                   // view fits inside the space between graph bottom and canvas bottom, pull it up
-                  activity_view.style.top = (canvas_offset_height + scaled_graph_height + epsilon_hack).toString() + "px"
+                  activity_view.style.top = Math.max(
+                          (canvas_offset_height + scaled_graph_height + epsilon_hack),
+                          (1.0 * canvas_height / 3.0)).toString() + "px"
                   // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
               } else if ( activity_height + timeline_margin > canvas_height / 3.0 ) {
                   // view doesn't fit and would swamp the canvas - limit it
-                  activity_view.style.top = (2.0 * canvas_height / 3.0).toString() + "px"
+                  activity_view.style.top = (1.0 * canvas_height / 3.0).toString() + "px"
               } else {
                   // view doesn't fit but is small, let it grow as needed
                   activity_view.style.top = "auto"
@@ -772,6 +774,7 @@ var py_trees = (function() {
           scaled_graph_height = canvas_scale * (graph_bounding_box.y + graph_bounding_box.height)
           // initially stored 'fit content' height
           blackboard_height = graph.get("blackboard_minimum_height")
+          /*
           console.log("  canvas scale: " + canvas_scale)
           console.log("  canvas height: ", canvas_height)
           console.log("--------------------------------")
@@ -779,22 +782,22 @@ var py_trees = (function() {
           console.log("  graph  height: ", graph.get("bounding_box").height)
           console.log("  graph  height (scaled): ", scaled_graph_height)
           console.log("  blackboard height: ", blackboard_height)
+          */
           // The 45 is a bit of a hack, it keeps the bottom above a timeline if it is present
           // (timeline height is 35px. Otherwise, just leaves that sized margin if no timeline
           // is present.
           timeline_margin = 45
           epsilon_hack = 20
           if ( canvas_offset_height + scaled_graph_height + blackboard_height + timeline_margin + epsilon_hack < canvas_height ) {
-              console.log("DJS: Pulling up")
               // view fits inside the space between graph bottom and canvas bottom, pull it up
-              blackboard_view.style.top = (canvas_offset_height + scaled_graph_height + epsilon_hack).toString() + "px"
+              blackboard_view.style.top = Math.max(
+                   (canvas_offset_height + scaled_graph_height + epsilon_hack),
+                   (1.0 * canvas_height / 3.0)).toString() + "px"
               // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
           } else if ( blackboard_height + timeline_margin > canvas_height / 3.0 ) {
-              console.log("DJS: Limit it")
               // view doesn't fit and would swamp the canvas - limit it
-              blackboard_view.style.top = (2.0 * canvas_height / 3.0).toString() + "px"
+              blackboard_view.style.top = (1.0 * canvas_height / 3.0).toString() + "px"
           } else {
-              console.log("DJS: Auto")
               // view doesn't fit but is small, let it grow as needed
               blackboard_view.style.top = "auto"
           }

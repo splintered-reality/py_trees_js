@@ -2,9 +2,9 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>py_trees_js</name>
-  <version>0.5.1</version>
+  <version>0.6.0</version>
   <description>
-    Qt-based viewer for py_trees in ROS.
+    Javascript library for visualising behaviour trees.
   </description>
 
   <maintainer email="d.stonier@gmail.com">Daniel Stonier</maintainer>

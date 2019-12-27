@@ -6,18 +6,21 @@
 
 Javascript libraries for visualisation and monitoring of behaviour trees at runtime or when replaying a log.
 
-* Visualise runtime snapshots of behaviour trees
-* Collapse subtrees
+* Visualise the runtime state of a behaviour tree
+* Collapsible subtrees
 * Zoom and scale contents to fit
 * Timeline rewind & resume
+* Blackboard key-value storage view
+* Activity log view
 
-Despite primarily catering for use cases with py_trees, these libraries
-can be used for behaviour trees in general since it requires only properties
-common to most behaviour tree implementations and flexibly opts into implementation
-specific data via passing of a key-value dictionary that is appropriately
-formatted in an implementation-agnostic manner inside the web application.
+Although designed for py_trees, these libraries, in theory, could be
+used for other behaviour trees since it relies only on common tree
+or key-value storage interfaces. Submit an
+[issue](https://github.com/splintered-reality/py_trees_js/issues)
+if you are interested in pursuing this further. 
 
-This repository also includes a hybrid Qt-JS application used for development and demonstration purposes.
+Also included is a hybrid Qt-JS application for development and
+demonstration purposes.
 
 For a quick preview of it's capabilities:
 
@@ -54,22 +57,25 @@ This section will walk through how to build a web application with the provided 
 To get started, let's begin with a basic html page with two divs, one for the tree canvas and one for the timeline:
 
 ```xhtml
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>PyTrees Viewer</title>
+  <style>
+    html {
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+    body {
+      margin: 0;
+      overflow:hidden;  /* no scrollbars */
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+  </style>
 </head>
-<style>
-  body {
-    margin: 0;
-    overflow:hidden;  <!-- no scrollbars -->
-  }
-</style>
 <body>
-  <div id="window">
-    <div id="canvas"></div>
-    <div id="timeline"></div>
-  </div>
+  <div id="canvas"></div>
+  <div id="timeline"></div>
 </body>
 </html>
 ```
@@ -87,26 +93,32 @@ You can verify that the libraries have been properly imported by calling `py_tre
 will print version information of the loaded javascript libraries (if found) to the javascript console.
 
 ```xhtml
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>PyTrees Viewer</title>
+  <link rel="stylesheet" href="js/py_trees-0.6.0.css"/>
+  <link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
+  <script src="js/jointjs/dagre-0.8.4.min.js"></script>
+  <script src="js/jointjs/graphlib-2.1.7.min.js"></script>
+  <script src="js/jointjs/jquery-3.4.1.min.js"></script>
+  <script src="js/jointjs/lodash-4.17.11.min.js"></script>
+  <script src="js/jointjs/backbone-1.4.0.js"></script>
+  <script src="js/jointjs/joint-3.0.4.min.js"></script>
+  <script src="js/py_trees-0.6.0.js"></script>
+  <!-- Web app integration css here -->
+  <style>
+    html {
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+    body {
+      margin: 0;
+      overflow:hidden;  /* no scrollbars */
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+  </style>
 </head>
-<script src="js/jointjs/dagre-0.8.4.min.js"></script>
-<script src="js/jointjs/graphlib-2.1.7.min.js"></script>
-<script src="js/jointjs/jquery-3.4.1.min.js"></script>
-<script src="js/jointjs/lodash-4.17.11.min.js"></script>
-<script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.4.min.js"></script>
-<script src="js/py_trees-0.5.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.5.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
-<style>
-  body {
-    margin: 0;
-    overflow:hidden;  <!-- no scrollbars -->
-  }
-</style>
 <body>
   <script type="text/javascript">
     py_trees.hello()
@@ -128,8 +140,8 @@ Output from `py_trees.hello()`:
  A javascript library for visualisation of executing behaviour trees.
 
  Version & Dependency Info:
-  - py_trees:  0.3.1
-    - jointjs :  3.0.4
+  - py_trees:  0.6.0
+    - jointjs :  3.1.0
        - backbone:  1.4.0
        - dagre   :  0.8.4
        - jquery  :  3.4.1
@@ -142,26 +154,32 @@ accepting incoming trees from an external source is prepared. To test it,
 pass it the demo tree provided by the library.
 
 ```xhtml
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>PyTrees Viewer</title>
+  <link rel="stylesheet" href="js/py_trees-0.6.0.css"/>
+  <link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
+  <script src="js/jointjs/dagre-0.8.4.min.js"></script>
+  <script src="js/jointjs/graphlib-2.1.7.min.js"></script>
+  <script src="js/jointjs/jquery-3.4.1.min.js"></script>
+  <script src="js/jointjs/lodash-4.17.11.min.js"></script>
+  <script src="js/jointjs/backbone-1.4.0.js"></script>
+  <script src="js/jointjs/joint-3.0.4.min.js"></script>
+  <script src="js/py_trees-0.6.0.js"></script>
+  <!-- Web app integration css here -->
+  <style>
+    html {
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+    body {
+      margin: 0;
+      overflow:hidden;  /* no scrollbars */
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+  </style>
 </head>
-<script src="js/jointjs/dagre-0.8.4.min.js"></script>
-<script src="js/jointjs/graphlib-2.1.7.min.js"></script>
-<script src="js/jointjs/jquery-3.4.1.min.js"></script>
-<script src="js/jointjs/lodash-4.17.11.min.js"></script>
-<script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.4.min.js"></script>
-<script src="js/py_trees-0.5.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.5.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
-<style>
-  body {
-    margin: 0;
-    overflow:hidden;  <!-- no scrollbars -->
-  }
-</style>
 <body>
   <script type="text/javascript">
     py_trees.hello()
@@ -197,26 +215,32 @@ change significantly and is a very useful feature to have. The built-in demo
 app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The code is reproduced below for convenience.
 
 ```xhtml
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>PyTrees Viewer</title>
+  <link rel="stylesheet" href="js/py_trees-0.6.0.css"/>
+  <link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
+  <script src="js/jointjs/dagre-0.8.4.min.js"></script>
+  <script src="js/jointjs/graphlib-2.1.7.min.js"></script>
+  <script src="js/jointjs/jquery-3.4.1.min.js"></script>
+  <script src="js/jointjs/lodash-4.17.11.min.js"></script>
+  <script src="js/jointjs/backbone-1.4.0.js"></script>
+  <script src="js/jointjs/joint-3.0.4.min.js"></script>
+  <script src="js/py_trees-0.6.0.js"></script>
+  <!-- Web app integration css here -->
+  <style>
+    html {
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+    body {
+      margin: 0;
+      overflow:hidden;  /* no scrollbars */
+      height: 100%  /* canvas is intended to fill the screen, cascading heights achieves this */
+    }
+  </style>
 </head>
-<script src="js/jointjs/dagre-0.8.4.min.js"></script>
-<script src="js/jointjs/graphlib-2.1.7.min.js"></script>
-<script src="js/jointjs/jquery-3.4.1.min.js"></script>
-<script src="js/jointjs/lodash-4.17.11.min.js"></script>
-<script src="js/jointjs/backbone-1.4.0.js"></script>
-<script src="js/jointjs/joint-3.0.4.min.js"></script>
-<script src="js/py_trees-0.5.1.js"></script>
-<link rel="stylesheet" href="js/py_trees-0.5.1.css">
-<link rel="stylesheet" type="text/css" href="js/jointjs/joint-3.0.4.min.css"/>
-<style>
-  body {
-    margin: 0;
-    overflow:hidden;  <!-- no scrollbars -->
-  }
-</style>
 <body>
   <script type="text/javascript">
     py_trees.hello()
@@ -372,6 +396,11 @@ Roughly, the specification expects json objects of the form:
 * timestamp: int
 * behaviours: dict[str, dict]
 * (optional) visited_path: list[str]
+* (optional) blackboard: {
+*    behaviours: dict[str, dict[str, str]],
+*    data: dict[str, str]
+* }
+* (optional) activity: list[str]
 
 where each behaviour in the dict has specification:
 
@@ -406,7 +435,7 @@ An example (extracted from `py_trees.experimental.create_demo_tree_definition()`
         '2': {
             id: '2',
             status: 'FAILURE',
-            name: 'Sequence',
+            name: 'Worker',
             colour: '#FFA500',
             children: ['7', '8', '9'],
             data: {
@@ -415,4 +444,19 @@ An example (extracted from `py_trees.experimental.create_demo_tree_definition()`
             },
         },
     }
+    'blackboard': {
+        'behaviours': {  # key metadata per behaviour
+            '2': {
+                '/parameters/initial_value': 'r',
+                '/state/worker': 'w'
+            },
+        },
+        'data': {
+            '/parameters/initial_value': 'foo',
+            '/state/worker': 'bar',
+        },
+    'activity': [
+        "<text style='color: blue;'>Worker initialised with 'foo'</text>'",
+        "<text style='color: red;'>Worker wrote 'bar'</text>'",
+    ]
 }

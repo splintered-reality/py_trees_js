@@ -7,7 +7,7 @@
     <file>../js/jointjs/joint-3.0.4.min.js</file>
     <file>../js/jointjs/joint-3.0.4.min.css</file>
     <file>../js/jointjs/backbone-1.4.0.js</file>
-    <file>../js/py_trees-0.6.0.css</file>
-    <file>../js/py_trees-0.6.0.js</file>
+    <file>../js/py_trees-0.6.css</file>
+    <file>../js/py_trees-0.6.js</file>
   </qresource>
 </RCC>

@@ -99,6 +99,14 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         // Set the position and dimension of the box so that it covers the JointJS element.
         var bbox = this.model.getBBox();
         // Example of updating the HTML with a data stored in the cell model.
+        try {
+            this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
+        } catch (err) {
+            console.log("Thrown an error")
+            console.log("BBox", bbox)
+            console.log("this.$box", this.$box)
+            console.log("this.$box.find('span.html-name')", this.$box.find('span.html-name'))
+        }
         this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
         this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
         this.$box.find('div.html-tooltip')[0].innerHTML =

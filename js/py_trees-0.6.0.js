@@ -752,7 +752,10 @@ var py_trees = (function() {
                   // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
               } else if ( activity_height + timeline_margin > canvas_height / 3.0 ) {
                   // view doesn't fit and would swamp the canvas - limit it
-                  activity_view.style.top = (1.0 * canvas_height / 3.0).toString() + "px"
+                  activity_view.style.top = Math.min(
+                          (2.0 * canvas_height / 3.0),
+                          (canvas_offset_height + scaled_graph_height + epsilon_hack)
+                      ).toString() + "px"
               } else {
                   // view doesn't fit but is small, let it grow as needed
                   activity_view.style.top = "auto"
@@ -796,7 +799,10 @@ var py_trees = (function() {
               // blackboard_view.style.bottom = "auto" // if you want to pull the bottom 'up'.
           } else if ( blackboard_height + timeline_margin > canvas_height / 3.0 ) {
               // view doesn't fit and would swamp the canvas - limit it
-              blackboard_view.style.top = (1.0 * canvas_height / 3.0).toString() + "px"
+              blackboard_view.style.top = Math.min(
+                      (2.0 * canvas_height / 3.0),
+                      (canvas_offset_height + scaled_graph_height + epsilon_hack)
+                  ).toString() + "px"
           } else {
               // view doesn't fit but is small, let it grow as needed
               blackboard_view.style.top = "auto"

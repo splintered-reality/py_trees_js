@@ -1379,7 +1379,7 @@ var py_trees = (function() {
               },
           }
       });
-      cache.set('tree_cache_size', event_cache_limit)
+      cache.set('event_cache_limit', event_cache_limit)
       cache.set('trees', [])
       var previous = new joint.shapes.standard.Rectangle({
           position: { x: cache.get('size').width + separation_width, y: 0},

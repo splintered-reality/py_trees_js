@@ -4,6 +4,14 @@ Changelog
 
 Forthcoming
 -----------
+* ...
+
+0.6.2 (2020-03-02)
+------------------
+* [js] bugfix accidentally ignored tree_cache size, `#123 <https://github.com/splintered-reality/py_trees_js/pull/123>`_
+
+0.6.0 (2019-12-27)
+------------------
 * [js] accepting trees flagged with no status/graph change, `#122 <https://github.com/splintered-reality/py_trees_js/pull/122>`_
 * [js] blackboard views, `#125 <https://github.com/splintered-reality/py_trees_js/pull/125>`_, `#133 <https://github.com/splintered-reality/py_trees_js/pull/134>`_, `#122 <https://github.com/splintered-reality/py_trees_js/pull/134>`_, `#135 <https://github.com/splintered-reality/py_trees_js/pull/135>`_, `#136 <https://github.com/splintered-reality/py_trees_js/pull/136>`_
 

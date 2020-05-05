@@ -72,8 +72,8 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         joint.dia.ElementView.prototype.initialize.apply(this, arguments);
 
         this.$box = $(_.template(this.template)());
-        // we don't need to do an update here, in most cases, the paper is not ready anyway
-        // this.updateBox();
+        // don't do an updateBox here, causes problems
+        //   https://github.com/splintered-reality/py_trees_js/issues/141
         // This is an example of reacting on the input change and storing the input data in the cell model.
         this.model.on('change', this.updateBox, this);
         // Remove the box when the model gets removed from the graph.

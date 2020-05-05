@@ -4,7 +4,8 @@ Changelog
 
 Forthcoming
 -----------
-* ...
+* [js] remove buggy early view update and optimise them, `#142 <https://github.com/splintered-reality/py_trees_js/pull/142>`_ 
+* ... missed quite a few pull requests inbetween
 
 0.6.2 (2020-03-02)
 ------------------

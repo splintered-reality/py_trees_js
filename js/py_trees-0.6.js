@@ -72,28 +72,23 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         joint.dia.ElementView.prototype.initialize.apply(this, arguments);
 
         this.$box = $(_.template(this.template)());
+        // don't do an updateBox here, causes problems
+        //   https://github.com/splintered-reality/py_trees_js/issues/141
         // This is an example of reacting on the input change and storing the input data in the cell model.
         this.model.on('change', this.updateBox, this);
         // Remove the box when the model gets removed from the graph.
         this.model.on('remove', this.removeBox, this);
-
-        this.updateBox();
     },
+
     render: function() {
         joint.dia.ElementView.prototype.render.apply(this, arguments);
-        this.listenTo(this.paper, 'translate', this.updateBox)
-        //this.listenTo(this.paper, 'translate', this.updateBox.bind(this, this.paper));
-        this.listenTo(this.paper, 'scale', this.updateBox)
-        // this.listenTo(this.paper, 'scale', this.updateBox.bind(this, this.paper));
         this.paper.$el.prepend(this.$box);
         this.updateBox();
         return this;
     },
-    // onDblClick: function() {
-    //     console.log("***** Fading ******")
-    //     this.model.prop('faded', !this.model.prop('faded'));
-    // },
+
     updateBox: function() {
+        // console.log("_element_view_update_box", this.model.get('name'))
         if (!this.paper) return;
 
         // Set the position and dimension of the box so that it covers the JointJS element.
@@ -102,7 +97,7 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         try {
             this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
         } catch (err) {
-            console.log("Thrown an error")
+            console.log("Thrown an error in updateBoxOnChange", this.model.get('name'))
             console.log("BBox", bbox)
             console.log("this.$box", this.$box)
             console.log("this.$box.find('span.html-name')", this.$box.find('span.html-name'))
@@ -226,12 +221,14 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
                 'visibility': 'visible',
             })
         }
+        // console.log("_element_view_update_box_on_change_done")
       },
 
       removeBox: function(evt) {
           this.$box.remove();
       }
   });
+
 
 /**
  * Used to model the cached trees in the timeline bar as think
@@ -820,10 +817,6 @@ var py_trees = (function() {
 
   var _canvas_scale_content_to_fit = function(paper, event, x, y) {
       console.log("_canvas_scale_content_to_fit")
-      // Make sure views are updated to match model's contents so that
-      // appropriate dimensions can be resolved. This is only critical
-      // if using async: true on the paper
-      paper.updateViews()
       paper.scaleContentToFit({
           padding: 50,
           minScale: 0.1,
@@ -846,9 +839,20 @@ var py_trees = (function() {
    */
   var _canvas_update = function({paper, graph, tree, force_scale_content_to_fit}) {
       paper.freeze()
-      var graph_changed = _canvas_update_graph({graph: graph, tree: tree})
-      if ( graph_changed ) {
+      var nodes_added = _canvas_update_graph({graph: graph, tree: tree})
+      if ( nodes_added.length != 0 ) {
+          // dot graph layout
           _canvas_layout_graph({graph: canvas_graph})
+          // listen to scale/translate events on the paper
+          for (index = 0; index < nodes_added.length; index++) {
+              view = paper.findViewByModel(nodes_added[index])
+              view.listenTo(paper, 'translate', view.updateBox)
+              view.listenTo(paper, 'scale', view.updateBox)
+
+          }
+          // Render the views so that appropriate dimensions can be
+          // initialised for further calculations, e.g. scale to fit.
+          paper.updateViews()
       }
       // force scale content to fit, even if the graph didn't change
       if ( force_scale_content_to_fit ) {
@@ -1057,11 +1061,14 @@ var py_trees = (function() {
   }
 
   /**
-   * Right now this is creating the graph. Will have to decide
-   * in future whether new tree serialisations reset the graph
-   * and completely recreate or just update the graph. The latter
-   * would be crucial to resolve computational efficiency problems.
+   * Checks if the constituent graph cell/link population has changed
+   * and clears/rebuilds if that is the case. The clear/rebuild is
+   * expensive, but in most cases, happens very rarely. it's usually
+   * just the cell/link data changes. 
    *
+   * Following this, it then proceeds to update each node/link to
+   * reflect new details.
+   * 
    * Returns: true or false depending on whether the graph changed
    *   i.e. composition of nodes and cells, not their contents/styles
    */
@@ -1122,13 +1129,13 @@ var py_trees = (function() {
             }
         }
     }
+    var _cells = []
     if ( need_to_clear ) {
         // reset
         graph.clear()
 
         console.log("_canvas_update_graph_create_nodes")
         // repopulate
-        var _cells = []
         var _nodes = {}
         for (behaviour in tree.behaviours) {
             node = _canvas_create_node({
@@ -1168,7 +1175,6 @@ var py_trees = (function() {
               _canvas_collapse_children(graph, el)
             }
         })
-        graph_changed = true
     } else {
         var _elements_by_id = {}
         _.each(graph.getElements(), function(element) {
@@ -1195,7 +1201,6 @@ var py_trees = (function() {
                 target: graph.getCell([link.get("target").id]),
             })
         })
-        graph_changed = false
     }
     console.log("_canvas_update_graph_update_views")
     _canvas_update_activity_view({
@@ -1209,7 +1214,7 @@ var py_trees = (function() {
     })
     graph.set("tree", tree)
     console.log("_canvas_update_graph_done")
-    return graph_changed
+    return _cells
   }
 
   /**

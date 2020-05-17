@@ -103,6 +103,7 @@ fi
 #  Crashes on exit, https://github.com/splintered-reality/py_trees_js/issues/100
 pip install PyQt5
 pip install PyQtWebEngine
+pip install twine
 
 python setup.py develop
 

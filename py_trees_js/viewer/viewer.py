@@ -7,9 +7,9 @@
 ##############################################################################
 # Documentation
 ##############################################################################
-"""
-A qt-javascript application for viewing executing or replaying py_trees
-"""
+
+"""A qt-javascript application for viewing executing or replaying py_trees."""
+
 ##############################################################################
 # Imports
 ##############################################################################
@@ -25,10 +25,7 @@ import time
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
 
-from . import console
-from . import trees
-
-from . import main_window
+from . import console, main_window, trees
 
 ##############################################################################
 # Helpers
@@ -36,27 +33,31 @@ from . import main_window
 
 
 def send_tree_response(reply):
+    """Confirm receipt of the tree by the js library."""
     console.logdebug("[{}] reply: '{}' [viewer]".format(time.monotonic(), reply))
 
 
 @qt_core.pyqtSlot()
 def send_tree(parameters, web_view_page, demo_trees, unused_checked):
+    """Send a tree snapshot to the tree library."""
     number_of_trees = len(demo_trees)
     tree = copy.deepcopy(demo_trees[send_tree.index])
-    tree['timestamp'] = time.time()
+    tree["timestamp"] = time.time()
     # demo_trees[send_tree.index]['timestamp'] = time.time()
-    console.logdebug("[{}] send: tree '{}' [{}][viewer]".format(
-        time.monotonic(),
-        send_tree.index,
-        tree['timestamp'])
+    console.logdebug(
+        "[{}] send: tree '{}' [{}][viewer]".format(
+            time.monotonic(), send_tree.index, tree["timestamp"]
+        )
     )
     if not parameters.send_blackboard_data:
-        del tree['blackboard']['data']
+        del tree["blackboard"]["data"]
     if not parameters.send_activity_stream:
-        del tree['activity']
+        del tree["activity"]
     javascript_command = "render_tree({{tree: {}}})".format(tree)
     web_view_page.runJavaScript(javascript_command, send_tree_response)
-    send_tree.index = 0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1
+    send_tree.index = (
+        0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1
+    )
 
 
 send_tree.index = 0
@@ -64,13 +65,12 @@ send_tree.index = 0
 
 @qt_core.pyqtSlot()
 def capture_screenshot(parent, web_engine_view, unused_checked):
+    """Capture a screenshot."""
     console.logdebug("captured screenshot [viewer]")
     file_dialog = qt_widgets.QFileDialog(parent)
-    file_dialog.setNameFilters([
-        "BMP Files (*.bmp)",
-        "JPEG Files (*.jpeg)",
-        "PNG Files (*.png)"
-    ])
+    file_dialog.setNameFilters(
+        ["BMP Files (*.bmp)", "JPEG Files (*.jpeg)", "PNG Files (*.png)"]
+    )
     file_dialog.selectNameFilter("PNG Files (*.png)")
     file_dialog.setDefaultSuffix((".png"))
     file_dialog.setAcceptMode(qt_widgets.QFileDialog.AcceptSave)
@@ -78,31 +78,35 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
     #   'kf5.kio.core: Invalid URL: QUrl("screenshot.jpeg")'
     #   'kf5.kio.core: Invalid URL: QUrl("screenshot.png")'
     # but...it ain't broke
-    file_dialog.selectFile("screenshot_{}.png".format(datetime.datetime.now().strftime("%S%M%H%d%m%y")))
-    unused_result = file_dialog.exec()
+    file_dialog.selectFile(
+        "screenshot_{}.png".format(datetime.datetime.now().strftime("%S%M%H%d%m%y"))
+    )
+    _ = file_dialog.exec()
     # should be able to restrict it to one file?
     for filename in file_dialog.selectedFiles():
         console.logdebug("capturing screenshot: {}".format(filename))
-    # This would be simpler, but you can't specify a default filename, nor suffix on linux...
-#     filename, _ = qt_widgets.QFileDialog.getSaveFileName(
-#         parent=parent,
-#         caption="Export to Png",
-#         directory="screenshot_{}.png".format(datetime.datetime.now().strftime("%S%M%H%d%m%y")),
-#         filter="BMP Files (*.bmp);;JPEG Files (*.jpeg);;PNG Files (*.png)",  # for multiple options, use ;;, e.g. 'All Files (*);;BMP Files (*.bmp);;JPEG Files (*.jpeg);;PNG Files (*.png)'
-#         initialFilter="PNG Files (*.png)",
-#         options=options
-#     )
-#     if filename:
-#         console.loginfo("capturing screenshot: {}".format(filename))
+        # This would be simpler, but you can't specify a default filename, nor suffix on linux...
+        #     filename, _ = qt_widgets.QFileDialog.getSaveFileName(
+        #         parent=parent,
+        #         caption="Export to Png",
+        #         directory="screenshot_{}.png".format(datetime.datetime.now().strftime("%S%M%H%d%m%y")),
+        #         # For multiple options, use ;;, e.g.
+        #         #   'All Files (*);;BMP Files (*.bmp);;JPEG Files (*.jpeg);;PNG Files (*.png)'
+        #         filter="BMP Files (*.bmp);;JPEG Files (*.jpeg);;PNG Files (*.png)",
+        #         initialFilter="PNG Files (*.png)",
+        #         options=options
+        #     )
+        #     if filename:
+        #         console.loginfo("capturing screenshot: {}".format(filename))
         extension = os.path.splitext(filename)[-1].upper()
         if filename.endswith(".png"):
-            extension = b'PNG'
+            extension = b"PNG"
         elif filename.endswith(".bmp"):
-            extension = b'BMP'
+            extension = b"BMP"
         elif filename.endswith(".jpeg"):
-            extension = b'JPEG'
+            extension = b"JPEG"
         else:
-            extension = b'PNG'
+            extension = b"PNG"
         web_engine_view.grab().save(filename, extension)
 
 
@@ -112,6 +116,7 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
 
 
 def main():
+    """Entrypoint."""
     # logging
     console.log_level = console.LogLevel.DEBUG
 
@@ -138,7 +143,7 @@ def main():
             send_tree,
             window.parameters,
             window.ui.web_view_group_box.ui.web_engine_view.page(),
-            trees.create_demo_tree_list()
+            trees.create_demo_tree_list(),
         )
     )
     window.ui.screenshot_button.clicked.connect(

@@ -8,20 +8,19 @@
 # Documentation
 ##############################################################################
 
-"""
-Launch a qt dashboard for the tutorials.
-"""
+"""Launch a qt dashboard for the tutorials."""
+
 ##############################################################################
 # Imports
 ##############################################################################
 
-import PyQt5.QtWidgets as qt_widgets
 import PyQt5.QtCore as qt_core
-
-from . import web_view_ui
+import PyQt5.QtWidgets as qt_widgets
 
 # Import the javascript libraries (via qrc bundles)
-import py_trees_js.resources
+import py_trees_js.resources  # noqa: F401
+
+from . import web_view_ui
 
 ##############################################################################
 # Helpers
@@ -29,14 +28,17 @@ import py_trees_js.resources
 
 
 class WebViewGroupBox(qt_widgets.QGroupBox):
-    """
-    Convenience class that Designer can use to promote
-    elements for layouts in applications.
-    """
+    """Promotable class (in Designer) for the web view group box."""
 
-    change_battery_percentage = qt_core.pyqtSignal(float, name="changeBatteryPercentage")
-    change_battery_charging_status = qt_core.pyqtSignal(bool, name="changeBatteryChargingStatus")
-    change_safety_sensors_enabled = qt_core.pyqtSignal(bool, name="safetySensorsEnabled")
+    change_battery_percentage = qt_core.pyqtSignal(
+        float, name="changeBatteryPercentage"
+    )
+    change_battery_charging_status = qt_core.pyqtSignal(
+        bool, name="changeBatteryChargingStatus"
+    )
+    change_safety_sensors_enabled = qt_core.pyqtSignal(
+        bool, name="safetySensorsEnabled"
+    )
 
     def __init__(self, parent):
         super().__init__(parent)

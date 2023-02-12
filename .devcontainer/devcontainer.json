@@ -1,0 +1,53 @@
+{
+    "name": "py_trees-js-38",
+
+    "build": {
+        "dockerfile": "./Dockerfile",
+        "args": {
+            "NAME": "py_trees_js",
+            "POETRY_VERSION": "1.3.2",
+            "PYTHON_VERSION": "3.8.16",
+            "DEBIAN_VERSION": "bullseye"
+        },
+        "context": ".."
+    },
+    "containerEnv": {
+        "POETRY_HTTP_BASIC_PYPI_USERNAME": "${localEnv:POETRY_HTTP_BASIC_PYPI_USERNAME}",
+        "POETRY_HTTP_BASIC_PYPI_PASSWORD": "${localEnv:POETRY_HTTP_BASIC_PYPI_PASSWORD}",
+        "QT_DEBUG_PLUGINS": "1"
+    },
+    "remoteUser": "zen",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bierner.github-markdown-preview",
+                "bierner.markdown-preview-github-styles",
+                "bungcip.better-toml",
+                "streetsidesoftware.code-spell-checker",
+                "ms-python.python",
+                "omnilib.ufmt",
+                "tht13.rst-vscode"
+            ]
+        }
+    },
+    "postCreateCommand": "poetry install --all-extras",
+    "mounts": [
+        {
+            "source": "/tmp/.X11-unix",
+            "target": "/tmp/.X11-unix:ro",
+            "type": "bind"
+        }
+    ],
+    "runArgs": [
+        "--runtime=nvidia",
+        "--gpus",
+        "all",
+        "--env",
+        "DISPLAY",
+        "--network",
+        "host"
+    ]
+    // Breaks codespaces
+    // "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
+    // "workspaceFolder": "/workspaces"
+ }

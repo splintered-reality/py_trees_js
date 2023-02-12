@@ -6,22 +6,16 @@
 # Documentation
 ##############################################################################
 
-"""
-A qt-js hybrid viewer used for development/testing/demonstration of the
-functionalities provided by the py_trees javascript libraries.
-"""
+"""A qt-js hybrid viewer demonstrating js library integration."""
 
 ##############################################################################
 # Imports
 ##############################################################################
 
-# Pythonic helper modules
-from . import console
-from . import trees
-
-# Qt widgets
-from . import main_window
-from . import web_view
-
-# Application entry point
-from . import viewer
+# fmt: off
+from . import console  # usort:skip
+from . import main_window  # usort:skip
+from . import trees  # usort:skip
+from . import viewer  # usort:skip
+from . import web_view  # usort:skip
+# fmt: on

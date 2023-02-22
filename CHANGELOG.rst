@@ -4,7 +4,9 @@ Changelog
 
 Forthcoming
 -----------
-* ...
+* [poetry] update project to use poetry, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 
+* [vscode] devcontainer workflows, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 
+* [tests] basic tests, formatting, linting, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 
 
 0.6.3 (2020-05-05)
 ------------------

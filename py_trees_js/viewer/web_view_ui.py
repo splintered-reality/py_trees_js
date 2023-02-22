@@ -8,6 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_WebViewGroupBox(object):
     def setupUi(self, WebViewGroupBox):
         WebViewGroupBox.setObjectName("WebViewGroupBox")
@@ -27,5 +28,7 @@ class Ui_WebViewGroupBox(object):
         WebViewGroupBox.setWindowTitle(_translate("WebViewGroupBox", "Tree View"))
         WebViewGroupBox.setTitle(_translate("WebViewGroupBox", "GroupBox"))
 
+
 from PyQt5 import QtWebEngineWidgets
+
 from . import web_app_rc

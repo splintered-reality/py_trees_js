@@ -1,10 +1,18 @@
 # PyTrees Js
 
-[[About](#about)] [[Roadmap](#roadmap)] [[Usage](#usage)] [[Example Qt-Js Integration](#example-qt-js-integration)] [[The JSON Specification](#the-json-specification)]
+[[About](#about)] [[Features](#features)] [[Preview](#preview)] [[Exmaple - Simple Web App](#example---simple-web-app)] [[Example - PyQt App](#example---pyqt-app)] [[The JSON Specification](#the-json-specification)]
 
 ## About
 
-Javascript libraries for visualisation and monitoring of behaviour trees at runtime or when replaying a log.
+Libraries for visualisation of runtime or replayed behaviour trees.
+
+* [./js](./js) - a self-contained javascript library to build apps around
+* [py_trees_js](./py_trees_js) - a python package that makes the js available as a pyqt resource
+* [py_trees_js.viewer](./py_trees_js/viewer) - a demo pyqtwebengine app
+
+See [py_trees_ros_viewer](https://github.com/splintered-reality/py_trees_ros_viewer) for a fully fledged pyqt integration that uses [py_trees_js](./py_trees_js).
+
+## Features
 
 * Visualise the runtime state of a behaviour tree
 * Collapsible subtrees
@@ -13,37 +21,24 @@ Javascript libraries for visualisation and monitoring of behaviour trees at runt
 * Blackboard key-value storage view
 * Activity log view
 
-Although designed for py_trees, these libraries, in theory, could be
-used for other behaviour trees since it relies only on common tree
-or key-value storage interfaces. Submit an
-[issue](https://github.com/splintered-reality/py_trees_js/issues)
-if you are interested in pursuing this further. 
+Although designed for py_trees, the js libs (in particular, the interfaces) are not dependent on py_trees and could be used for other behaviour tree applications.
 
-Also included is a hybrid Qt-JS application for development and
-demonstration purposes.
-
-For a quick preview of it's capabilities:
-
+## Preview
 
 ```
-git clone https://github.com/splintered-reality/py_trees_js
-cd py_trees_js
-. ./virtualenv.bash
-# launch the demo viewer
-py-trees-demo-viewer
-# OR launch the demo viewer with a js console for debugging
-./scripts/py-trees-devel-viewer
+$ git clone https://github.com/splintered-reality/py_trees_js
+$ code .
+# Reopen the project in the devcontainer
+$ poetry install
+$ poetry shell
+$ py-trees-demo-viewer
 ```
 <p align="center">
   <img src="images/splash.png" width="80%"/>
   <img src="images/screenshot.png" width="100%"/>
 </p>
 
-## Roadmap
-
-See the [Projects](https://github.com/splintered-reality/py_trees_js/projects?query=is%3Aopen+sort%3Acreated-asc) page for progress and planned milestones.
-
-## Usage
+## Example - Simple Web App
 
 Building a complete application that can render a behaviour tree stream is an effort that can be decomposed into two tasks:
 
@@ -282,32 +277,25 @@ app's [index.html](py_trees_js/viewer/html/index.html) does exactly this. The co
 </html>
 ```
 
-## Example Qt-Js Integration
+## Example - PyQt App
 
-The demonstration application `py-trees-demo-viewer` is a qt-js hybrid application and serves
-two purposes.
+The `py-trees-demo-viewer` app is a qt-js hybrid application using `qtwebengine`.
+Every time a qt button is pressed, an internally generated tree snapshot is sent to `render_tree()` in the embedded web application. From here, it is not too hard to
+imagine connecting the qt application to an actual external source. The qt layer
+then acts as a shim or relay transferring messages to the internal web app.
 
-The first purpose is to demonstrate connecting an external source to the `render_tree()`
-method in the web application (as defined above). The demo application here cycles through serialised trees whenever a Qt button is pressed.
+How does it work? 
 
-The second purpose is to demonstrate the ease and utility of building a hybrid Qt-JS application. This is especially useful for robotics teams that lack a dedicated web team to help build and serve web applications. The usual problem is that developers need visual and interactive applications in their typical development workflow, whilst the product needs similar applications that can
-run as cloud services or on handheld devices. All too often, robotics developers build Qt applications to meet their needs but not the products, or endeavour to meet the product needs
-with web applications only to make their own development environment overly complex and
-cumbersome (and all too often not having the skills themselves to create polished web applications).
+* The js libs are made available as a `.qrc` resource [1]
+* A simple web app is made available as another `.qrc` resource
+* Both resources are consumed by the QWebEngine View to serve the app
 
-A Qt-Js hybrid application can help meet both needs. Javscript libraries can be
-shared as libraries / modules (via the `.qrc` generation mechanisms), the application
-itself can drop neatly into the developer's environment and if the Qt side endeavours
-to merely wrap the bundled web application, then migrating to a cloud service / mobile
-devices merely requires rewriting the wrapper to fit the framework of choice.
+[1] This can be made available separately and as a dependency to the actual
+pyqt application. For instance, the [py_trees_js](./py_trees_js) package is a dependency of [py_trees_ros_viewer](https://github.com/splintered-reality/py_trees_ros_viewer).
 
-Step-by-step, how does this work?
+In more detail...
 
 ### The JS Libraries
-
-The JS libraries are handled separately from the application and even deployed separately,
-with the obvious advantage that multiple applications can then take advantage of them without
-vendoring them into each and every application that uses them. Typical steps involve:
 
 1. Bundle the javascript resources into a `.qrc` file
 2. Generate the resources as a c++ library / python module
@@ -320,9 +308,6 @@ in [py_trees_js/resources.qrc](py_trees_js/resources.qrc), generated using
 Qt application wishing to visualise behaviour trees need only import this module from the `py_trees_js` package.
 
 ### The Web App
-
-The web application itself is made available similarly via `.qrc` resources, though
-the need to distribute it as a shareable package is not necessary. Typical steps involve:
 
 1. Bundle the `.html`/`.css` pages into a `.qrc` file
 2. Import into directly into designer when building your Qt application

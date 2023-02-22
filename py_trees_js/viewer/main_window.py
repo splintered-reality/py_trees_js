@@ -8,22 +8,15 @@
 # Documentation
 ##############################################################################
 
-"""
-Launch a qt dashboard for the tutorials.
-"""
+"""Launch a qt dashboard for the tutorials."""
 ##############################################################################
 # Imports
 ##############################################################################
 
-import functools
-import json
-import time
-
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
 
-from . import main_window_ui
-from . import console
+from . import console, main_window_ui
 
 ##############################################################################
 # Helpers
@@ -31,6 +24,7 @@ from . import console
 
 
 class Parameters(object):
+    """Parameters configuring the ui to save/load."""
 
     def __init__(self):
         self.send_blackboard_data = False
@@ -41,7 +35,9 @@ class Parameters(object):
 # Main Window
 ##############################################################################
 
+
 class MainWindow(qt_widgets.QMainWindow):
+    """Main window for the application."""
 
     request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
 
@@ -54,21 +50,37 @@ class MainWindow(qt_widgets.QMainWindow):
             self.on_load_finished
         )
         self.parameters = Parameters()
-        self.ui.send_blackboard_data_checkbox.stateChanged.connect(self.on_blackboard_data_checked)
-        self.ui.send_activity_stream_checkbox.stateChanged.connect(self.on_activity_stream_checked)
+        self.ui.send_blackboard_data_checkbox.stateChanged.connect(
+            self.on_blackboard_data_checked
+        )
+        self.ui.send_activity_stream_checkbox.stateChanged.connect(
+            self.on_activity_stream_checked
+        )
 
     @qt_core.pyqtSlot()
     def on_load_finished(self):
+        """On load callback."""
         console.logdebug("web page loaded [main window]")
         self.ui.send_button.setEnabled(True)
         self.ui.screenshot_button.setEnabled(True)
         self.ui.send_blackboard_data_checkbox.setEnabled(True)
-        self.parameters.send_blackboard_data = True if self.ui.send_blackboard_data_checkbox.checkState() == qt_core.Qt.Checked else False
+        self.parameters.send_blackboard_data = (
+            True
+            if self.ui.send_blackboard_data_checkbox.checkState() == qt_core.Qt.Checked
+            else False
+        )
         self.ui.send_activity_stream_checkbox.setEnabled(True)
-        self.parameters.send_activity_stream = True if self.ui.send_activity_stream_checkbox.checkState() == qt_core.Qt.Checked else False
+        self.parameters.send_activity_stream = (
+            True
+            if self.ui.send_activity_stream_checkbox.checkState() == qt_core.Qt.Checked
+            else False
+        )
 
     def on_blackboard_data_checked(self, state):
-        self.parameters.send_blackboard_data = True if state == qt_core.Qt.Checked else False
+        """Enable/disable blackboard data."""
+        self.parameters.send_blackboard_data = (
+            True if state == qt_core.Qt.Checked else False
+        )
         console.logdebug(
             "received blackboard data parameter change signal [send_blackboard_data: {}]".format(
                 self.parameters.send_blackboard_data
@@ -76,7 +88,10 @@ class MainWindow(qt_widgets.QMainWindow):
         )
 
     def on_activity_stream_checked(self, state):
-        self.parameters.send_activity_stream = True if state == qt_core.Qt.Checked else False
+        """Enable/disable the activity stream."""
+        self.parameters.send_activity_stream = (
+            True if state == qt_core.Qt.Checked else False
+        )
         console.logdebug(
             "received blackboard activity parameter change signal [send_activity_stream: {}]".format(
                 self.parameters.send_activity_stream
@@ -84,18 +99,22 @@ class MainWindow(qt_widgets.QMainWindow):
         )
 
     def closeEvent(self, event):
+        """Termination event, save settings."""
         console.logdebug("received close event [main_window]")
         self.request_shutdown.emit()
         self.writeSettings()
         super().closeEvent(event)
 
     def readSettings(self):
+        """Load settings."""
         console.logdebug("read settings [main_window]")
         settings = qt_core.QSettings("Splintered Reality", "PyTrees Viewer")
         geometry = settings.value("geometry")
         if geometry is not None:
             self.restoreGeometry(geometry)
-        window_state = settings.value("window_state")  # full size, maximised, minimised, no state
+        window_state = settings.value(
+            "window_state"
+        )  # full size, maximised, minimised, no state
         if window_state is not None:
             self.restoreState(window_state)
         self.ui.send_blackboard_data_checkbox.setChecked(
@@ -106,15 +125,16 @@ class MainWindow(qt_widgets.QMainWindow):
         )
 
     def writeSettings(self):
+        """Write settings to be loaded in future launches."""
         console.logdebug("write settings [main_window]")
         settings = qt_core.QSettings("Splintered Reality", "PyTrees Viewer")
         settings.setValue("geometry", self.saveGeometry())
-        settings.setValue("window_state", self.saveState())  # full size, maximised, minimised, no state
         settings.setValue(
-            "send_blackboard_data",
-            self.ui.send_blackboard_data_checkbox.isChecked()
+            "window_state", self.saveState()
+        )  # full size, maximised, minimised, no state
+        settings.setValue(
+            "send_blackboard_data", self.ui.send_blackboard_data_checkbox.isChecked()
         )
         settings.setValue(
-            "send_activity_stream",
-            self.ui.send_activity_stream_checkbox.isChecked()
+            "send_activity_stream", self.ui.send_activity_stream_checkbox.isChecked()
         )

@@ -1,0 +1,69 @@
+[tool.poetry]
+name = "py_trees_js"
+version = "0.6.3"
+# version needs to be updated in several places
+#   package.xml
+#   pyproject.toml
+#   py_trees-<version>.js (and version variable therein)
+#   py_trees-<version.css>
+#   py_trees_js/viewer/html/index.html
+#   py_trees_js/resources.qrc
+description = "javascript libraries for visualising behaviour trees"
+authors = ["Daniel Stonier"]
+maintainers = ["Daniel Stonier <d.stonier@gmail.com>"]
+readme = "README.md"
+license = "BSD"
+homepage = "https://github.com/splintered-reality/py_trees_js"
+repository = "https://github.com/splintered-reality/py_trees_js"
+documentation = "https://github.com/splintered-reality/py_trees_js"
+packages = [
+    { include = "py_trees_js" },
+]
+include = [
+    "py_trees_js/viewer/*.ui",
+    "py_trees_js/viewer/html/*",
+    "py_trees_js/viewer/images/*"
+]
+classifiers = [
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    'Topic :: Software Development :: Libraries'
+]
+keywords=["py_trees", "py-trees", "behaviour-trees"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyqt5 = "~5.14"
+pyqtwebengine = "~5.14"
+
+[tool.poetry.group.dev.dependencies]
+tox = ">=3.26"
+tox-poetry-installer = {extras = ["poetry"], version = ">=0.9.0"}
+pytest = [
+    { version = ">=7.1", python = "^3.7" }
+]
+pytest-console-scripts = ">=1.3"
+pytest-cov = ">=3.0.0"             # transitively depends on coverage[toml]
+
+[tool.poetry.group.format.dependencies]
+ufmt = ">=2.0"                     # black (style) + usort (import order)
+
+[tool.poetry.group.static.dependencies]
+mypy = ">=0.991"
+
+[tool.poetry.group.lint.dependencies]
+# strongly recommended
+flake8 = ">=5.0"                  # combines pyflakes (errors) & pycodestyle (pep8 style)
+flake8-docstrings = ">=1.6"       # docstrings (integrates pydocstyle)
+darglint = ">=1.8"                # checks docstrings match implementation
+# optional, these go above and beyond
+flake8-bugbear = ">=22.9"         # bugs & design not strictly pep8
+
+[tool.poetry.scripts]
+py-trees-demo-viewer = "py_trees_js.viewer.viewer:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

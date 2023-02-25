@@ -70,6 +70,6 @@ jobs:
           POETRY_VERSION=${{ env.POETRY_VERSION }}
           DEBIAN_VERSION=${{ env.DEBIAN_VERSION }}
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PYTHON_SECONDARY_TAG }}-poetry-${{ env.DEBIAN_VERSION }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:python${{ env.PYTHON_SECONDARY_VERSION }}-poetry${{ env.POETRY_VERSION }}-${{ env.DEBIAN_VERSION }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PYTHON_SECONDARY_TAG }}-poetry-gl-${{ env.DEBIAN_VERSION }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:python${{ env.PYTHON_SECONDARY_VERSION }}-poetry${{ env.POETRY_VERSION }}-gl-${{ env.DEBIAN_VERSION }}
         labels: ${{ steps.meta.outputs.labels }}

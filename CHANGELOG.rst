@@ -4,6 +4,8 @@ Changelog
 
 Forthcoming
 -----------
+* [actions] pre-merge and update-cache, `#146 <https://github.com/splintered-reality/py_trees_js/pull/146>`_ 
+* [actions] push containers, `#144 <https://github.com/splintered-reality/py_trees_js/pull/144>`_ 
 * [poetry] update project to use poetry, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 
 * [vscode] devcontainer workflows, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 
 * [tests] basic tests, formatting, linting, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 

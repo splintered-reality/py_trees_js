@@ -1,0 +1,54 @@
+name: pre-merge
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pre-merge:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.10"]
+        include:
+          - python-version: "3.8"
+            python-py-version: "py38"
+          - python-version: "3.10"
+            python-py-version: "py310"
+    container:
+      image: ghcr.io/${{ github.repository }}-ci:${{ matrix.python-py-version }}-poetry-gl-bullseye
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Poetry Venv Dir
+      run: |
+        echo "VENV_DIR=$(poetry config virtualenvs.path)" >> $GITHUB_ENV
+
+    - name: Restore the Cache
+      id: cache-deps
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.VENV_DIR }}
+        # bump the suffix if you need to force-refresh the cache
+        key: py-trees-ci-cache-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock', '**/tox.ini') }}-1
+
+    # Install all deps, sans the project (--no-root)
+    - name: Poetry - Install Dependencies
+      run: poetry install --no-interaction --no-root
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+
+    # Project is installed separately to avoid always invalidating the cache
+    - name: Poetry - Install Project
+      run: poetry install --no-interaction
+
+    - name: Tox - Tests
+      run: poetry run tox --workdir ${{ env.VENV_DIR }} -e ${{ matrix.python-py-version }}
+    - name: Tox - Formatters, Linters
+      run: poetry run tox --workdir ${{ env.VENV_DIR }} -e check

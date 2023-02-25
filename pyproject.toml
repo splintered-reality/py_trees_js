@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_trees_js"
-version = "0.6.3"
+version = "0.6.4"
 # version needs to be updated in several places
 #   package.xml
 #   pyproject.toml
@@ -8,6 +8,7 @@ version = "0.6.3"
 #   py_trees-<version.css>
 #   py_trees_js/viewer/html/index.html
 #   py_trees_js/resources.qrc
+#   setup.py
 description = "javascript libraries for visualising behaviour trees"
 authors = ["Daniel Stonier"]
 maintainers = ["Daniel Stonier <d.stonier@gmail.com>"]

@@ -4,6 +4,10 @@ Changelog
 
 Forthcoming
 -----------
+* ...
+
+0.6.4 (2022-02-24)
+------------------
 * [actions] pre-merge and update-cache, `#146 <https://github.com/splintered-reality/py_trees_js/pull/146>`_ 
 * [actions] push containers, `#144 <https://github.com/splintered-reality/py_trees_js/pull/144>`_ 
 * [poetry] update project to use poetry, `#143 <https://github.com/splintered-reality/py_trees_js/pull/143>`_ 

@@ -39,7 +39,7 @@ setup(
     data_files=[("share/" + package_name, ["package.xml"])] + gather_js_files(),
     package_data={"py_trees_js": ["viewer/*.ui", "viewer/html/*", "viewer/images/*"]},
     author="Daniel Stonier",
-    maintainer="Daniel Stonier <d.stonier@gmail.com>",
+    maintainer="Daniel Stonier <d.stonier@gmail.com>, Sebastian Castro <sebas.a.castro@gmail.com>",
     url="https://github.com/splintered-reality/py_trees_js",
     keywords=["ROS", "ROS2", "behaviour-trees", "Qt"],
     zip_safe=True,

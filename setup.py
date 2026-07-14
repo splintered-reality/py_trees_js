@@ -48,7 +48,6 @@ setup(
     zip_safe=True,
     classifiers=[
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries",
@@ -60,7 +59,7 @@ setup(
         "Javascript libraries for visualising executing or log-replayed behaviour trees."
         "Includes a qt-js hybrid viewer for development and demonstration purposes."
     ),
-    license="BSD",
+    license="BSD-3-Clause",
     entry_points={
         "console_scripts": [
             "py-trees-demo-viewer = py_trees_js.viewer.viewer:main",

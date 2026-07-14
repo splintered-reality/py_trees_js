@@ -34,7 +34,7 @@ setup(
     #   py_trees-<version.css>
     #   py_trees_js/viewer/html/index.html
     #   py_trees_js/resources.qrc
-    version="0.6.6",
+    version="0.6.7",
     packages=find_packages(exclude=["tests*", "docs*"]),
     data_files=[
         ("share/" + package_name, ["package.xml"]),

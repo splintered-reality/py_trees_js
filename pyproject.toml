@@ -13,7 +13,7 @@ description = "javascript libraries for visualising behaviour trees"
 authors = ["Daniel Stonier"]
 maintainers = ["Daniel Stonier <d.stonier@gmail.com>"]
 readme = "README.md"
-license = "BSD"
+license = "BSD-3-Clause"
 homepage = "https://github.com/splintered-reality/py_trees_js"
 repository = "https://github.com/splintered-reality/py_trees_js"
 documentation = "https://github.com/splintered-reality/py_trees_js"
@@ -27,7 +27,6 @@ include = [
 ]
 classifiers = [
     'Intended Audience :: Developers',
-    'License :: OSI Approved :: BSD License',
     'Programming Language :: Python',
     'Topic :: Scientific/Engineering :: Artificial Intelligence',
     'Topic :: Software Development :: Libraries'

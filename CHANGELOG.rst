@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Forthcoming
+-----------
+* [js] Performance improvements (`#161 <https://github.com/splintered-reality/py_trees_js/issues/161>`_)
+* [infra] Switch to uv and add automatic PyPi publish on release (`#160 <https://github.com/splintered-reality/py_trees_js/issues/160>`_)
+* [infra] Use older license syntax to make ROS happy
+* [infra] Fix build warnings (`#159 <https://github.com/splintered-reality/py_trees_js/issues/159>`_)
+* Contributors: Sebastian Castro
+
 0.6.7 (2026-07-13)
 ------------------
 * [infra] Fix package.xml dependencies for newer Ubuntu distros (`#157 <https://github.com/splintered-reality/py_trees_js/issues/157>`_)

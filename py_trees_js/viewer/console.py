@@ -371,7 +371,7 @@ class LogLevel(enum.Enum):
     ERROR = 4
 
 
-log_level = LogLevel.INFO
+log_level: LogLevel = LogLevel.INFO
 """ Console's current log level."""
 
 

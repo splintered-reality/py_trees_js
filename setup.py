@@ -41,6 +41,11 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ] + gather_js_files(),
     package_data={"py_trees_js": ["viewer/*.ui", "viewer/html/*", "viewer/images/*"]},
+    # The PEP 621 [project] table in pyproject.toml flips setuptools' default to
+    # include_package_data=True, which makes it warn that viewer/html and viewer/images
+    # are "importable packages absent from the packages configuration". The explicit
+    # package_data above is all we need.
+    include_package_data=False,
     author="Daniel Stonier",
     maintainer="Daniel Stonier <d.stonier@gmail.com>, Sebastian Castro <sebas.a.castro@gmail.com>",
     url="https://github.com/splintered-reality/py_trees_js",

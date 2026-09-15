@@ -95,7 +95,8 @@ class MainWindow(qt_widgets.QMainWindow):
             f"[send_activity_stream: {self.parameters.send_activity_stream}]"
         )
 
-    def closeEvent(self, event):
+    # The PyQt5 stubs name the argument `a0`; Qt only ever calls this positionally.
+    def closeEvent(self, event):  # ty: ignore[invalid-method-override]
         """Termination event, save settings."""
         console.logdebug("received close event [main_window]")
         self.request_shutdown.emit()

@@ -6,6 +6,7 @@ This project uses
 
 * [`uv`](https://docs.astral.sh/uv/) for environment and dependency management
 * [`ruff`](https://docs.astral.sh/ruff/) for formatting & linting
+* [`ty`](https://github.com/astral-sh/ty) for static type checking
 
 ## Setup
 
@@ -31,6 +32,9 @@ $ uv run ruff format
 
 # Lint
 $ uv run ruff check          # add --fix to auto-fix
+
+# Type-Check
+$ uv run ty check
 
 # Tests
 $ uv run pytest -s tests/

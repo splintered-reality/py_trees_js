@@ -54,9 +54,14 @@ test = [
 lint = [
     "ruff>=0.6",
 ]
+types = [
+    "pyqt5-stubs>=5.15.6.0",
+    "ty>=0.0.1a1",
+]
 dev = [
     { include-group = "test" },
     { include-group = "lint" },
+    { include-group = "types" },
 ]
 
 [build-system]
@@ -128,3 +133,13 @@ max-complexity = 15
 "py_trees_js/viewer/web_app_rc.py" = ["D100", "D103", "UP", "I"]
 "py_trees_js/viewer/main_window_ui.py" = ["D100", "D101", "D102", "E402", "F401", "UP", "I"]
 "py_trees_js/viewer/web_view_ui.py" = ["D100", "D101", "D102", "E402", "F401", "UP", "I"]
+
+##########################
+# ty: static type checker
+##########################
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.ty.src]
+include = ["py_trees_js", "tests"]

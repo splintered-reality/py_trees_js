@@ -55,6 +55,6 @@ $ uv publish
 ```
 
 Releases are normally published by CI instead: pushing a tag of the form `x.y.z`
-(e.g. `0.6.7`) runs `.github/workflows/publish.yaml`, which checks that the tag
+(e.g. `0.0.100`) runs `.github/workflows/publish.yaml`, which checks that the tag
 matches the version in `pyproject.toml`, builds the distributions and uploads them
 to PyPI via trusted publishing (no token needed).

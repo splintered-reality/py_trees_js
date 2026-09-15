@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.6.7 (2026-07-13)
+0.0.100 (2026-07-13)
 ------------------
 * [infra] Fix package.xml dependencies for newer Ubuntu distros (`#157 <https://github.com/splintered-reality/py_trees_js/issues/157>`_)
 * Add resource file (`#156 <https://github.com/splintered-reality/py_trees_js/issues/156>`_)

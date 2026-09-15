@@ -39,6 +39,7 @@ joint.shapes.trees.Node = joint.dia.Element.define(
                 refWidth: '6%', refHeight: '6%',
                 fill: '#704214', stroke: '#000000', 'stroke-width': 2,
                 'pointer-events': 'visiblePainted', r: 5,
+                visibility: 'hidden',  // shown when children are collapsed
             }
         }
     }, {
@@ -72,6 +73,11 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         joint.dia.ElementView.prototype.initialize.apply(this, arguments);
 
         this.$box = $(_.template(this.template)());
+        // cache the sub-elements, jquery lookups on every update are not free
+        this.$name = this.$box.find('span.html-name')
+        this.$detail = this.$box.find('span.html-detail')
+        this.$tooltip = this.$box.find('div.html-tooltip')
+        this.tooltip_html = null
         // don't do an updateBox here, causes problems
         //   https://github.com/splintered-reality/py_trees_js/issues/141
         // This is an example of reacting on the input change and storing the input data in the cell model.
@@ -87,38 +93,19 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
         return this;
     },
 
-    updateBox: function() {
-        // console.log("_element_view_update_box", this.model.get('name'))
-        if (!this.paper) return;
-
-        // Set the position and dimension of the box so that it covers the JointJS element.
-        var bbox = this.model.getBBox();
-        // Example of updating the HTML with a data stored in the cell model.
-        try {
-            this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
-        } catch (err) {
-            console.log("Thrown an error in updateBoxOnChange", this.model.get('name'))
-            console.log("BBox", bbox)
-            console.log("this.$box", this.$box)
-            console.log("this.$box.find('span.html-name')", this.$box.find('span.html-name'))
-        }
-        this.$box.find('span.html-name')[0].innerHTML = this.model.get('name')
-        this.$box.find('span.html-detail')[0].innerHTML = this.model.get('details')
-        this.$box.find('div.html-tooltip')[0].innerHTML =
-            "<div class='id'>#" +
-            this.model.get('behaviour_id') +
-            "</div>" +
+    /**
+     * Build the tooltip html as a single string. Appending to innerHTML
+     * piecewise re-parses the whole element on every append.
+     */
+    tooltipHtml: function() {
+        var model = this.model
+        var html =
+            "<div class='id'>#" + model.get('behaviour_id') + "</div>" +
             "<hr/>" +
-            "<span><b>Name: </b>" +
-            this.model.get('name') +
-            "</span><br/>" +
-            "<span><b>Status: </b>" +
-            this.model.get('status') +
-            "</span><br/>" +
-            "<span><b>Visited: </b>" +
-            this.model.get('visited') +
-            "</span><br/>"
-        data = this.model.get('data')
+            "<span><b>Name: </b>" + model.get('name') + "</span><br/>" +
+            "<span><b>Status: </b>" + model.get('status') + "</span><br/>" +
+            "<span><b>Visited: </b>" + model.get('visited') + "</span><br/>"
+        var data = model.get('data')
         for (var key in data) {
             // Not a reliable way of checking for types, but since
             // the user has control over the input (fundamentals or arrays or dicts)
@@ -126,46 +113,53 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
             //   http://tobyho.com/2011/01/28/checking-types-in-javascript/
             if (data[key].constructor == Object) {
             } else if (Array.isArray(data[key])) {
-                this.$box.find('div.html-tooltip')[0].innerHTML +=
-                    "<span><b>" +
-                     key +
-                     ":</b></span><br/>"
+                html += "<span><b>" + key + ":</b></span><br/>"
                 for (var index in data[key]) {
-                    this.$box.find('div.html-tooltip')[0].innerHTML +=
-                        "<span>&nbsp;&nbsp;" +
-                         data[key][index] +
-                         "</span><br/>"
+                    html += "<span>&nbsp;&nbsp;" + data[key][index] + "</span><br/>"
                 }
             } else {
-                this.$box.find('div.html-tooltip')[0].innerHTML +=
-                   "<span><b>" +
-                    key +
-                    ": </b>" +
-                    data[key] +
-                    "</span><br/>"
+                html += "<span><b>" + key + ": </b>" + data[key] + "</span><br/>"
             }
         }
-        scale = this.paper.scale()       // sx, sy
-        offset = this.paper.translate()  // tx, ty
+        return html
+    },
+
+    updateBox: function() {
+        // console.log("_element_view_update_box", this.model.get('name'))
+        if (!this.paper) return;
+
+        var model = this.model
+        // Set the position and dimension of the box so that it covers the JointJS element.
+        var bbox = model.getBBox();
+        this.$name[0].innerHTML = model.get('name')
+        this.$detail[0].innerHTML = model.get('elided_details')
+        var tooltip_html = this.tooltipHtml()
+        if ( tooltip_html !== this.tooltip_html ) {
+            this.$tooltip[0].innerHTML = tooltip_html
+            this.tooltip_html = tooltip_html
+        }
+        var scale = this.paper.scale()       // sx, sy
+        var offset = this.paper.translate()  // tx, ty
+        var colour = model.get('visited') ? '#F1F1F1' : '#AAAAAA'
         // Positioning
         var tooltip_max_width = 250  // pixels
-        this.$box.find('div.html-tooltip').css({
+        this.$tooltip.css({
             left: 0.85*bbox.width*scale.sx,  // see below, parent is 0.8*bbox.wdith
             'max-width': tooltip_max_width
         })
-        this.$box.find('span.html-detail').css({
+        this.$detail.css({
             'width': 0.80*bbox.width*scale.sx,
             'margin-top': 0.10*bbox.height*scale.sy,
             'margin-bottom': 0.15*bbox.height*scale.sy,
             'font-size': 10*scale.sy,
-            'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
+            'color': colour,
         })
-        this.$box.find('span.html-name').css({
+        this.$name.css({
             'width': 0.80*bbox.width*scale.sx,
             'margin-top': 0.10*bbox.height*scale.sy,
             'margin-bottom': 0.15*bbox.height*scale.sy,
             'font-size': 14*scale.sy,
-            'color': this.model.get('visited') ? '#F1F1F1' : '#AAAAAA',
+            'color': colour,
         })
         this.$box.css({
             // math says this should be 0.85/1.0, but not everything lining up correctly
@@ -175,52 +169,12 @@ joint.shapes.trees.NodeView = joint.dia.ElementView.extend({
             height: 0.95*bbox.height*scale.sy,
             left: offset.tx + bbox.x*scale.sx + 0.15*bbox.width*scale.sx,
             top: offset.ty + bbox.y*scale.sy,
-            transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'
+            transform: 'rotate(' + (model.get('angle') || 0) + 'deg)',
+            visibility: model.get('hidden') ? 'hidden' : 'visible',
         });
-        sepia = "#704214"
-        this.model.attr({
-            collapse: {
-                fill: sepia,
-                visibility: this.model.get('collapse_children') ? "visible" : "hidden"
-            }
-        })
-        if ( this.model.get('selected') ) {
-            this.model.attr({
-                box: {
-                    fill: {
-                        type: 'linearGradient',
-                        stops: [
-                            { offset: '0%',  color: sepia },
-                            { offset: '100%', color: "#d9822b" }
-                        ],
-                        attrs: {
-                            x1: '0%',
-                            y1: '0%',
-                            x2: '0%',
-                            y2: '100%'
-                        },
-                    },
-                }
-            })
-        } else {
-            this.model.attr({
-                box: {
-                    fill: '#333333'
-                }
-            })
-        }
-        // Hiding
-        if ( this.model.get('hidden') ) {
-            this.model.attr('./visibility', 'hidden')
-            this.$box.css({
-                'visibility': 'hidden',
-            })
-        } else {
-            this.model.attr('./visibility', 'visible')
-            this.$box.css({
-                'visibility': 'visible',
-            })
-        }
+        // NB: the svg styling for the collapse marker, selection and hiding is
+        // applied to the model where those flags change (py_trees.canvas), not
+        // here - changing model attrs from inside a 'change' handler re-enters it.
         // console.log("_element_view_update_box_on_change_done")
       },
 
@@ -420,8 +374,10 @@ var py_trees = (function() {
       }
       model.set('collapse_children', !model.get('collapse_children'))
       collapse_children = model.get('collapse_children')
+      model.attr('collapse/visibility', collapse_children ? 'visible' : 'hidden')
       _.each(successors, function(behaviour) {
           behaviour.set('hidden', collapse_children)
+          behaviour.attr('./visibility', collapse_children ? 'hidden' : 'visible')
           var links = graph.getConnectedLinks(behaviour, { inbound: true })
           _.each(links, function(link) {
               // prefer to set a variable in the model and do this in a view,
@@ -621,6 +577,7 @@ var py_trees = (function() {
           setTimeout(() => {
               if ( graph.get("last_single_click_ms") > graph.get("last_double_click_ms") ) {
                   view.model.set('selected', !view.model.get('selected'))
+                  _canvas_update_node_selection_style({node: view.model})
                   // update the blackboard view
                   tree = graph.get("tree")
                   _canvas_update_blackboard_view({
@@ -1243,13 +1200,21 @@ var py_trees = (function() {
                   stroke = very_dark_gray
           }
       }
-      link.attr({
-          line: { // selector for the visible <path> SVGElement
-              stroke: stroke // SVG attribute and value
-          }
-      });
-      // TODO: avoid setting these if the link already exists, not urgent
-      //       though, since the blockers are always above setting the html attrs.
+      // Any attr change makes jointjs recompute the whole route (router + connector),
+      // so only touch the stroke when the colour actually changes.
+      if ( link.attr('line/stroke') !== stroke ) {
+          link.attr({
+              line: { // selector for the visible <path> SVGElement
+                  stroke: stroke // SVG attribute and value
+              }
+          });
+      }
+      // Endpoints and routing are fixed for the lifetime of a link (the graph is
+      // rebuilt when the structure changes), so configure them only once. Re-setting
+      // the router on every tick forces every link to be re-routed each tick.
+      if ( link.router() ) {  // null on a fresh link
+          return link
+      }
       link.source(source)
       link.target(target)
       // Routers
@@ -1268,7 +1233,7 @@ var py_trees = (function() {
       //
       link.connector('rounded')  //
       link.router('manhattan', {
-          step: 1,
+          step: 10,  // grid resolution for the obstacle-avoiding search (1 => 100x the cells of 10)
           padding: { top: 25 },
           startDirections: ['bottom'],
           endDirections: ['top']
@@ -1285,16 +1250,52 @@ var py_trees = (function() {
   var _canvas_update_node = function({node, behaviour_id, colour, name, details, status, visited, data}) {
       // TODO assert that behaviour_id is the same
       // console.log("_canvas_update_node")
-      node.set("name", name)
-      node.set("details", _canvas_create_elided_details(details))
-      node.set("status", status)
-      node.set("visited", visited)
-      node.set("data", data)
+      // A single set() fires a single 'change' event (each set() would otherwise
+      // trigger a full html overlay update). Text elision measures text in the
+      // DOM, so only redo it when the details actually change.
+      var changes = { name: name, status: status, visited: visited, data: data }
+      if ( details !== node.get("details") ) {
+          changes.details = details
+          changes.elided_details = _canvas_create_elided_details(details)
+      }
+      node.set(changes)
       _canvas_update_node_style({
           node: node,
           colour: colour
       })
       // console.log("_canvas_update_node_done")
+  }
+
+  /*
+   * Style the box to reflect whether the node is selected (blackboard tracking).
+   */
+  var _canvas_update_node_selection_style = function({node}) {
+      var sepia = "#704214"
+      if ( node.get('selected') ) {
+          node.attr({
+              box: {
+                  fill: {
+                      type: 'linearGradient',
+                      stops: [
+                          { offset: '0%',  color: sepia },
+                          { offset: '100%', color: "#d9822b" }
+                      ],
+                      attrs: {
+                          x1: '0%',
+                          y1: '0%',
+                          x2: '0%',
+                          y2: '100%'
+                      },
+                  },
+              }
+          })
+      } else {
+          node.attr({
+              box: {
+                  fill: '#333333'
+              }
+          })
+      }
   }
 
   /*
@@ -1779,12 +1780,23 @@ var py_trees = (function() {
     cache = graph.get('cache')
     trees = cache.get('trees')
 
-    // clear the visual cache
-    _.each(cache.getEmbeddedCells(), function(embedded) {
-        cache.unembed(embedded)
-        embedded.remove()  // from the graph
-    })
-    events = []
+    // Reuse the existing event marker models (and their views) - creating and
+    // destroying a hundred jointjs cells on every tick is far more expensive
+    // than re-positioning them. Drop the oldest markers if trees fell out of the
+    // cache, create markers only for the trees that don't have one yet.
+    var events = cache.get('events') || []
+    while ( events.length > trees.length ) {
+        var surplus = events.shift()
+        cache.unembed(surplus)
+        surplus.remove()  // from the graph
+    }
+    graph.startBatch('timeline')
+    while ( events.length < trees.length ) {
+        var event_marker = new joint.shapes.trees.EventMarker()
+        cache.embed(event_marker)
+        event_marker.addTo(graph)
+        events.push(event_marker)
+    }
     min_timestamp = trees.length == 1 ? 0 : trees[0]['timestamp']
     max_timestamp = trees[trees.length - 1]['timestamp']
     delta = max_timestamp - min_timestamp
@@ -1792,16 +1804,17 @@ var py_trees = (function() {
     delta = delta == 0 ? max_timestamp : delta
     dimensions = cache.getBBox()
     trees.forEach(function (tree, index) {
+      var event_marker = events[index]
+      var default_width = event_marker.get('default_width')
       // normalise between 0.05 and 0.95
       normalised_x = 0.05 + 0.9 * (tree['timestamp'] - min_timestamp) / delta
-      var event_marker = new joint.shapes.trees.EventMarker()
       event_marker.set('significant', tree['changed'])
-      event_marker.translate(
-          dimensions.x + normalised_x * dimensions.width - event_marker.get('default_width') / 2.0,
-          0
-      )
-      event_marker.resize(event_marker.get('default_width'), dimensions.height)
       event_marker.set('tree', tree)
+      event_marker.position(
+          dimensions.x + normalised_x * dimensions.width - default_width / 2.0,
+          dimensions.y
+      )
+      event_marker.resize(default_width, dimensions.height)
       if ( !graph.get('streaming') && (index == cache.get('selected_index')) ) {
           cache.set('selected', event_marker)
           _timeline_highlight_event({event: event_marker, highlight: true})
@@ -1812,10 +1825,8 @@ var py_trees = (function() {
       } else {
           _timeline_highlight_event({event: event_marker, highlight: false})
       }
-      cache.embed(event_marker)
-      events.push(event_marker)
-      event_marker.addTo(graph)
     })
+    graph.stopBatch('timeline')
     cache.set('events', events)
     console.log("_timeline_rebuild_cache_event_markers_done")
   }

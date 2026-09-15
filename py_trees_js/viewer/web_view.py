@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # License: BSD
 #   https://github.com/splintered-reality/py_trees_js/raw/devel/LICENSE

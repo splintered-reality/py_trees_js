@@ -3,7 +3,7 @@
 ################################################################################
 # This is a minimal setup.py for enabling ROS builds.
 #
-# For all other modes of development, use poetry and pyproject.toml
+# For all other modes of development, use uv and pyproject.toml
 ################################################################################
 
 import os

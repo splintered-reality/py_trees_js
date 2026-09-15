@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # License: BSD
 #   https://github.com/splintered-reality/py_trees_js/raw/devel/LICENSE
@@ -15,7 +14,6 @@
 ##############################################################################
 
 import copy
-import typing
 
 ##############################################################################
 # Methods
@@ -167,7 +165,7 @@ def create_demo_tree_definition():
     return tree
 
 
-def generate_activity_timeline() -> typing.List[typing.List[str]]:
+def generate_activity_timeline() -> list[list[str]]:
     """Generate activity feed."""
     space = "<text>&#xa0;</text>"
     left_arrow = "<text>&#x2190;</text>"
@@ -235,18 +233,18 @@ def create_demo_tree_list():
     activity_timeline = generate_activity_timeline()
     trees = []
     tree = create_demo_tree_definition()
-    tree["blackboard"]["data"][
-        "/state/worker_a"
-    ] = "And his noodly appendage reached forth to tickle the blessed..."
+    tree["blackboard"]["data"]["/state/worker_a"] = (
+        "And his noodly appendage reached forth to tickle the blessed..."
+    )
     tree["activity"] = activity_timeline[0]
     trees.append(copy.deepcopy(tree))
     # sequence progressed, but running
     tree["visited_path"] = ["1", "2", "7", "8"]
     tree["behaviours"]["7"]["status"] = "SUCCESS"  # first worker
     tree["behaviours"]["8"]["status"] = "RUNNING"  # middle worker
-    tree["blackboard"]["data"][
-        "/foobar"
-    ] = "oi"  # TODO: flip to True, and fix dump/load problems
+    tree["blackboard"]["data"]["/foobar"] = (
+        "oi"  # TODO: flip to True, and fix dump/load problems
+    )
     tree["blackboard"]["data"]["/state/worker_b"] = 5
     tree["activity"] = activity_timeline[1]
     trees.append(copy.deepcopy(tree))

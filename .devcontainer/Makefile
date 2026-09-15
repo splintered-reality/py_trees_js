@@ -14,8 +14,7 @@ help:
 
 image:
 	docker build \
-	  --build-arg POETRY_VERSION=1.3.2 \
-	  --build-arg PYTHON_VERSION=3.8.16 \
+	  --build-arg PYTHON_VERSION=3.10 \
 	  --build-arg DEBIAN_VERSION=bullseye \
 	  --build-arg NAME=${TAG} \
 	  -t ${REPO}:${TAG} .

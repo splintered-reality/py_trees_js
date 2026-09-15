@@ -12,7 +12,7 @@
 # Imports
 ##############################################################################
 
-# fmt: off
-from . import resources  # usort:skip
-from . import viewer  # usort:skip
-# fmt: on
+# isort: off
+from . import resources
+from . import viewer
+# isort: on

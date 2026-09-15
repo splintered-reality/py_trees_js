@@ -2,30 +2,27 @@
 
 ## Setup
 
-Make sure you run `poetry install` from the root folder of the package.
+Install [`uv`](https://docs.astral.sh/uv/).
+
+Then run `uv sync` from the root folder of the package.
 
 ## Local Usage
 
 ```
 # No stdout
-$ poetry run pytest
+$ uv run pytest
 
 # With stdout
-$ poetry run pytest -s
+$ uv run pytest -s
+
+# With coverage
+$ uv run pytest --cov=py_trees_js tests/
 ```
 
-or in the poetry shell
+or inside the activated environment
 
 ```
-$ poetry shell
-(e) $ cd tests && pytest -s
-(e) exit
-```
-
-## Tox
-
-```
-$ tox -e py38      # tests + coverage
-$ tox -e format    # formats with ufmt
-$ tox -e check     # formatting, linting and mypy checkers
+$ source .venv/bin/activate
+(.venv) $ cd tests && pytest -s
+(.venv) $ deactivate
 ```

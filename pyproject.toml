@@ -1,4 +1,4 @@
-[tool.poetry]
+[project]
 name = "py_trees_js"
 version = "0.6.7"
 # version needs to be updated in several places
@@ -10,60 +10,136 @@ version = "0.6.7"
 #   py_trees_js/resources.qrc
 #   setup.py
 description = "javascript libraries for visualising behaviour trees"
-authors = ["Daniel Stonier"]
-maintainers = ["Daniel Stonier <d.stonier@gmail.com>"]
+authors = [
+    { name = "Daniel Stonier" },
+]
+maintainers = [
+    { name = "Daniel Stonier", email = "d.stonier@gmail.com" },
+    { name = "Sebastian Castro", email = "sebas.a.castro@gmail.com" },
+]
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
-homepage = "https://github.com/splintered-reality/py_trees_js"
-repository = "https://github.com/splintered-reality/py_trees_js"
-documentation = "https://github.com/splintered-reality/py_trees_js"
-packages = [
-    { include = "py_trees_js" },
-]
-include = [
-    "py_trees_js/viewer/*.ui",
-    "py_trees_js/viewer/html/*",
-    "py_trees_js/viewer/images/*"
-]
+# NOTE: deliberately omitted. `colcon build` (ament_python) introspects setup.py via
+# colcon-python-setup-py, which repr()s + ast.literal_eval()s the setuptools metadata.
+# setuptools merges this PEP 621 field as a packaging.SpecifierSet, whose repr
+# (`<SpecifierSet(...)>`) is not a valid literal and breaks the colcon build.
+# requires-python = ">=3.10,<4.0"
+keywords = ["py_trees", "py-trees", "behaviour-trees"]
 classifiers = [
-    'Intended Audience :: Developers',
-    'Programming Language :: Python',
-    'Topic :: Scientific/Engineering :: Artificial Intelligence',
-    'Topic :: Software Development :: Libraries'
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
 ]
-keywords=["py_trees", "py-trees", "behaviour-trees"]
-
-[tool.poetry.dependencies]
-python = "^3.8"
-pyqt5 = "~5.14"
-pyqtwebengine = "~5.14"
-
-[tool.poetry.group.dev.dependencies]
-tox = ">=3.26"
-tox-poetry-installer = {extras = ["poetry"], version = ">=0.9.0"}
-pytest = [
-    { version = ">=7.1", python = "^3.7" }
+dependencies = [
+    "pyqt5>=5.14,<5.15",
+    "pyqtwebengine>=5.14,<5.15",
 ]
-pytest-console-scripts = ">=1.3"
-pytest-cov = ">=3.0.0"             # transitively depends on coverage[toml]
 
-[tool.poetry.group.format.dependencies]
-ufmt = ">=2.0"                     # black (style) + usort (import order)
+[project.urls]
+Homepage = "https://github.com/splintered-reality/py_trees_js"
+Repository = "https://github.com/splintered-reality/py_trees_js"
+Documentation = "https://github.com/splintered-reality/py_trees_js"
 
-[tool.poetry.group.static.dependencies]
-mypy = ">=0.991"
-
-[tool.poetry.group.lint.dependencies]
-# strongly recommended
-flake8 = ">=5.0"                  # combines pyflakes (errors) & pycodestyle (pep8 style)
-flake8-docstrings = ">=1.6"       # docstrings (integrates pydocstyle)
-darglint = ">=1.8"                # checks docstrings match implementation
-# optional, these go above and beyond
-flake8-bugbear = ">=22.9"         # bugs & design not strictly pep8
-
-[tool.poetry.scripts]
+[project.scripts]
 py-trees-demo-viewer = "py_trees_js.viewer.viewer:main"
 
+# Development dependencies (PEP 735). Install everything with `uv sync`.
+[dependency-groups]
+test = [
+    "pytest>=7.1",
+    "pytest-console-scripts>=1.3",
+    "pytest-cov>=3.0.0",
+]
+lint = [
+    "ruff>=0.6",
+]
+types = [
+    "pyqt5-stubs>=5.15.6.0",
+    "ty>=0.0.1a1",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    { include-group = "types" },
+]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["py_trees_js"]
+
+[tool.hatch.build.targets.sdist]
+# Keep the sdist minimal (the same contents poetry used to produce): the python
+# package plus the standard metadata files hatchling always includes.
+only-include = ["py_trees_js"]
+
+[tool.coverage.run]
+source = ["py_trees_js"]
+# Explore conditional branches (important):
+#   https://coverage.readthedocs.io/en/latest/branch.html#branch
+branch = true
+
+###########################
+# Ruff: formatter + linter
+###########################
+
+[tool.ruff]
+# black-compatible formatting width (what ufmt used to enforce); lint tolerates up to 120 (see pycodestyle below)
+line-length = 88
+# Keep in step with the supported python floor so pyupgrade never rewrites to syntax
+# that won't parse on the oldest supported python.
+target-version = "py310"
+include = ["py_trees_js/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import ordering, replaces usort)
+    "D",   # pydocstyle (docstrings, replaces flake8-docstrings)
+    "B",   # flake8-bugbear (bugs & design beyond pep8)
+    "UP",  # pyupgrade (modernize syntax for the target python)
+]
+ignore = [
+    "D105",  # magic method docstrings
+    "D107",  # prefer documenting __init__ args in the class docstring
+]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 120
+
+[tool.ruff.lint.pydocstyle]
+# Sphinx-style docstrings; pep257 convention relaxes the conflicting one-liner
+# rules (e.g. D203/D212/D213) that previously lived in the flake8 ignore list.
+convention = "pep257"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.per-file-ignores]
+# Relax docstring & assert checks in the tests dir.
+"tests/*" = ["D", "S101"]
+# Re-exports (`from . import ...`) in package __init__ files.
+"py_trees_js/__init__.py" = ["F401"]
+"py_trees_js/viewer/__init__.py" = ["F401"]
+# Auto-generated files (pyrcc5 / pyuic5, see the gen.bash scripts).
+# Don't ask for docstrings, modern syntax or sorted imports in code we don't hand-write.
+"py_trees_js/resources.py" = ["D100", "D103", "UP", "I"]
+"py_trees_js/viewer/images_rc.py" = ["D100", "D103", "UP", "I"]
+"py_trees_js/viewer/web_app_rc.py" = ["D100", "D103", "UP", "I"]
+"py_trees_js/viewer/main_window_ui.py" = ["D100", "D101", "D102", "E402", "F401", "UP", "I"]
+"py_trees_js/viewer/web_view_ui.py" = ["D100", "D101", "D102", "E402", "F401", "UP", "I"]
+
+##########################
+# ty: static type checker
+##########################
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.ty.src]
+include = ["py_trees_js", "tests"]

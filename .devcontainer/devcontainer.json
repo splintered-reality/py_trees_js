@@ -1,20 +1,17 @@
 {
-    "name": "py_trees-js-38",
+    "name": "py_trees_js",
 
     "build": {
         "dockerfile": "./Dockerfile",
         "args": {
             "NAME": "py_trees_js",
-            "POETRY_VERSION": "1.3.2",
-            "PYTHON_VERSION": "3.8.16",
+            "PYTHON_VERSION": "3.10",
             "DEBIAN_VERSION": "bullseye"
         },
         "context": ".."
     },
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
-        "POETRY_HTTP_BASIC_PYPI_USERNAME": "${localEnv:POETRY_HTTP_BASIC_PYPI_USERNAME}",
-        "POETRY_HTTP_BASIC_PYPI_PASSWORD": "${localEnv:POETRY_HTTP_BASIC_PYPI_PASSWORD}",
         "QT_DEBUG_PLUGINS": "1"
     },
     "remoteUser": "zen",
@@ -26,12 +23,12 @@
                 "bungcip.better-toml",
                 "streetsidesoftware.code-spell-checker",
                 "ms-python.python",
-                "omnilib.ufmt",
+                "charliermarsh.ruff",
                 "tht13.rst-vscode"
             ]
         }
     },
-    "postCreateCommand": "poetry install --all-extras",
+    "postCreateCommand": "uv sync",
     "mounts": [
         {
             "source": "/tmp/.X11-unix",

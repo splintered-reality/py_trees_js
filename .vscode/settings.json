@@ -2,7 +2,7 @@
     "python.linting.enabled": true,
     "python.formatting.provider": "none",
     "[python]": {
-        "editor.defaultFormatter": "omnilib.ufmt",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true
     },
     "cSpell.words": [
@@ -10,12 +10,9 @@
         "behaviours",
         "bierner",
         "bungcip",
-        "omnilib",
         "py_trees",
         "pydot",
         "pypi",
-        "ufmt",
-        "usort",
         "Visualise",
         "visualising",
     ]

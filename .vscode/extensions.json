@@ -5,6 +5,7 @@
         "bungcip.better-toml",
         "streetsidesoftware.code-spell-checker",
         "ms-python.python",
+        "charliermarsh.ruff",
         "ms-vscode-remote.vscode-remote-extensionpack",
         "tht13.rst-vscode"
     ]

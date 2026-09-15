@@ -16,7 +16,7 @@
 # Q: Are all pytest plugins undiscoverable by mypy?
 ##############################################################################
 
-# The venv tox creates isn't sufficent for qwebengine's opengl requirements.
+# The venv uv creates isn't sufficient for qwebengine's opengl requirements.
 # def test_launch(script_runner) -> None:  # type: ignore[no-untyped-def]
 #     ret = script_runner.run("py-trees-demo-viewer")
 #     assert ret.success

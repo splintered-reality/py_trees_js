@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # License: BSD
 #   https://github.com/splintered-reality/py_trees_js/raw/devel/LICENSE
@@ -34,33 +33,35 @@ from . import console, main_window, trees
 
 def send_tree_response(reply):
     """Confirm receipt of the tree by the js library."""
-    console.logdebug("[{}] reply: '{}' [viewer]".format(time.monotonic(), reply))
+    console.logdebug(f"[{time.monotonic()}] reply: '{reply}' [viewer]")
+
+
+# index of the next demo tree to send, cycles through the demo trees
+send_tree_index = 0
 
 
 @qt_core.pyqtSlot()
 def send_tree(parameters, web_view_page, demo_trees, unused_checked):
     """Send a tree snapshot to the tree library."""
+    global send_tree_index
     number_of_trees = len(demo_trees)
-    tree = copy.deepcopy(demo_trees[send_tree.index])
+    tree = copy.deepcopy(demo_trees[send_tree_index])
     tree["timestamp"] = time.time()
-    # demo_trees[send_tree.index]['timestamp'] = time.time()
+    # demo_trees[send_tree_index]['timestamp'] = time.time()
     console.logdebug(
         "[{}] send: tree '{}' [{}][viewer]".format(
-            time.monotonic(), send_tree.index, tree["timestamp"]
+            time.monotonic(), send_tree_index, tree["timestamp"]
         )
     )
     if not parameters.send_blackboard_data:
         del tree["blackboard"]["data"]
     if not parameters.send_activity_stream:
         del tree["activity"]
-    javascript_command = "render_tree({{tree: {}}})".format(tree)
+    javascript_command = f"render_tree({{tree: {tree}}})"
     web_view_page.runJavaScript(javascript_command, send_tree_response)
-    send_tree.index = (
-        0 if send_tree.index == (number_of_trees - 1) else send_tree.index + 1
+    send_tree_index = (
+        0 if send_tree_index == (number_of_trees - 1) else send_tree_index + 1
     )
-
-
-send_tree.index = 0
 
 
 @qt_core.pyqtSlot()
@@ -72,7 +73,7 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
         ["BMP Files (*.bmp)", "JPEG Files (*.jpeg)", "PNG Files (*.png)"]
     )
     file_dialog.selectNameFilter("PNG Files (*.png)")
-    file_dialog.setDefaultSuffix((".png"))
+    file_dialog.setDefaultSuffix(".png")
     file_dialog.setAcceptMode(qt_widgets.QFileDialog.AcceptSave)
     # unfortunately creates a fair amount of spam on stdout
     #   'kf5.kio.core: Invalid URL: QUrl("screenshot.jpeg")'
@@ -84,7 +85,7 @@ def capture_screenshot(parent, web_engine_view, unused_checked):
     _ = file_dialog.exec()
     # should be able to restrict it to one file?
     for filename in file_dialog.selectedFiles():
-        console.logdebug("capturing screenshot: {}".format(filename))
+        console.logdebug(f"capturing screenshot: {filename}")
         # This would be simpler, but you can't specify a default filename, nor suffix on linux...
         #     filename, _ = qt_widgets.QFileDialog.getSaveFileName(
         #         parent=parent,

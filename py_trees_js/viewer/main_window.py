@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # License: BSD
 #   https://github.com/splintered-reality/py_trees_js/raw/devel/LICENSE
@@ -23,7 +22,7 @@ from . import console, main_window_ui
 ##############################################################################
 
 
-class Parameters(object):
+class Parameters:
     """Parameters configuring the ui to save/load."""
 
     def __init__(self):
@@ -82,9 +81,8 @@ class MainWindow(qt_widgets.QMainWindow):
             True if state == qt_core.Qt.Checked else False
         )
         console.logdebug(
-            "received blackboard data parameter change signal [send_blackboard_data: {}]".format(
-                self.parameters.send_blackboard_data
-            )
+            "received blackboard data parameter change signal "
+            f"[send_blackboard_data: {self.parameters.send_blackboard_data}]"
         )
 
     def on_activity_stream_checked(self, state):
@@ -93,12 +91,12 @@ class MainWindow(qt_widgets.QMainWindow):
             True if state == qt_core.Qt.Checked else False
         )
         console.logdebug(
-            "received blackboard activity parameter change signal [send_activity_stream: {}]".format(
-                self.parameters.send_activity_stream
-            )
+            "received blackboard activity parameter change signal "
+            f"[send_activity_stream: {self.parameters.send_activity_stream}]"
         )
 
-    def closeEvent(self, event):
+    # The PyQt5 stubs name the argument `a0`; Qt only ever calls this positionally.
+    def closeEvent(self, event):  # ty: ignore[invalid-method-override]
         """Termination event, save settings."""
         console.logdebug("received close event [main_window]")
         self.request_shutdown.emit()

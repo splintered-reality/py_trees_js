@@ -40,8 +40,8 @@ $ cd py_trees_js
 $ (use CTRL-SHIFT-P if you miss VSCode's helper dialog)
 
 # Setup and launch
-$ poetry install
-$ poetry run py-trees-demo-viewer
+$ uv sync
+$ uv run py-trees-demo-viewer
 ```
 <p align="center">
   <img src="images/splash.png" width="80%"/>
@@ -50,7 +50,7 @@ $ poetry run py-trees-demo-viewer
 
 If you do not have a PC that meets those requirements, some alternative options:
 
-* Install [Poetry](https://python-poetry.org/) and PyQt on your system or in a venv. Clone and launch.
+* Install [uv](https://docs.astral.sh/uv/) and PyQt on your system or in a venv. Clone and launch.
 * If you're just interested in seeing the demo viewer, `pip install --user py_trees_js` and launch the viewer
 * Create your own devcontainer with something like the [desktop-lite](https://github.com/devcontainers/features/tree/main/src/desktop-lite) feature. If this works, send me a PR!
 

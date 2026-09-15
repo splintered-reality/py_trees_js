@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Forthcoming
------------
+0.7.0 (2026-09-14)
+------------------
 * [js] Performance improvements (`#161 <https://github.com/splintered-reality/py_trees_js/issues/161>`_)
 * [infra] Switch to uv and add automatic PyPi publish on release (`#160 <https://github.com/splintered-reality/py_trees_js/issues/160>`_)
 * [infra] Use older license syntax to make ROS happy
